@@ -84,7 +84,7 @@ runtime is available in the build environment. ID columns are `VARCHAR(40)`
 - Livestock stats (headcount by type, production, cost, sales)
 - Import maps all `animal_*` tables
 
-## Phase 6 — GIS / Field Mapping  ☐
+## Phase 6 — GIS / Field Mapping  ☑
 - Schema `009_gis`: `field_boundaries`, `field_zones`, `farm_markers`
 - Self-hosted Leaflet + leaflet-draw
 - Per-field boundary drawing + zone editing; farm-wide map; markers
