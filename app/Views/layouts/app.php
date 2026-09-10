@@ -27,13 +27,13 @@ $navMain = [
 $navBusiness = [
     ['key' => 'finance',   'label' => 'Finance',   'href' => url('finance'),    'icon' => 'wallet'],
     ['key' => 'inventory', 'label' => 'Inventory', 'href' => url('inventory'),  'icon' => 'boxes'],
+    ['key' => 'livestock', 'label' => 'Livestock', 'href' => url('livestock'),  'icon' => 'cow'],
 ];
 $navPeople = [
     ['key' => 'employees', 'label' => 'Employees', 'href' => url('employees'), 'icon' => 'users'],
     ['key' => 'team',      'label' => 'Team',      'href' => url('team'),      'icon' => 'users'],
 ];
 $navUpcoming = [
-    ['label' => 'Livestock', 'icon' => 'cow'],
     ['label' => 'Reports',   'icon' => 'bar-chart'],
     ['label' => 'Documents', 'icon' => 'file-text'],
 ];

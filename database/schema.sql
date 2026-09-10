@@ -91,6 +91,148 @@ CREATE TABLE IF NOT EXISTS `admin_users` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ---------------------------------------------------------------------
+-- animals
+-- ---------------------------------------------------------------------
+DROP TABLE IF EXISTS `animals`;
+CREATE TABLE IF NOT EXISTS `animals` (
+  `id` varchar(40) NOT NULL,
+  `farm_id` varchar(40) NOT NULL,
+  `livestock_type_id` varchar(40) NOT NULL,
+  `tag` varchar(60) DEFAULT NULL,
+  `name` varchar(80) DEFAULT NULL,
+  `animal_group` varchar(80) DEFAULT NULL,
+  `sex` varchar(10) NOT NULL DEFAULT 'Unknown',
+  `birth_date` date DEFAULT NULL,
+  `acquisition_date` date NOT NULL,
+  `acquisition_type` varchar(40) NOT NULL DEFAULT 'Born on farm',
+  `acquisition_cost` decimal(12,2) DEFAULT NULL,
+  `status` varchar(20) NOT NULL DEFAULT 'Active',
+  `breed` varchar(80) DEFAULT NULL,
+  `colour` varchar(60) DEFAULT NULL,
+  `weight` decimal(10,2) DEFAULT NULL,
+  `notes` varchar(500) DEFAULT NULL,
+  `parent_id` varchar(40) DEFAULT NULL,
+  `created_at` datetime NOT NULL,
+  `updated_at` datetime NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx_animals_farm` (`farm_id`,`status`),
+  KEY `idx_animals_type` (`livestock_type_id`),
+  KEY `idx_animals_parent` (`parent_id`),
+  CONSTRAINT `fk_animals_farm` FOREIGN KEY (`farm_id`) REFERENCES `farms` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_animals_parent` FOREIGN KEY (`parent_id`) REFERENCES `animals` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `fk_animals_type` FOREIGN KEY (`livestock_type_id`) REFERENCES `livestock_types` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ---------------------------------------------------------------------
+-- animal_expenses
+-- ---------------------------------------------------------------------
+DROP TABLE IF EXISTS `animal_expenses`;
+CREATE TABLE IF NOT EXISTS `animal_expenses` (
+  `id` varchar(40) NOT NULL,
+  `farm_id` varchar(40) NOT NULL,
+  `animal_id` varchar(40) DEFAULT NULL,
+  `category` varchar(60) NOT NULL DEFAULT 'Other',
+  `description` varchar(200) NOT NULL,
+  `amount` decimal(12,2) NOT NULL DEFAULT 0.00,
+  `date` date NOT NULL,
+  `notes` varchar(500) DEFAULT NULL,
+  `created_at` datetime NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx_ae_farm_date` (`farm_id`,`date`),
+  KEY `idx_ae_animal` (`animal_id`),
+  CONSTRAINT `fk_ae_animal` FOREIGN KEY (`animal_id`) REFERENCES `animals` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `fk_ae_farm` FOREIGN KEY (`farm_id`) REFERENCES `farms` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ---------------------------------------------------------------------
+-- animal_health
+-- ---------------------------------------------------------------------
+DROP TABLE IF EXISTS `animal_health`;
+CREATE TABLE IF NOT EXISTS `animal_health` (
+  `id` varchar(40) NOT NULL,
+  `farm_id` varchar(40) NOT NULL,
+  `animal_id` varchar(40) NOT NULL,
+  `type` varchar(60) NOT NULL,
+  `description` varchar(255) NOT NULL,
+  `veterinarian` varchar(120) DEFAULT NULL,
+  `cost` decimal(12,2) NOT NULL DEFAULT 0.00,
+  `date` date NOT NULL,
+  `next_due_date` date DEFAULT NULL,
+  `notes` varchar(500) DEFAULT NULL,
+  `created_at` datetime NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx_ah_animal` (`animal_id`),
+  KEY `idx_ah_farm` (`farm_id`),
+  CONSTRAINT `fk_ah_animal` FOREIGN KEY (`animal_id`) REFERENCES `animals` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ---------------------------------------------------------------------
+-- animal_production
+-- ---------------------------------------------------------------------
+DROP TABLE IF EXISTS `animal_production`;
+CREATE TABLE IF NOT EXISTS `animal_production` (
+  `id` varchar(40) NOT NULL,
+  `farm_id` varchar(40) NOT NULL,
+  `animal_id` varchar(40) DEFAULT NULL,
+  `type` varchar(60) NOT NULL,
+  `quantity` decimal(14,3) NOT NULL DEFAULT 0.000,
+  `unit` varchar(20) NOT NULL DEFAULT '',
+  `date` date NOT NULL,
+  `price_per_unit` decimal(12,2) DEFAULT NULL,
+  `total_value` decimal(14,2) DEFAULT NULL,
+  `notes` varchar(500) DEFAULT NULL,
+  `created_at` datetime NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx_ap_animal` (`animal_id`),
+  KEY `idx_ap_farm_date` (`farm_id`,`date`),
+  CONSTRAINT `fk_ap_animal` FOREIGN KEY (`animal_id`) REFERENCES `animals` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_ap_farm` FOREIGN KEY (`farm_id`) REFERENCES `farms` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ---------------------------------------------------------------------
+-- animal_sales
+-- ---------------------------------------------------------------------
+DROP TABLE IF EXISTS `animal_sales`;
+CREATE TABLE IF NOT EXISTS `animal_sales` (
+  `id` varchar(40) NOT NULL,
+  `farm_id` varchar(40) NOT NULL,
+  `animal_id` varchar(40) NOT NULL,
+  `transaction_id` varchar(40) DEFAULT NULL,
+  `sale_date` date NOT NULL,
+  `quantity` int(11) NOT NULL DEFAULT 1,
+  `weight_at_sale` decimal(10,2) DEFAULT NULL,
+  `price_per_kg` decimal(12,2) DEFAULT NULL,
+  `total_amount` decimal(14,2) NOT NULL DEFAULT 0.00,
+  `buyer` varchar(160) DEFAULT NULL,
+  `notes` varchar(500) DEFAULT NULL,
+  `created_at` datetime NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx_as_farm` (`farm_id`),
+  KEY `idx_as_animal` (`animal_id`),
+  KEY `fk_as_tx` (`transaction_id`),
+  CONSTRAINT `fk_as_animal` FOREIGN KEY (`animal_id`) REFERENCES `animals` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_as_farm` FOREIGN KEY (`farm_id`) REFERENCES `farms` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_as_tx` FOREIGN KEY (`transaction_id`) REFERENCES `transactions` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ---------------------------------------------------------------------
+-- animal_weight
+-- ---------------------------------------------------------------------
+DROP TABLE IF EXISTS `animal_weight`;
+CREATE TABLE IF NOT EXISTS `animal_weight` (
+  `id` varchar(40) NOT NULL,
+  `farm_id` varchar(40) NOT NULL,
+  `animal_id` varchar(40) NOT NULL,
+  `weight` decimal(10,2) NOT NULL DEFAULT 0.00,
+  `unit` varchar(10) NOT NULL DEFAULT 'kg',
+  `date` date NOT NULL,
+  `notes` varchar(300) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx_aw_animal` (`animal_id`,`date`),
+  CONSTRAINT `fk_aw_animal` FOREIGN KEY (`animal_id`) REFERENCES `animals` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ---------------------------------------------------------------------
 -- audit_log
 -- ---------------------------------------------------------------------
 DROP TABLE IF EXISTS `audit_log`;
@@ -247,6 +389,28 @@ CREATE TABLE IF NOT EXISTS `farm_activities` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ---------------------------------------------------------------------
+-- farm_markers
+-- ---------------------------------------------------------------------
+DROP TABLE IF EXISTS `farm_markers`;
+CREATE TABLE IF NOT EXISTS `farm_markers` (
+  `id` varchar(40) NOT NULL,
+  `farm_id` varchar(40) NOT NULL,
+  `field_id` varchar(40) DEFAULT NULL,
+  `type` varchar(30) NOT NULL DEFAULT 'other',
+  `label` varchar(120) NOT NULL,
+  `lat` double NOT NULL,
+  `lng` double NOT NULL,
+  `notes` varchar(500) DEFAULT NULL,
+  `icon` varchar(40) DEFAULT NULL,
+  `created_at` datetime NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx_marker_farm` (`farm_id`),
+  KEY `fk_marker_field` (`field_id`),
+  CONSTRAINT `fk_marker_farm` FOREIGN KEY (`farm_id`) REFERENCES `farms` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_marker_field` FOREIGN KEY (`field_id`) REFERENCES `fields` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ---------------------------------------------------------------------
 -- farm_members
 -- ---------------------------------------------------------------------
 DROP TABLE IF EXISTS `farm_members`;
@@ -291,6 +455,54 @@ CREATE TABLE IF NOT EXISTS `fields` (
   PRIMARY KEY (`id`),
   KEY `idx_fields_farm` (`farm_id`),
   CONSTRAINT `fk_fields_farm` FOREIGN KEY (`farm_id`) REFERENCES `farms` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ---------------------------------------------------------------------
+-- field_boundaries
+-- ---------------------------------------------------------------------
+DROP TABLE IF EXISTS `field_boundaries`;
+CREATE TABLE IF NOT EXISTS `field_boundaries` (
+  `id` varchar(40) NOT NULL,
+  `farm_id` varchar(40) NOT NULL,
+  `field_id` varchar(40) NOT NULL,
+  `geo_json` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL CHECK (json_valid(`geo_json`)),
+  `area_ha` decimal(12,4) DEFAULT NULL,
+  `centroid_lat` double DEFAULT NULL,
+  `centroid_lng` double DEFAULT NULL,
+  `created_at` datetime NOT NULL,
+  `updated_at` datetime NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uniq_boundary_field` (`field_id`),
+  KEY `idx_boundary_farm` (`farm_id`),
+  CONSTRAINT `fk_boundary_farm` FOREIGN KEY (`farm_id`) REFERENCES `farms` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_boundary_field` FOREIGN KEY (`field_id`) REFERENCES `fields` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ---------------------------------------------------------------------
+-- field_zones
+-- ---------------------------------------------------------------------
+DROP TABLE IF EXISTS `field_zones`;
+CREATE TABLE IF NOT EXISTS `field_zones` (
+  `id` varchar(40) NOT NULL,
+  `farm_id` varchar(40) NOT NULL,
+  `boundary_id` varchar(40) NOT NULL,
+  `field_id` varchar(40) NOT NULL,
+  `crop_field_id` varchar(40) DEFAULT NULL,
+  `name` varchar(120) NOT NULL,
+  `type` varchar(40) NOT NULL DEFAULT 'management',
+  `geo_json` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL CHECK (json_valid(`geo_json`)),
+  `area_ha` decimal(12,4) DEFAULT NULL,
+  `colour` varchar(20) DEFAULT NULL,
+  `notes` varchar(500) DEFAULT NULL,
+  `created_at` datetime NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx_zone_boundary` (`boundary_id`),
+  KEY `idx_zone_field` (`field_id`),
+  KEY `idx_zone_farm` (`farm_id`),
+  KEY `fk_zone_crop_field` (`crop_field_id`),
+  CONSTRAINT `fk_zone_boundary` FOREIGN KEY (`boundary_id`) REFERENCES `field_boundaries` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_zone_crop_field` FOREIGN KEY (`crop_field_id`) REFERENCES `crop_fields` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `fk_zone_field` FOREIGN KEY (`field_id`) REFERENCES `fields` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ---------------------------------------------------------------------
@@ -369,6 +581,22 @@ CREATE TABLE IF NOT EXISTS `inventory_sales` (
   CONSTRAINT `fk_invs_farm` FOREIGN KEY (`farm_id`) REFERENCES `farms` (`id`) ON DELETE CASCADE,
   CONSTRAINT `fk_invs_item` FOREIGN KEY (`inventory_item_id`) REFERENCES `inventory_items` (`id`) ON DELETE CASCADE,
   CONSTRAINT `fk_invs_tx` FOREIGN KEY (`transaction_id`) REFERENCES `transactions` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ---------------------------------------------------------------------
+-- livestock_types
+-- ---------------------------------------------------------------------
+DROP TABLE IF EXISTS `livestock_types`;
+CREATE TABLE IF NOT EXISTS `livestock_types` (
+  `id` varchar(40) NOT NULL,
+  `farm_id` varchar(40) NOT NULL,
+  `name` varchar(80) NOT NULL,
+  `category` varchar(60) NOT NULL DEFAULT '',
+  `icon` varchar(40) NOT NULL DEFAULT 'cow',
+  `created_at` datetime NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uniq_lt_farm_name` (`farm_id`,`name`),
+  CONSTRAINT `fk_lt_farm` FOREIGN KEY (`farm_id`) REFERENCES `farms` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ---------------------------------------------------------------------
