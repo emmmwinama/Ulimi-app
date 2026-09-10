@@ -45,7 +45,7 @@ runtime is available in the build environment. ID columns are `VARCHAR(40)`
 - `DEPLOY.md` runbook for biz.na.ht
 - Tests: authz matrix, csrf, validators, token lifecycle, rate limiter
 
-## Phase 2 — Land & Crops  ☐
+## Phase 2 — Land & Crops  ☑
 - Schema `003_land` + `004_crops`: `fields`, `crop_types`, `crop_fields`
   (+ archive), plus `seasons` derivation
 - Fields CRUD (area, soil, GPS, notes)

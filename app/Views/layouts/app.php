@@ -16,13 +16,13 @@ $ctx    = FarmContext::has() ? FarmContext::current() : null;
 
 $path = parse_url((string) ($_SERVER['REQUEST_URI'] ?? '/'), PHP_URL_PATH) ?: '/';
 
-/** @var list<array{key:string,label:string,href:string,icon:string,live:bool}> $navMain */
+/** @var list<array{key:string,label:string,href:string,icon:string}> $navMain */
 $navMain = [
-    ['key' => 'dashboard', 'label' => 'Dashboard', 'href' => url('dashboard'), 'icon' => 'gauge', 'live' => true],
+    ['key' => 'dashboard', 'label' => 'Dashboard', 'href' => url('dashboard'), 'icon' => 'gauge'],
+    ['key' => 'fields',    'label' => 'Fields',    'href' => url('fields'),    'icon' => 'map'],
+    ['key' => 'crops',     'label' => 'Crops',     'href' => url('crops'),     'icon' => 'sprout'],
 ];
 $navUpcoming = [
-    ['label' => 'Fields & Map',  'icon' => 'map'],
-    ['label' => 'Crops',         'icon' => 'sprout'],
     ['label' => 'Activities',    'icon' => 'leaf'],
     ['label' => 'Finance',       'icon' => 'wallet'],
     ['label' => 'Inventory',     'icon' => 'boxes'],
