@@ -19,8 +19,8 @@ final class Authz
     public const ROLES = ['owner', 'manager', 'agronomist', 'accountant', 'field_worker', 'viewer'];
 
     public const RESOURCES = [
-        'fields', 'crops', 'activities', 'finance', 'employees',
-        'yields', 'reports', 'team', 'documents', 'equipment', 'livestock',
+        'fields', 'crops', 'activities', 'finance', 'employees', 'yields',
+        'inventory', 'reports', 'team', 'documents', 'equipment', 'livestock',
     ];
 
     private static ?self $current = null;
@@ -134,24 +134,24 @@ final class Authz
             'manager' => [
                 ...$viewAll,
                 ...$manage(['fields', 'crops', 'activities', 'finance', 'employees',
-                            'yields', 'documents', 'equipment', 'livestock']),
+                            'yields', 'inventory', 'documents', 'equipment', 'livestock']),
                 'billing.view',
             ],
 
             'agronomist' => [
-                'fields.view', 'crops.view', 'activities.view', 'yields.view',
+                'fields.view', 'crops.view', 'activities.view', 'yields.view', 'inventory.view',
                 'livestock.view', 'reports.view', 'documents.view', 'equipment.view',
-                ...$manage(['fields', 'crops', 'activities', 'yields', 'livestock']),
+                ...$manage(['fields', 'crops', 'activities', 'yields', 'inventory', 'livestock']),
             ],
 
             'accountant' => [
                 ...$viewAll,
-                ...$manage(['finance', 'employees', 'documents']),
+                ...$manage(['finance', 'employees', 'inventory', 'documents']),
             ],
 
             'field_worker' => [
                 'fields.view', 'crops.view', 'activities.view', 'yields.view',
-                'livestock.view', 'equipment.view',
+                'inventory.view', 'livestock.view', 'equipment.view',
                 'activities.manage', 'yields.manage',
             ],
 
