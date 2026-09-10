@@ -18,6 +18,7 @@ use App\Controllers\Farm\FieldsController;
 use App\Controllers\Farm\FinanceController;
 use App\Controllers\Farm\InventoryController;
 use App\Controllers\Farm\LivestockController;
+use App\Controllers\Farm\MapController;
 use App\Controllers\Farm\TeamController;
 use App\Controllers\Farm\YieldsController;
 use App\Controllers\Onboarding\FarmSetupController;
@@ -88,6 +89,19 @@ $router->group('/fields', $farm, static function (Router $r): void {
     $r->get('/{id}/edit', [FieldsController::class, 'edit'], ['Can:fields.manage']);
     $r->put('/{id}', [FieldsController::class, 'update'], ['Can:fields.manage']);
     $r->post('/{id}/delete', [FieldsController::class, 'destroy'], ['Can:fields.manage']);
+});
+
+/* ------------------------------------------------------------------- map */
+$router->group('', $farm, static function (Router $r): void {
+    $r->get('/map', [MapController::class, 'farmMap'], ['Can:fields.view']);
+    $r->post('/map/markers', [MapController::class, 'addMarker'], ['Can:fields.manage']);
+    $r->post('/map/markers/{markerId}/delete', [MapController::class, 'deleteMarker'], ['Can:fields.manage']);
+
+    $r->get('/fields/{id}/map', [MapController::class, 'fieldMap'], ['Can:fields.view']);
+    $r->post('/fields/{id}/map/boundary', [MapController::class, 'saveBoundary'], ['Can:fields.manage']);
+    $r->post('/fields/{id}/map/boundary/delete', [MapController::class, 'deleteBoundary'], ['Can:fields.manage']);
+    $r->post('/fields/{id}/map/zones', [MapController::class, 'addZone'], ['Can:fields.manage']);
+    $r->post('/fields/{id}/map/zones/{zoneId}/delete', [MapController::class, 'deleteZone'], ['Can:fields.manage']);
 });
 
 /* ----------------------------------------------------------------- crops */

@@ -19,7 +19,8 @@ $path = parse_url((string) ($_SERVER['REQUEST_URI'] ?? '/'), PHP_URL_PATH) ?: '/
 /** @var list<array{key:string,label:string,href:string,icon:string}> $navMain */
 $navMain = [
     ['key' => 'dashboard',  'label' => 'Dashboard',  'href' => url('dashboard'),  'icon' => 'gauge'],
-    ['key' => 'fields',     'label' => 'Fields',     'href' => url('fields'),     'icon' => 'map'],
+    ['key' => 'fields',     'label' => 'Fields',     'href' => url('fields'),     'icon' => 'sprout'],
+    ['key' => 'map',        'label' => 'Farm map',   'href' => url('map'),        'icon' => 'map'],
     ['key' => 'crops',      'label' => 'Crops',      'href' => url('crops'),      'icon' => 'sprout'],
     ['key' => 'activities', 'label' => 'Activities', 'href' => url('activities'), 'icon' => 'leaf'],
     ['key' => 'yields',     'label' => 'Yields',     'href' => url('yields'),     'icon' => 'sprout'],
@@ -48,6 +49,7 @@ $navManage = [
     <meta name="robots" content="noindex, nofollow">
     <title><?= e($title) ?> — AgriVault</title>
     <link rel="stylesheet" href="<?= e(asset('app.css')) ?>">
+    <?= $this->section('head') ?>
 </head>
 <body>
 <a class="skip-link" href="#main">Skip to content</a>
@@ -161,5 +163,6 @@ $navManage = [
 
 <?= $this->partial('partials/flash') ?>
 <script src="<?= e(asset('app.js')) ?>" defer></script>
+<?= $this->section('scripts') ?>
 </body>
 </html>

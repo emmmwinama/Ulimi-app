@@ -49,9 +49,13 @@ return [
         'login_decay_seconds'  => 15 * 60,
         'form_max_attempts'    => 8,             // contact / demo / register
         'form_decay_seconds'   => 60 * 60,
-        // Content-Security-Policy: everything is self-hosted, so this stays tight.
-        'csp' => "default-src 'self'; img-src 'self' data:; "
-               . "style-src 'self'; script-src 'self'; "
+        // Content-Security-Policy. Scripts/styles/fonts are all self-hosted.
+        // The only external origins are raster map tiles (OpenStreetMap and
+        // Esri World Imagery) loaded as <img> by Leaflet — images only, no
+        // scripts, no data exfiltration path.
+        'csp' => "default-src 'self'; "
+               . "img-src 'self' data: https://*.tile.openstreetmap.org https://server.arcgisonline.com https://*.basemaps.cartocdn.com; "
+               . "style-src 'self' 'unsafe-inline'; script-src 'self'; "
                . "connect-src 'self'; font-src 'self'; "
                . "object-src 'none'; base-uri 'self'; form-action 'self'; "
                . "frame-ancestors 'none'",

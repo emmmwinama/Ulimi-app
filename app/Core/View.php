@@ -119,14 +119,21 @@ final class View
         return $file;
     }
 
-    /** @param array<string,mixed> $data */
-    private function evaluate(string $file, array $data): string
+    /**
+     * @param array<string,mixed> $__data
+     *
+     * The parameter is `$__data` (not `$data`) on purpose: `extract()` runs with
+     * EXTR_SKIP, so any variable that already exists in this scope would shadow a
+     * template variable of the same name. A template passing `data` as a key is
+     * common, so the internals stay out of that namespace.
+     */
+    private function evaluate(string $file, array $__data): string
     {
         $level = ob_get_level();
         ob_start();
         try {
-            (function () use ($file, $data): void {
-                extract($data, EXTR_SKIP);
+            (function () use ($file, $__data): void {
+                extract($__data, EXTR_SKIP);
                 require $file;
             })();
         } catch (Throwable $e) {
