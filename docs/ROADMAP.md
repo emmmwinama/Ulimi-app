@@ -8,8 +8,21 @@ Legend: ☐ not started · ◐ in progress · ☑ done
 
 ---
 
-## Phase 1 — Foundation & Identity  ☐
+## Phase 1 — Foundation & Identity  ☑
 The skeleton everything else hangs off.
+
+**Done.** Core runtime, middleware pipeline, DB-backed sessions, CSRF, rate
+limiting, argon2id auth (customer + separate admin), role/permission Authz,
+lazy subscription reconciliation, `migrate.php` + `001_core`/`002_identity` +
+tier seed, full auth flows (register→activate→onboarding, login/logout,
+forgot/reset, change password), team invite/accept/roles, farm switcher,
+account settings, admin login + overview, hand-authored design system, error
+pages, `make_admin.php`, 17 passing unit tests, `DEPLOY.md`.
+_Deferred to end of Phase 5:_ `import_live_sqlite.php` (needs the operational
+tables from Phases 2–5 to exist first).
+_Deviation:_ CSS is a hand-authored system, not Tailwind output — no Node
+runtime is available in the build environment. ID columns are `VARCHAR(40)`
+(not 30) to fit legacy UUIDs.
 
 - Project structure, autoloader, `bootstrap.php`, front controller, `.htaccess`
 - Core primitives: Router, Request, Response, View, Database, Session (DB
