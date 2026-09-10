@@ -68,6 +68,53 @@ CREATE TABLE IF NOT EXISTS `auth_tokens` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ---------------------------------------------------------------------
+-- crop_fields
+-- ---------------------------------------------------------------------
+DROP TABLE IF EXISTS `crop_fields`;
+CREATE TABLE IF NOT EXISTS `crop_fields` (
+  `id` varchar(40) NOT NULL,
+  `farm_id` varchar(40) NOT NULL,
+  `field_id` varchar(40) NOT NULL,
+  `crop_type_id` varchar(40) NOT NULL,
+  `variety` varchar(120) NOT NULL DEFAULT '',
+  `area_planted` decimal(12,3) NOT NULL DEFAULT 0.000,
+  `season` varchar(60) NOT NULL DEFAULT '',
+  `planting_date` date NOT NULL,
+  `expected_harvest_date` date NOT NULL,
+  `status` varchar(20) NOT NULL DEFAULT 'Active',
+  `is_archived` tinyint(1) NOT NULL DEFAULT 0,
+  `archived_at` datetime DEFAULT NULL,
+  `archived_reason` varchar(255) DEFAULT NULL,
+  `created_at` datetime NOT NULL,
+  `updated_at` datetime NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx_cf_farm` (`farm_id`),
+  KEY `idx_cf_field` (`field_id`),
+  KEY `idx_cf_crop_type` (`crop_type_id`),
+  KEY `idx_cf_season` (`farm_id`,`season`),
+  KEY `idx_cf_active` (`farm_id`,`is_archived`,`status`),
+  CONSTRAINT `fk_cf_crop_type` FOREIGN KEY (`crop_type_id`) REFERENCES `crop_types` (`id`),
+  CONSTRAINT `fk_cf_farm` FOREIGN KEY (`farm_id`) REFERENCES `farms` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_cf_field` FOREIGN KEY (`field_id`) REFERENCES `fields` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ---------------------------------------------------------------------
+-- crop_types
+-- ---------------------------------------------------------------------
+DROP TABLE IF EXISTS `crop_types`;
+CREATE TABLE IF NOT EXISTS `crop_types` (
+  `id` varchar(40) NOT NULL,
+  `farm_id` varchar(40) DEFAULT NULL,
+  `name` varchar(120) NOT NULL,
+  `is_custom` tinyint(1) NOT NULL DEFAULT 0,
+  `created_at` datetime NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uniq_crop_types_scope_name` (`farm_id`,`name`),
+  KEY `idx_crop_types_farm` (`farm_id`),
+  CONSTRAINT `fk_crop_types_farm` FOREIGN KEY (`farm_id`) REFERENCES `farms` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ---------------------------------------------------------------------
 -- farms
 -- ---------------------------------------------------------------------
 DROP TABLE IF EXISTS `farms`;
@@ -109,6 +156,28 @@ CREATE TABLE IF NOT EXISTS `farm_members` (
   KEY `idx_member_farm` (`farm_id`),
   CONSTRAINT `fk_member_farm` FOREIGN KEY (`farm_id`) REFERENCES `farms` (`id`) ON DELETE CASCADE,
   CONSTRAINT `fk_member_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ---------------------------------------------------------------------
+-- fields
+-- ---------------------------------------------------------------------
+DROP TABLE IF EXISTS `fields`;
+CREATE TABLE IF NOT EXISTS `fields` (
+  `id` varchar(40) NOT NULL,
+  `farm_id` varchar(40) NOT NULL,
+  `name` varchar(160) NOT NULL,
+  `total_area` decimal(12,3) NOT NULL DEFAULT 0.000,
+  `cultivatable_area` decimal(12,3) NOT NULL DEFAULT 0.000,
+  `soil_type` varchar(80) NOT NULL DEFAULT '',
+  `location_lat` double DEFAULT NULL,
+  `location_lng` double DEFAULT NULL,
+  `boundary_points` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`boundary_points`)),
+  `notes` text DEFAULT NULL,
+  `created_at` datetime NOT NULL,
+  `updated_at` datetime NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx_fields_farm` (`farm_id`),
+  CONSTRAINT `fk_fields_farm` FOREIGN KEY (`farm_id`) REFERENCES `farms` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ---------------------------------------------------------------------

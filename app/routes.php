@@ -10,7 +10,9 @@ use App\Controllers\Auth\LoginController;
 use App\Controllers\Auth\PasswordResetController;
 use App\Controllers\Auth\RegisterController;
 use App\Controllers\DashboardController;
+use App\Controllers\Farm\CropsController;
 use App\Controllers\Farm\FarmSwitchController;
+use App\Controllers\Farm\FieldsController;
 use App\Controllers\Farm\TeamController;
 use App\Controllers\Onboarding\FarmSetupController;
 use App\Controllers\Public\HomeController;
@@ -71,6 +73,28 @@ $router->get('/dashboard', [DashboardController::class, 'index'], $farm);
 
 /* ------------------------------------------------------------ farm switch */
 $router->post('/farm/switch', [FarmSwitchController::class, 'switch'], $farm);
+
+/* ---------------------------------------------------------------- fields */
+$router->group('/fields', $farm, static function (Router $r): void {
+    $r->get('', [FieldsController::class, 'index'], ['Can:fields.view']);
+    $r->get('/create', [FieldsController::class, 'create'], ['Can:fields.manage']);
+    $r->post('', [FieldsController::class, 'store'], ['Can:fields.manage']);
+    $r->get('/{id}/edit', [FieldsController::class, 'edit'], ['Can:fields.manage']);
+    $r->put('/{id}', [FieldsController::class, 'update'], ['Can:fields.manage']);
+    $r->post('/{id}/delete', [FieldsController::class, 'destroy'], ['Can:fields.manage']);
+});
+
+/* ----------------------------------------------------------------- crops */
+$router->group('/crops', $farm, static function (Router $r): void {
+    $r->get('', [CropsController::class, 'index'], ['Can:crops.view']);
+    $r->get('/create', [CropsController::class, 'create'], ['Can:crops.manage']);
+    $r->post('', [CropsController::class, 'store'], ['Can:crops.manage']);
+    $r->get('/{id}', [CropsController::class, 'show'], ['Can:crops.view']);
+    $r->get('/{id}/edit', [CropsController::class, 'edit'], ['Can:crops.manage']);
+    $r->put('/{id}', [CropsController::class, 'update'], ['Can:crops.manage']);
+    $r->post('/{id}/archive', [CropsController::class, 'archive'], ['Can:crops.manage']);
+    $r->post('/{id}/restore', [CropsController::class, 'restore'], ['Can:crops.manage']);
+});
 
 /* ------------------------------------------------------------------ team */
 $router->group('/team', $farm, static function (Router $r): void {
