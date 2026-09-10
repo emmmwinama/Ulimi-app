@@ -65,7 +65,7 @@ runtime is available in the build environment. ID columns are `VARCHAR(40)`
 - Activity-type suggestions from `CropTimeline`
 - Import maps activities + children, employees, yields
 
-## Phase 4 — Finance & Inventory  ☐
+## Phase 4 — Finance & Inventory  ☑
 - Schema `006_finance` + `007_inventory`: `transactions`,
   `overhead_expenses`, `inventory_items`, `inventory_sales`,
   `inventory_sale_links`

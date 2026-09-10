@@ -22,15 +22,17 @@ $navMain = [
     ['key' => 'fields',     'label' => 'Fields',     'href' => url('fields'),     'icon' => 'map'],
     ['key' => 'crops',      'label' => 'Crops',      'href' => url('crops'),      'icon' => 'sprout'],
     ['key' => 'activities', 'label' => 'Activities', 'href' => url('activities'), 'icon' => 'leaf'],
-    ['key' => 'yields',     'label' => 'Yields',     'href' => url('yields'),     'icon' => 'boxes'],
+    ['key' => 'yields',     'label' => 'Yields',     'href' => url('yields'),     'icon' => 'sprout'],
+];
+$navBusiness = [
+    ['key' => 'finance',   'label' => 'Finance',   'href' => url('finance'),    'icon' => 'wallet'],
+    ['key' => 'inventory', 'label' => 'Inventory', 'href' => url('inventory'),  'icon' => 'boxes'],
 ];
 $navPeople = [
     ['key' => 'employees', 'label' => 'Employees', 'href' => url('employees'), 'icon' => 'users'],
     ['key' => 'team',      'label' => 'Team',      'href' => url('team'),      'icon' => 'users'],
 ];
 $navUpcoming = [
-    ['label' => 'Finance',   'icon' => 'wallet'],
-    ['label' => 'Inventory', 'icon' => 'boxes'],
     ['label' => 'Livestock', 'icon' => 'cow'],
     ['label' => 'Reports',   'icon' => 'bar-chart'],
     ['label' => 'Documents', 'icon' => 'file-text'],
@@ -64,6 +66,16 @@ $navManage = [
                 </a>
             <?php endforeach; ?>
         </nav>
+
+        <div class="nav-group">
+            <div class="eyebrow">Business</div>
+            <?php foreach ($navBusiness as $item): ?>
+                <a class="nav-item <?= $active === $item['key'] ? 'is-active' : '' ?>" href="<?= e($item['href']) ?>">
+                    <?= $this->partial('partials/icon', ['name' => $item['icon'], 'class' => 'ico']) ?>
+                    <span><?= e($item['label']) ?></span>
+                </a>
+            <?php endforeach; ?>
+        </div>
 
         <div class="nav-group">
             <div class="eyebrow">People</div>

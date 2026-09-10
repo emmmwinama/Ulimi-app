@@ -33,7 +33,8 @@ CREATE TABLE IF NOT EXISTS `activity_inputs` (
   KEY `idx_ai_activity` (`activity_id`),
   KEY `idx_ai_farm` (`farm_id`),
   KEY `idx_ai_inventory` (`inventory_item_id`),
-  CONSTRAINT `fk_ai_activity` FOREIGN KEY (`activity_id`) REFERENCES `farm_activities` (`id`) ON DELETE CASCADE
+  CONSTRAINT `fk_ai_activity` FOREIGN KEY (`activity_id`) REFERENCES `farm_activities` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_ai_inventory` FOREIGN KEY (`inventory_item_id`) REFERENCES `inventory_items` (`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ---------------------------------------------------------------------
@@ -316,6 +317,61 @@ CREATE TABLE IF NOT EXISTS `harvest_yields` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ---------------------------------------------------------------------
+-- inventory_items
+-- ---------------------------------------------------------------------
+DROP TABLE IF EXISTS `inventory_items`;
+CREATE TABLE IF NOT EXISTS `inventory_items` (
+  `id` varchar(40) NOT NULL,
+  `farm_id` varchar(40) NOT NULL,
+  `name` varchar(160) NOT NULL,
+  `category` varchar(40) NOT NULL DEFAULT 'other',
+  `unit` varchar(20) NOT NULL DEFAULT 'kg',
+  `quantity` decimal(14,3) NOT NULL DEFAULT 0.000,
+  `acquisition_unit_cost` decimal(12,2) DEFAULT NULL,
+  `acquired_at` date DEFAULT NULL,
+  `unit_weight` decimal(10,3) DEFAULT NULL,
+  `season` varchar(60) DEFAULT NULL,
+  `crop_field_id` varchar(40) DEFAULT NULL,
+  `harvest_yield_id` varchar(40) DEFAULT NULL,
+  `notes` varchar(500) DEFAULT NULL,
+  `created_at` datetime NOT NULL,
+  `updated_at` datetime NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx_inv_farm` (`farm_id`,`category`),
+  KEY `idx_inv_crop_field` (`crop_field_id`),
+  KEY `fk_inv_yield` (`harvest_yield_id`),
+  CONSTRAINT `fk_inv_crop_field` FOREIGN KEY (`crop_field_id`) REFERENCES `crop_fields` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `fk_inv_farm` FOREIGN KEY (`farm_id`) REFERENCES `farms` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_inv_yield` FOREIGN KEY (`harvest_yield_id`) REFERENCES `harvest_yields` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ---------------------------------------------------------------------
+-- inventory_sales
+-- ---------------------------------------------------------------------
+DROP TABLE IF EXISTS `inventory_sales`;
+CREATE TABLE IF NOT EXISTS `inventory_sales` (
+  `id` varchar(40) NOT NULL,
+  `farm_id` varchar(40) NOT NULL,
+  `inventory_item_id` varchar(40) NOT NULL,
+  `transaction_id` varchar(40) DEFAULT NULL,
+  `quantity_sold` decimal(14,3) NOT NULL DEFAULT 0.000,
+  `unit` varchar(20) NOT NULL DEFAULT '',
+  `price_per_unit` decimal(12,2) NOT NULL DEFAULT 0.00,
+  `total_amount` decimal(14,2) NOT NULL DEFAULT 0.00,
+  `buyer_name` varchar(160) DEFAULT NULL,
+  `sale_date` date NOT NULL,
+  `notes` varchar(500) DEFAULT NULL,
+  `created_at` datetime NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx_invs_farm` (`farm_id`),
+  KEY `idx_invs_item` (`inventory_item_id`),
+  KEY `fk_invs_tx` (`transaction_id`),
+  CONSTRAINT `fk_invs_farm` FOREIGN KEY (`farm_id`) REFERENCES `farms` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_invs_item` FOREIGN KEY (`inventory_item_id`) REFERENCES `inventory_items` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_invs_tx` FOREIGN KEY (`transaction_id`) REFERENCES `transactions` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ---------------------------------------------------------------------
 -- mail_queue
 -- ---------------------------------------------------------------------
 DROP TABLE IF EXISTS `mail_queue`;
@@ -333,6 +389,26 @@ CREATE TABLE IF NOT EXISTS `mail_queue` (
   `sent_at` datetime DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `idx_mail_queue_status` (`status`,`created_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ---------------------------------------------------------------------
+-- overhead_expenses
+-- ---------------------------------------------------------------------
+DROP TABLE IF EXISTS `overhead_expenses`;
+CREATE TABLE IF NOT EXISTS `overhead_expenses` (
+  `id` varchar(40) NOT NULL,
+  `farm_id` varchar(40) NOT NULL,
+  `description` varchar(200) NOT NULL,
+  `category` varchar(40) NOT NULL DEFAULT 'Other',
+  `amount` decimal(14,2) NOT NULL DEFAULT 0.00,
+  `date` date NOT NULL,
+  `recurring` tinyint(1) NOT NULL DEFAULT 0,
+  `notes` varchar(500) DEFAULT NULL,
+  `created_at` datetime NOT NULL,
+  `updated_at` datetime NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx_oh_farm_date` (`farm_id`,`date`),
+  CONSTRAINT `fk_oh_farm` FOREIGN KEY (`farm_id`) REFERENCES `farms` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ---------------------------------------------------------------------
@@ -457,6 +533,44 @@ CREATE TABLE IF NOT EXISTS `subscription_tiers` (
   `created_at` datetime NOT NULL,
   PRIMARY KEY (`id`),
   KEY `idx_tiers_visible` (`is_active`,`is_public`,`sort_order`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ---------------------------------------------------------------------
+-- transactions
+-- ---------------------------------------------------------------------
+DROP TABLE IF EXISTS `transactions`;
+CREATE TABLE IF NOT EXISTS `transactions` (
+  `id` varchar(40) NOT NULL,
+  `farm_id` varchar(40) NOT NULL,
+  `type` varchar(10) NOT NULL,
+  `category` varchar(80) NOT NULL DEFAULT 'Other',
+  `amount` decimal(14,2) NOT NULL DEFAULT 0.00,
+  `date` date NOT NULL,
+  `description` varchar(255) NOT NULL DEFAULT '',
+  `season` varchar(60) DEFAULT NULL,
+  `field_id` varchar(40) DEFAULT NULL,
+  `crop_field_id` varchar(40) DEFAULT NULL,
+  `harvest_yield_id` varchar(40) DEFAULT NULL,
+  `inventory_item_id` varchar(40) DEFAULT NULL,
+  `source` varchar(20) NOT NULL DEFAULT 'manual',
+  `created_by_id` varchar(40) NOT NULL,
+  `created_at` datetime NOT NULL,
+  `updated_at` datetime NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx_tx_farm_date` (`farm_id`,`date`),
+  KEY `idx_tx_farm_type` (`farm_id`,`type`),
+  KEY `idx_tx_season` (`farm_id`,`season`),
+  KEY `idx_tx_crop_field` (`crop_field_id`),
+  KEY `fk_tx_field` (`field_id`),
+  KEY `fk_tx_yield` (`harvest_yield_id`),
+  KEY `fk_tx_creator` (`created_by_id`),
+  KEY `fk_tx_inventory` (`inventory_item_id`),
+  CONSTRAINT `fk_tx_creator` FOREIGN KEY (`created_by_id`) REFERENCES `users` (`id`),
+  CONSTRAINT `fk_tx_crop_field` FOREIGN KEY (`crop_field_id`) REFERENCES `crop_fields` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `fk_tx_farm` FOREIGN KEY (`farm_id`) REFERENCES `farms` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_tx_field` FOREIGN KEY (`field_id`) REFERENCES `fields` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `fk_tx_inventory` FOREIGN KEY (`inventory_item_id`) REFERENCES `inventory_items` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `fk_tx_yield` FOREIGN KEY (`harvest_yield_id`) REFERENCES `harvest_yields` (`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ---------------------------------------------------------------------

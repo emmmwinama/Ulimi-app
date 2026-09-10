@@ -15,6 +15,8 @@ use App\Controllers\Farm\CropsController;
 use App\Controllers\Farm\EmployeesController;
 use App\Controllers\Farm\FarmSwitchController;
 use App\Controllers\Farm\FieldsController;
+use App\Controllers\Farm\FinanceController;
+use App\Controllers\Farm\InventoryController;
 use App\Controllers\Farm\TeamController;
 use App\Controllers\Farm\YieldsController;
 use App\Controllers\Onboarding\FarmSetupController;
@@ -136,6 +138,32 @@ $router->group('/yields', $farm, static function (Router $r): void {
     $r->get('/{id}/edit', [YieldsController::class, 'edit'], ['Can:yields.manage']);
     $r->put('/{id}', [YieldsController::class, 'update'], ['Can:yields.manage']);
     $r->post('/{id}/delete', [YieldsController::class, 'destroy'], ['Can:yields.manage']);
+});
+
+/* --------------------------------------------------------------- finance */
+$router->group('/finance', $farm, static function (Router $r): void {
+    $r->get('', [FinanceController::class, 'overview'], ['Can:finance.view']);
+    $r->get('/transactions', [FinanceController::class, 'transactions'], ['Can:finance.view']);
+    $r->get('/transactions/create', [FinanceController::class, 'createTransaction'], ['Can:finance.manage']);
+    $r->post('/transactions', [FinanceController::class, 'storeTransaction'], ['Can:finance.manage']);
+    $r->get('/transactions/{id}/edit', [FinanceController::class, 'editTransaction'], ['Can:finance.manage']);
+    $r->put('/transactions/{id}', [FinanceController::class, 'updateTransaction'], ['Can:finance.manage']);
+    $r->post('/transactions/{id}/delete', [FinanceController::class, 'destroyTransaction'], ['Can:finance.manage']);
+    $r->get('/overheads', [FinanceController::class, 'overheadsIndex'], ['Can:finance.view']);
+    $r->post('/overheads', [FinanceController::class, 'storeOverhead'], ['Can:finance.manage']);
+    $r->post('/overheads/{id}/delete', [FinanceController::class, 'destroyOverhead'], ['Can:finance.manage']);
+});
+
+/* ------------------------------------------------------------- inventory */
+$router->group('/inventory', $farm, static function (Router $r): void {
+    $r->get('', [InventoryController::class, 'index'], ['Can:inventory.view']);
+    $r->get('/create', [InventoryController::class, 'create'], ['Can:inventory.manage']);
+    $r->post('', [InventoryController::class, 'store'], ['Can:inventory.manage']);
+    $r->get('/{id}/edit', [InventoryController::class, 'edit'], ['Can:inventory.manage']);
+    $r->put('/{id}', [InventoryController::class, 'update'], ['Can:inventory.manage']);
+    $r->post('/{id}/delete', [InventoryController::class, 'destroy'], ['Can:inventory.manage']);
+    $r->get('/{id}/sell', [InventoryController::class, 'sellForm'], ['Can:inventory.view']);
+    $r->post('/{id}/sell', [InventoryController::class, 'sell'], ['Can:inventory.manage']);
 });
 
 /* --------------------------------------------------------------- account */
