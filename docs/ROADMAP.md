@@ -56,7 +56,7 @@ runtime is available in the build environment. ID columns are `VARCHAR(40)`
 - Dashboard v1: farm summary tiles (fields, area, active crops, workers)
 - Import maps `live.sqlite` fields / crop_fields / crop_types
 
-## Phase 3 — Activities, Labour & Yields  ☐
+## Phase 3 — Activities, Labour & Yields  ☑
 - Schema `005_activities`: `farm_activities`, `activity_labour`,
   `activity_inputs`, `activity_other_costs`, `employees`, `harvest_yields`
 - Activity log CRUD with nested labour / inputs / other costs

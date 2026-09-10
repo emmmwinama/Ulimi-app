@@ -12,7 +12,7 @@ VALUES
   ('tier_trial','Trial','7-day full access, then 14 days view-only.','MWK',0,0,'New farms',
    1,1,0,0,
    3,3,40,30,3,1,2,
-   1,1,1,0,0,1,0,0,1,
+   1,1,1,1,1,1,1,0,1,
    UTC_TIMESTAMP()),
   ('tier_regular','Regular','For a single working farm.','MWK',9500,95000,'Smallholder & family farms',
    1,1,1,1,

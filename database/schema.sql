@@ -13,6 +13,67 @@ SET FOREIGN_KEY_CHECKS = 0;
 SET NAMES utf8mb4;
 
 -- ---------------------------------------------------------------------
+-- activity_inputs
+-- ---------------------------------------------------------------------
+DROP TABLE IF EXISTS `activity_inputs`;
+CREATE TABLE IF NOT EXISTS `activity_inputs` (
+  `id` varchar(40) NOT NULL,
+  `farm_id` varchar(40) NOT NULL,
+  `activity_id` varchar(40) NOT NULL,
+  `input_name` varchar(160) NOT NULL,
+  `category` varchar(60) NOT NULL DEFAULT 'Other',
+  `quantity` decimal(12,3) NOT NULL DEFAULT 0.000,
+  `unit` varchar(20) NOT NULL DEFAULT '',
+  `unit_cost` decimal(12,2) NOT NULL DEFAULT 0.00,
+  `total_cost` decimal(12,2) NOT NULL DEFAULT 0.00,
+  `acquisition_unit_cost` decimal(12,2) DEFAULT NULL,
+  `time_value_cost` decimal(12,2) DEFAULT NULL,
+  `inventory_item_id` varchar(40) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx_ai_activity` (`activity_id`),
+  KEY `idx_ai_farm` (`farm_id`),
+  KEY `idx_ai_inventory` (`inventory_item_id`),
+  CONSTRAINT `fk_ai_activity` FOREIGN KEY (`activity_id`) REFERENCES `farm_activities` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ---------------------------------------------------------------------
+-- activity_labour
+-- ---------------------------------------------------------------------
+DROP TABLE IF EXISTS `activity_labour`;
+CREATE TABLE IF NOT EXISTS `activity_labour` (
+  `id` varchar(40) NOT NULL,
+  `farm_id` varchar(40) NOT NULL,
+  `activity_id` varchar(40) NOT NULL,
+  `employee_id` varchar(40) DEFAULT NULL,
+  `worker_name` varchar(120) DEFAULT NULL,
+  `hours_worked` decimal(8,2) NOT NULL DEFAULT 0.00,
+  `days_worked` decimal(8,2) NOT NULL DEFAULT 0.00,
+  `total_cost` decimal(12,2) NOT NULL DEFAULT 0.00,
+  PRIMARY KEY (`id`),
+  KEY `idx_al_activity` (`activity_id`),
+  KEY `idx_al_farm` (`farm_id`),
+  KEY `fk_al_employee` (`employee_id`),
+  CONSTRAINT `fk_al_activity` FOREIGN KEY (`activity_id`) REFERENCES `farm_activities` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_al_employee` FOREIGN KEY (`employee_id`) REFERENCES `employees` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ---------------------------------------------------------------------
+-- activity_other_costs
+-- ---------------------------------------------------------------------
+DROP TABLE IF EXISTS `activity_other_costs`;
+CREATE TABLE IF NOT EXISTS `activity_other_costs` (
+  `id` varchar(40) NOT NULL,
+  `farm_id` varchar(40) NOT NULL,
+  `activity_id` varchar(40) NOT NULL,
+  `description` varchar(200) NOT NULL,
+  `amount` decimal(12,2) NOT NULL DEFAULT 0.00,
+  PRIMARY KEY (`id`),
+  KEY `idx_aoc_activity` (`activity_id`),
+  KEY `idx_aoc_farm` (`farm_id`),
+  CONSTRAINT `fk_aoc_activity` FOREIGN KEY (`activity_id`) REFERENCES `farm_activities` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ---------------------------------------------------------------------
 -- admin_users
 -- ---------------------------------------------------------------------
 DROP TABLE IF EXISTS `admin_users`;
@@ -115,6 +176,26 @@ CREATE TABLE IF NOT EXISTS `crop_types` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ---------------------------------------------------------------------
+-- employees
+-- ---------------------------------------------------------------------
+DROP TABLE IF EXISTS `employees`;
+CREATE TABLE IF NOT EXISTS `employees` (
+  `id` varchar(40) NOT NULL,
+  `farm_id` varchar(40) NOT NULL,
+  `name` varchar(120) NOT NULL,
+  `role` varchar(80) NOT NULL DEFAULT '',
+  `pay_rate` decimal(12,2) NOT NULL DEFAULT 0.00,
+  `pay_rate_unit` varchar(20) NOT NULL DEFAULT 'day',
+  `phone` varchar(40) DEFAULT NULL,
+  `is_active` tinyint(1) NOT NULL DEFAULT 1,
+  `created_at` datetime NOT NULL,
+  `updated_at` datetime NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx_employees_farm` (`farm_id`,`is_active`),
+  CONSTRAINT `fk_employees_farm` FOREIGN KEY (`farm_id`) REFERENCES `farms` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ---------------------------------------------------------------------
 -- farms
 -- ---------------------------------------------------------------------
 DROP TABLE IF EXISTS `farms`;
@@ -131,6 +212,37 @@ CREATE TABLE IF NOT EXISTS `farms` (
   PRIMARY KEY (`id`),
   KEY `idx_farms_user` (`user_id`),
   CONSTRAINT `fk_farms_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ---------------------------------------------------------------------
+-- farm_activities
+-- ---------------------------------------------------------------------
+DROP TABLE IF EXISTS `farm_activities`;
+CREATE TABLE IF NOT EXISTS `farm_activities` (
+  `id` varchar(40) NOT NULL,
+  `farm_id` varchar(40) NOT NULL,
+  `field_id` varchar(40) NOT NULL,
+  `crop_field_id` varchar(40) DEFAULT NULL,
+  `activity_type` varchar(80) NOT NULL,
+  `date` date NOT NULL,
+  `notes` text DEFAULT NULL,
+  `responsible_person_name` varchar(120) DEFAULT NULL,
+  `responsible_employee_id` varchar(40) DEFAULT NULL,
+  `created_by_id` varchar(40) NOT NULL,
+  `created_at` datetime NOT NULL,
+  `updated_at` datetime NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx_fa_farm_date` (`farm_id`,`date`),
+  KEY `idx_fa_field` (`field_id`),
+  KEY `idx_fa_crop_field` (`crop_field_id`),
+  KEY `idx_fa_type` (`farm_id`,`activity_type`),
+  KEY `fk_fa_employee` (`responsible_employee_id`),
+  KEY `fk_fa_creator` (`created_by_id`),
+  CONSTRAINT `fk_fa_creator` FOREIGN KEY (`created_by_id`) REFERENCES `users` (`id`),
+  CONSTRAINT `fk_fa_crop_field` FOREIGN KEY (`crop_field_id`) REFERENCES `crop_fields` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `fk_fa_employee` FOREIGN KEY (`responsible_employee_id`) REFERENCES `employees` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `fk_fa_farm` FOREIGN KEY (`farm_id`) REFERENCES `farms` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_fa_field` FOREIGN KEY (`field_id`) REFERENCES `fields` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ---------------------------------------------------------------------
@@ -178,6 +290,29 @@ CREATE TABLE IF NOT EXISTS `fields` (
   PRIMARY KEY (`id`),
   KEY `idx_fields_farm` (`farm_id`),
   CONSTRAINT `fk_fields_farm` FOREIGN KEY (`farm_id`) REFERENCES `farms` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ---------------------------------------------------------------------
+-- harvest_yields
+-- ---------------------------------------------------------------------
+DROP TABLE IF EXISTS `harvest_yields`;
+CREATE TABLE IF NOT EXISTS `harvest_yields` (
+  `id` varchar(40) NOT NULL,
+  `farm_id` varchar(40) NOT NULL,
+  `crop_field_id` varchar(40) NOT NULL,
+  `harvest_date` date NOT NULL,
+  `quantity` decimal(14,3) NOT NULL DEFAULT 0.000,
+  `unit` varchar(20) NOT NULL DEFAULT 'kg',
+  `unit_weight` decimal(10,3) DEFAULT NULL,
+  `quantity_kg` decimal(14,3) NOT NULL DEFAULT 0.000,
+  `notes` varchar(500) DEFAULT NULL,
+  `created_at` datetime NOT NULL,
+  `updated_at` datetime NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx_hy_farm` (`farm_id`),
+  KEY `idx_hy_crop_field` (`crop_field_id`),
+  CONSTRAINT `fk_hy_crop_field` FOREIGN KEY (`crop_field_id`) REFERENCES `crop_fields` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_hy_farm` FOREIGN KEY (`farm_id`) REFERENCES `farms` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ---------------------------------------------------------------------

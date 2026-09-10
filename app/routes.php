@@ -10,10 +10,13 @@ use App\Controllers\Auth\LoginController;
 use App\Controllers\Auth\PasswordResetController;
 use App\Controllers\Auth\RegisterController;
 use App\Controllers\DashboardController;
+use App\Controllers\Farm\ActivitiesController;
 use App\Controllers\Farm\CropsController;
+use App\Controllers\Farm\EmployeesController;
 use App\Controllers\Farm\FarmSwitchController;
 use App\Controllers\Farm\FieldsController;
 use App\Controllers\Farm\TeamController;
+use App\Controllers\Farm\YieldsController;
 use App\Controllers\Onboarding\FarmSetupController;
 use App\Controllers\Public\HomeController;
 use App\Controllers\Public\PageController;
@@ -102,6 +105,37 @@ $router->group('/team', $farm, static function (Router $r): void {
     $r->post('/invite', [TeamController::class, 'invite'], ['Can:team.manage']);
     $r->post('/{memberId}/role', [TeamController::class, 'updateRole'], ['Can:team.manage']);
     $r->post('/{memberId}/remove', [TeamController::class, 'remove'], ['Can:team.manage']);
+});
+
+/* ------------------------------------------------------------ activities */
+$router->group('/activities', $farm, static function (Router $r): void {
+    $r->get('', [ActivitiesController::class, 'index'], ['Can:activities.view']);
+    $r->get('/create', [ActivitiesController::class, 'create'], ['Can:activities.manage']);
+    $r->post('', [ActivitiesController::class, 'store'], ['Can:activities.manage']);
+    $r->get('/{id}', [ActivitiesController::class, 'show'], ['Can:activities.view']);
+    $r->get('/{id}/edit', [ActivitiesController::class, 'edit'], ['Can:activities.manage']);
+    $r->put('/{id}', [ActivitiesController::class, 'update'], ['Can:activities.manage']);
+    $r->post('/{id}/delete', [ActivitiesController::class, 'destroy'], ['Can:activities.manage']);
+});
+
+/* ------------------------------------------------------------- employees */
+$router->group('/employees', $farm, static function (Router $r): void {
+    $r->get('', [EmployeesController::class, 'index'], ['Can:employees.view']);
+    $r->get('/create', [EmployeesController::class, 'create'], ['Can:employees.manage']);
+    $r->post('', [EmployeesController::class, 'store'], ['Can:employees.manage']);
+    $r->get('/{id}/edit', [EmployeesController::class, 'edit'], ['Can:employees.manage']);
+    $r->put('/{id}', [EmployeesController::class, 'update'], ['Can:employees.manage']);
+    $r->post('/{id}/delete', [EmployeesController::class, 'destroy'], ['Can:employees.manage']);
+});
+
+/* ---------------------------------------------------------------- yields */
+$router->group('/yields', $farm, static function (Router $r): void {
+    $r->get('', [YieldsController::class, 'index'], ['Can:yields.view']);
+    $r->get('/create', [YieldsController::class, 'create'], ['Can:yields.manage']);
+    $r->post('', [YieldsController::class, 'store'], ['Can:yields.manage']);
+    $r->get('/{id}/edit', [YieldsController::class, 'edit'], ['Can:yields.manage']);
+    $r->put('/{id}', [YieldsController::class, 'update'], ['Can:yields.manage']);
+    $r->post('/{id}/delete', [YieldsController::class, 'destroy'], ['Can:yields.manage']);
 });
 
 /* --------------------------------------------------------------- account */

@@ -18,21 +18,25 @@ $path = parse_url((string) ($_SERVER['REQUEST_URI'] ?? '/'), PHP_URL_PATH) ?: '/
 
 /** @var list<array{key:string,label:string,href:string,icon:string}> $navMain */
 $navMain = [
-    ['key' => 'dashboard', 'label' => 'Dashboard', 'href' => url('dashboard'), 'icon' => 'gauge'],
-    ['key' => 'fields',    'label' => 'Fields',    'href' => url('fields'),    'icon' => 'map'],
-    ['key' => 'crops',     'label' => 'Crops',     'href' => url('crops'),     'icon' => 'sprout'],
+    ['key' => 'dashboard',  'label' => 'Dashboard',  'href' => url('dashboard'),  'icon' => 'gauge'],
+    ['key' => 'fields',     'label' => 'Fields',     'href' => url('fields'),     'icon' => 'map'],
+    ['key' => 'crops',      'label' => 'Crops',      'href' => url('crops'),      'icon' => 'sprout'],
+    ['key' => 'activities', 'label' => 'Activities', 'href' => url('activities'), 'icon' => 'leaf'],
+    ['key' => 'yields',     'label' => 'Yields',     'href' => url('yields'),     'icon' => 'boxes'],
+];
+$navPeople = [
+    ['key' => 'employees', 'label' => 'Employees', 'href' => url('employees'), 'icon' => 'users'],
+    ['key' => 'team',      'label' => 'Team',      'href' => url('team'),      'icon' => 'users'],
 ];
 $navUpcoming = [
-    ['label' => 'Activities',    'icon' => 'leaf'],
-    ['label' => 'Finance',       'icon' => 'wallet'],
-    ['label' => 'Inventory',     'icon' => 'boxes'],
-    ['label' => 'Livestock',     'icon' => 'cow'],
-    ['label' => 'Reports',       'icon' => 'bar-chart'],
-    ['label' => 'Documents',     'icon' => 'file-text'],
+    ['label' => 'Finance',   'icon' => 'wallet'],
+    ['label' => 'Inventory', 'icon' => 'boxes'],
+    ['label' => 'Livestock', 'icon' => 'cow'],
+    ['label' => 'Reports',   'icon' => 'bar-chart'],
+    ['label' => 'Documents', 'icon' => 'file-text'],
 ];
 $navManage = [
-    ['key' => 'team',    'label' => 'Team',     'href' => url('team'),    'icon' => 'users',    'live' => true],
-    ['key' => 'account', 'label' => 'Account',  'href' => url('account'), 'icon' => 'settings', 'live' => true],
+    ['key' => 'account', 'label' => 'Account', 'href' => url('account'), 'icon' => 'settings'],
 ];
 ?><!doctype html>
 <html lang="en">
@@ -60,6 +64,16 @@ $navManage = [
                 </a>
             <?php endforeach; ?>
         </nav>
+
+        <div class="nav-group">
+            <div class="eyebrow">People</div>
+            <?php foreach ($navPeople as $item): ?>
+                <a class="nav-item <?= $active === $item['key'] ? 'is-active' : '' ?>" href="<?= e($item['href']) ?>">
+                    <?= $this->partial('partials/icon', ['name' => $item['icon'], 'class' => 'ico']) ?>
+                    <span><?= e($item['label']) ?></span>
+                </a>
+            <?php endforeach; ?>
+        </div>
 
         <div class="nav-group">
             <div class="eyebrow">Arriving soon</div>

@@ -40,6 +40,48 @@
     }
   });
 
+  /* ---- repeatable line-item rows (activity form) ---- */
+  document.querySelectorAll("[data-rowset]").forEach(function (set) {
+    var body = set.querySelector("[data-rows]");
+    if (!body) return;
+
+    set.addEventListener("click", function (e) {
+      var addBtn = e.target.closest("[data-add-row]");
+      var rmBtn = e.target.closest("[data-remove-row]");
+
+      if (addBtn) {
+        var rows = body.querySelectorAll("[data-row]");
+        var template = rows[rows.length - 1];
+        var clone = template.cloneNode(true);
+        clone.querySelectorAll("input").forEach(function (i) { i.value = ""; });
+        clone.querySelectorAll("select").forEach(function (s) { s.selectedIndex = 0; });
+        body.appendChild(clone);
+      }
+
+      if (rmBtn) {
+        var all = body.querySelectorAll("[data-row]");
+        if (all.length > 1) {
+          rmBtn.closest("[data-row]").remove();
+        } else {
+          rmBtn.closest("[data-row]").querySelectorAll("input").forEach(function (i) { i.value = ""; });
+        }
+      }
+    });
+  });
+
+  /* ---- activity form: suggest activity types from the selected crop ---- */
+  var cropSelect = document.getElementById("f_crop_field_id");
+  var hint = document.querySelector("[data-type-hint]");
+  if (cropSelect && hint) {
+    var updateHint = function () {
+      var opt = cropSelect.options[cropSelect.selectedIndex];
+      var types = opt && opt.dataset.types ? opt.dataset.types.split("|").filter(Boolean) : [];
+      hint.textContent = types.length ? "Common for this crop: " + types.join(", ") : "";
+    };
+    cropSelect.addEventListener("change", updateHint);
+    updateHint();
+  }
+
   /* ---- guard against double form submission ---- */
   document.addEventListener("submit", function (e) {
     var form = e.target;
