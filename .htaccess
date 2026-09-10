@@ -1,0 +1,35 @@
+# ---------------------------------------------------------------------------
+# ROOT .htaccess — fallback hardening for hosts that will NOT let you point the
+# domain's DocumentRoot at /public.
+#
+# If you CAN set DocumentRoot to the public/ directory, this file is harmless
+# and mostly unused. If you cannot, upload the whole project under the web root
+# and this file:
+#   - denies direct access to every application directory
+#   - routes all requests into public/index.php
+# ---------------------------------------------------------------------------
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Block dotfiles.
+    RewriteRule (^|/)\.(?!well-known/) - [F]
+
+    # Deny direct hits on non-public code / data directories.
+    RewriteRule ^(app|config|database|docs|storage|tests|tools|vendor)(/|$) - [F]
+
+    # Serve existing files inside public/ directly.
+    RewriteCond %{REQUEST_FILENAME} -f
+    RewriteRule ^ - [L]
+
+    # Map everything else to the front controller under public/.
+    RewriteCond %{REQUEST_URI} !^/public/
+    RewriteRule ^(.*)$ public/index.php [L]
+</IfModule>
+
+Options -Indexes -MultiViews
+AddDefaultCharset UTF-8
+
+<FilesMatch "\.(?:sqlite|sqlite3|db|md|lock|dist|example|log|ini|sql)$">
+    Require all denied
+</FilesMatch>

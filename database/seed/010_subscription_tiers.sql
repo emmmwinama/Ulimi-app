@@ -1,0 +1,55 @@
+-- Idempotent seed of the default subscription tiers.
+-- Prices in MWK. -1 = unlimited. Mirrors the original's Trial / Regular /
+-- Enterprise / Large Enterprise shape.
+
+INSERT INTO `subscription_tiers`
+  (`id`,`name`,`description`,`currency`,`price_monthly`,`price_annual`,`audience`,
+   `is_active`,`is_public`,`is_featured`,`sort_order`,
+   `max_fields`,`max_crops`,`max_activities`,`max_transactions`,`max_employees`,`max_farms`,`max_team_members`,
+   `season_analytics`,`yield_suggestions`,`cost_per_hectare`,`payroll_tracking`,`multiple_farms`,`team_accounts`,`custom_reports`,`api_access`,`sync_enabled`,
+   `created_at`)
+VALUES
+  ('tier_trial','Trial','7-day full access, then 14 days view-only.','MWK',0,0,'New farms',
+   1,1,0,0,
+   3,3,40,30,3,1,2,
+   1,1,1,0,0,1,0,0,1,
+   UTC_TIMESTAMP()),
+  ('tier_regular','Regular','For a single working farm.','MWK',9500,95000,'Smallholder & family farms',
+   1,1,1,1,
+   10,25,-1,-1,15,1,4,
+   1,1,1,1,0,1,0,0,1,
+   UTC_TIMESTAMP()),
+  ('tier_enterprise','Enterprise','Multiple farms and a full team.','MWK',29000,290000,'Commercial operations',
+   1,1,0,2,
+   -1,-1,-1,-1,-1,5,15,
+   1,1,1,1,1,1,1,1,1,
+   UTC_TIMESTAMP()),
+  ('tier_large','Large Enterprise','Estates, cooperatives and aggregators.','MWK',75000,750000,'Estates & cooperatives',
+   1,0,0,3,
+   -1,-1,-1,-1,-1,-1,-1,
+   1,1,1,1,1,1,1,1,1,
+   UTC_TIMESTAMP())
+ON DUPLICATE KEY UPDATE
+  `description`   = VALUES(`description`),
+  `price_monthly` = VALUES(`price_monthly`),
+  `price_annual`  = VALUES(`price_annual`),
+  `audience`      = VALUES(`audience`),
+  `is_public`     = VALUES(`is_public`),
+  `is_featured`   = VALUES(`is_featured`),
+  `sort_order`    = VALUES(`sort_order`),
+  `max_fields`       = VALUES(`max_fields`),
+  `max_crops`        = VALUES(`max_crops`),
+  `max_activities`   = VALUES(`max_activities`),
+  `max_transactions` = VALUES(`max_transactions`),
+  `max_employees`    = VALUES(`max_employees`),
+  `max_farms`        = VALUES(`max_farms`),
+  `max_team_members` = VALUES(`max_team_members`),
+  `season_analytics` = VALUES(`season_analytics`),
+  `yield_suggestions`= VALUES(`yield_suggestions`),
+  `cost_per_hectare` = VALUES(`cost_per_hectare`),
+  `payroll_tracking` = VALUES(`payroll_tracking`),
+  `multiple_farms`   = VALUES(`multiple_farms`),
+  `team_accounts`    = VALUES(`team_accounts`),
+  `custom_reports`   = VALUES(`custom_reports`),
+  `api_access`       = VALUES(`api_access`),
+  `sync_enabled`     = VALUES(`sync_enabled`);

@@ -1,0 +1,4 @@
+# Belt-and-braces: never serve anything from storage/ over the web, even if the
+# document root is mis-set. Application code reads these files directly.
+Require all denied
+Deny from all

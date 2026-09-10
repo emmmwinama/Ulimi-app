@@ -1,0 +1,46 @@
+<?php
+
+/**
+ * config/config.local.php  — real secrets, NEVER committed.
+ *
+ * Copy this file to `config.local.php` and fill it in for each environment.
+ * Anything here is deep-merged over config/config.php defaults.
+ *
+ * On biz.na.ht: place this file at config/config.local.php on the server
+ * (outside the web root if DocumentRoot points at /public) and chmod 600.
+ */
+
+return [
+    'app' => [
+        'env'   => 'local',                 // local | production
+        'debug' => true,                    // MUST be false in production
+        'url'   => 'http://agrivault.test', // no trailing slash
+        // 32+ random bytes, base64. Used to hash tokens at rest + sign cookies.
+        // Generate: php -r "echo base64_encode(random_bytes(32)).PHP_EOL;"
+        'key'   => 'base64:REPLACE_WITH_RANDOM_32_BYTES',
+    ],
+
+    'db' => [
+        'host'    => '127.0.0.1',
+        'port'    => 3306,
+        'name'    => 'agrivault',
+        'user'    => 'root',
+        'pass'    => '',
+        'charset' => 'utf8mb4',
+    ],
+
+    'mail' => [
+        'driver'     => 'smtp',            // smtp | log  (log = write to storage/logs, don't send)
+        'host'       => 'sandbox.smtp.mailtrap.io',
+        'port'       => 587,
+        'encryption' => 'tls',            // tls | ssl | ''
+        'username'   => '',
+        'password'   => '',
+        'from_email' => 'no-reply@agrivault.test',
+        'from_name'  => 'AgriVault',
+    ],
+
+    // Comma-free list of proxy IPs whose X-Forwarded-For we trust for client IP.
+    // Leave empty unless the host sits behind a known reverse proxy / Cloudflare.
+    'trusted_proxies' => [],
+];

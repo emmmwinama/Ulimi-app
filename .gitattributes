@@ -1,0 +1,9 @@
+# Normalise line endings: LF in the repository, tools may check out CRLF on Windows.
+* text=auto eol=lf
+
+*.png binary
+*.jpg binary
+*.webp binary
+*.ico binary
+*.woff2 binary
+*.sqlite binary

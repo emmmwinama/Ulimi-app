@@ -1,0 +1,27 @@
+# --- secrets & local config ---
+/config/config.local.php
+
+# --- runtime state (never commit) ---
+/storage/logs/*
+!/storage/logs/.gitkeep
+/storage/cache/*
+!/storage/cache/.gitkeep
+/storage/sessions/*
+!/storage/sessions/.gitkeep
+/storage/uploads/*
+!/storage/uploads/.gitkeep
+
+# --- source data snapshot: one real farm's records, do not publish ---
+/live.sqlite
+/database/dumps/*
+
+# --- local build tooling ---
+/tools/tailwind/node_modules
+/tools/tailwind/package-lock.json
+
+# --- editor / OS ---
+.idea/
+.vscode/
+*.log
+.DS_Store
+Thumbs.db

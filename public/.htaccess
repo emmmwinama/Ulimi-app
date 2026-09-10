@@ -1,0 +1,50 @@
+# ---------------------------------------------------------------------------
+# Front-controller rewrite + hardening for the public web root.
+# Assumes Apache with mod_rewrite (standard on biz.na.ht / shared hosts).
+# ---------------------------------------------------------------------------
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # If the domain's DocumentRoot is a parent dir, uncomment and set:
+    # RewriteBase /
+
+    # Block dotfiles (.env, .git, .htaccess itself is already protected).
+    RewriteRule (^|/)\.(?!well-known/) - [F]
+
+    # Serve real files and directories as-is.
+    RewriteCond %{REQUEST_FILENAME} -f [OR]
+    RewriteCond %{REQUEST_FILENAME} -d
+    RewriteRule ^ - [L]
+
+    # Everything else goes through the front controller.
+    RewriteRule ^ index.php [L]
+</IfModule>
+
+# Do not serve directory listings.
+Options -Indexes -MultiViews
+
+# Default charset.
+AddDefaultCharset UTF-8
+
+# Deny access to the PHP entry file's source under any name but execution.
+<Files ~ "\.(?:sqlite|sqlite3|db|md|json|lock|dist|example|log|ini)$">
+    Require all denied
+</Files>
+
+<IfModule mod_headers.c>
+    # Long-cache fingerprinted static assets.
+    <FilesMatch "\.(?:css|js|svg|woff2|png|jpg|jpeg|webp|gif|ico)$">
+        Header set Cache-Control "public, max-age=31536000, immutable"
+    </FilesMatch>
+</IfModule>
+
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/html text/plain text/css application/javascript application/json image/svg+xml
+</IfModule>
+
+# Never expose the PHP version banner.
+<IfModule mod_headers.c>
+    Header unset X-Powered-By
+    Header always unset X-Powered-By
+</IfModule>
