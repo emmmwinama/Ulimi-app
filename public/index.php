@@ -15,6 +15,17 @@ use App\Core\Response;
 use App\Core\Router;
 use App\Core\Session;
 
+/**
+ * Under `php -S` (the dev server) this file is the router script, so it must
+ * hand back real files itself. Apache/Nginx serve them before PHP is reached.
+ */
+if (PHP_SAPI === 'cli-server') {
+    $path = realpath(__DIR__ . parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH));
+    if ($path !== false && $path !== __FILE__ && is_file($path) && str_starts_with($path, __DIR__)) {
+        return false;
+    }
+}
+
 require dirname(__DIR__) . '/app/bootstrap.php';
 
 $request = Request::capture();

@@ -43,7 +43,7 @@ $cultArea  = array_sum(array_map(static fn ($f) => (float) $f['cultivatable_area
                     <th class="num">Cultivatable (ha)</th>
                     <th class="num">Active crops</th>
                     <th>Added</th>
-                    <?php if ($canManage): ?><th class="num">Actions</th><?php endif; ?>
+                    <th class="num">Actions</th>
                 </tr>
             </thead>
             <tbody>
@@ -60,16 +60,17 @@ $cultArea  = array_sum(array_map(static fn ($f) => (float) $f['cultivatable_area
                     <td class="num"><?= e(number_format((float) $f['cultivatable_area'], 2)) ?></td>
                     <td class="num"><?= e((string) $f['active_crops']) ?></td>
                     <td class="small muted"><?= e(Dates::forDisplay((string) $f['created_at'])) ?></td>
-                    <?php if ($canManage): ?>
-                        <td class="num nowrap">
+                    <td class="num nowrap">
+                        <a class="btn sm ghost" href="<?= e(url('fields/' . rawurlencode((string) $f['id']) . '/map')) ?>">Map</a>
+                        <?php if ($canManage): ?>
                             <a class="btn sm ghost" href="<?= e(url('fields/' . rawurlencode((string) $f['id']) . '/edit')) ?>">Edit</a>
                             <form method="post" action="<?= e(url('fields/' . rawurlencode((string) $f['id']) . '/delete')) ?>"
                                   style="display:inline" onsubmit="return confirm('Delete this field?')">
                                 <?= csrf_field() ?>
                                 <button class="btn sm ghost danger" type="submit">Delete</button>
                             </form>
-                        </td>
-                    <?php endif; ?>
+                        <?php endif; ?>
+                    </td>
                 </tr>
             <?php endforeach; ?>
             </tbody>
