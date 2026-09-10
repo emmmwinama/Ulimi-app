@@ -77,7 +77,7 @@ runtime is available in the build environment. ID columns are `VARCHAR(40)`
 - Season profitability + cost-per-ha / per-kg (gated by tier flags)
 - Import maps transactions, overhead, inventory, inventory_sales
 
-## Phase 5 — Livestock  ☐
+## Phase 5 — Livestock  ☑
 - Schema `008_livestock`: `livestock_types`, `animals`, `animal_health`,
   `animal_production`, `animal_weight`, `animal_expenses`, `animal_sales`
 - Full lifecycle CRUD + parent/offspring links

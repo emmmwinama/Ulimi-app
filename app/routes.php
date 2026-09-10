@@ -17,6 +17,7 @@ use App\Controllers\Farm\FarmSwitchController;
 use App\Controllers\Farm\FieldsController;
 use App\Controllers\Farm\FinanceController;
 use App\Controllers\Farm\InventoryController;
+use App\Controllers\Farm\LivestockController;
 use App\Controllers\Farm\TeamController;
 use App\Controllers\Farm\YieldsController;
 use App\Controllers\Onboarding\FarmSetupController;
@@ -164,6 +165,24 @@ $router->group('/inventory', $farm, static function (Router $r): void {
     $r->post('/{id}/delete', [InventoryController::class, 'destroy'], ['Can:inventory.manage']);
     $r->get('/{id}/sell', [InventoryController::class, 'sellForm'], ['Can:inventory.view']);
     $r->post('/{id}/sell', [InventoryController::class, 'sell'], ['Can:inventory.manage']);
+});
+
+/* ------------------------------------------------------------- livestock */
+$router->group('/livestock', $farm, static function (Router $r): void {
+    $r->get('', [LivestockController::class, 'index'], ['Can:livestock.view']);
+    $r->post('/types', [LivestockController::class, 'storeType'], ['Can:livestock.manage']);
+    $r->post('/types/{id}/delete', [LivestockController::class, 'destroyType'], ['Can:livestock.manage']);
+
+    $r->get('/animals/create', [LivestockController::class, 'createAnimal'], ['Can:livestock.manage']);
+    $r->post('/animals', [LivestockController::class, 'storeAnimal'], ['Can:livestock.manage']);
+    $r->get('/animals/{id}', [LivestockController::class, 'showAnimal'], ['Can:livestock.view']);
+    $r->get('/animals/{id}/edit', [LivestockController::class, 'editAnimal'], ['Can:livestock.manage']);
+    $r->put('/animals/{id}', [LivestockController::class, 'updateAnimal'], ['Can:livestock.manage']);
+    $r->post('/animals/{id}/delete', [LivestockController::class, 'destroyAnimal'], ['Can:livestock.manage']);
+    $r->post('/animals/{id}/sell', [LivestockController::class, 'sellAnimal'], ['Can:livestock.manage']);
+
+    $r->post('/animals/{id}/events/{kind}', [LivestockController::class, 'addEvent'], ['Can:livestock.manage']);
+    $r->post('/animals/{id}/events/{kind}/{eventId}/delete', [LivestockController::class, 'deleteEvent'], ['Can:livestock.manage']);
 });
 
 /* --------------------------------------------------------------- account */
