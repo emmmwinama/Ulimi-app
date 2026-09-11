@@ -7,6 +7,7 @@ namespace App\Controllers\Farm;
 use App\Controllers\Controller;
 use App\Core\AuditLog;
 use App\Core\Auth;
+use App\Core\Authz;
 use App\Core\Config;
 use App\Core\Database;
 use App\Core\FarmContext;
@@ -56,6 +57,8 @@ final class TeamController extends Controller
             'maxMembers'  => $maxMembers,
             'activeCount' => $activeCount,
             'atLimit'     => $maxMembers !== -1 && $activeCount >= $maxMembers,
+            'roleMatrix'  => Authz::roleMatrix(),
+            'allRoles'    => Authz::ROLES,
         ]);
     }
 

@@ -119,6 +119,24 @@ final class Authz
         return $abilities;
     }
 
+    /**
+     * A resource x role "can manage" matrix for the Team page's permissions
+     * overview widget. Derived from the same defaults every role actually
+     * gets — never hand-maintained separately.
+     *
+     * @return array<string,array<string,bool>> resource => [role => bool]
+     */
+    public static function roleMatrix(): array
+    {
+        $matrix = [];
+        foreach (self::RESOURCES as $resource) {
+            foreach (self::ROLES as $role) {
+                $matrix[$resource][$role] = in_array($resource . '.manage', self::defaultsFor($role), true);
+            }
+        }
+        return $matrix;
+    }
+
     /** @return list<string> */
     private static function defaultsFor(string $role): array
     {
