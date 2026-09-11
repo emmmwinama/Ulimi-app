@@ -77,18 +77,24 @@ final class ActivitiesController extends Controller
         usort($byField, static fn ($a, $b) => $b['count'] <=> $a['count']);
         usort($bySeason, static fn ($a, $b) => $b['count'] <=> $a['count']);
 
+        $canManage = $ctx->can('activities.manage') && !$ctx->isReadOnly();
+        $allFields = $this->fields->forFarm($ctx->farmId());
+
         return $this->view('activities/index', [
             'title'       => 'Activities',
             'active'      => 'activities',
             'rows'        => $rows,
-            'fields'      => $this->fields->forFarm($ctx->farmId()),
+            'fields'      => $allFields,
             'types'       => self::TYPES,
             'filters'     => $filters,
-            'canManage'   => $ctx->can('activities.manage') && !$ctx->isReadOnly(),
+            'canManage'   => $canManage,
             'byType'      => array_values($byType),
             'byField'     => array_values($byField),
             'bySeason'    => array_values($bySeason),
             'activeCount' => $activeCount,
+            'crops'       => $canManage ? $this->crops->forFarm($ctx->farmId()) : [],
+            'employees'   => $canManage ? $this->employees->forFarm($ctx->farmId(), true) : [],
+            'payroll'     => $ctx->feature('payroll_tracking'),
         ]);
     }
 

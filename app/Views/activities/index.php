@@ -41,7 +41,7 @@ foreach ($rows as $r) {
         <p class="lede"><?= count($rows) ?> record<?= count($rows) === 1 ? '' : 's' ?> · <?= e(Money::format($total)) ?> total cost</p>
     </div>
     <?php if ($canManage): ?>
-        <a class="btn" href="<?= e(url('activities/create')) ?>">
+        <a class="btn" href="#log-activity">
             <?= $this->partial('partials/icon', ['name' => 'plus', 'class' => 'ico']) ?> Log activity
         </a>
     <?php endif; ?>
@@ -191,7 +191,7 @@ foreach ($rows as $r) {
         </span>
         <div class="h3">No activities</div>
         <p>Log land prep, planting, spraying, weeding and harvest — with the labour, inputs and other costs behind each.</p>
-        <?php if ($canManage): ?><p class="mt-16px"><a class="btn" href="<?= e(url('activities/create')) ?>">Log your first activity</a></p><?php endif; ?>
+        <?php if ($canManage): ?><p class="mt-16px"><a class="btn" href="#log-activity">Log your first activity</a></p><?php endif; ?>
     </div>
 <?php else: ?>
     <div class="stack" style="--stack-gap:20px">
@@ -256,6 +256,33 @@ foreach ($rows as $r) {
                 </div>
             </div>
         <?php endforeach; ?>
+    </div>
+<?php endif; ?>
+
+<?php if ($canManage): ?>
+    <div class="slide-over" id="log-activity">
+        <a href="#" class="scrim" aria-label="Close"></a>
+        <div class="panel wide">
+            <div class="panel-head">
+                <div>
+                    <h2 class="h3">Log activity</h2>
+                    <p class="small muted mt-8px">Land prep, planting, spraying, weeding, harvest — with labour, inputs and other costs</p>
+                </div>
+                <a href="#" class="panel-close" aria-label="Close"><?= $this->partial('partials/icon', ['name' => 'x', 'class' => 'ico ico-sm']) ?></a>
+            </div>
+            <form method="post" action="<?= e(url('activities')) ?>" style="display:contents" data-activity-form>
+                <?= csrf_field() ?>
+                <div class="panel-body stack" style="--stack-gap:16px">
+                    <?= $this->partial('partials/activities/activity', [
+                        'a' => null, 'fields' => $fields, 'crops' => $crops, 'employees' => $employees, 'types' => $types, 'payroll' => $payroll,
+                    ]) ?>
+                </div>
+                <div class="panel-foot">
+                    <a href="#" class="btn ghost block">Cancel</a>
+                    <button type="submit" class="btn block">Log activity</button>
+                </div>
+            </form>
+        </div>
     </div>
 <?php endif; ?>
 <?php $this->stop(); ?>
