@@ -16,7 +16,7 @@ use App\Support\Money;
     <?php endforeach; ?>
 </div>
 
-<form method="get" action="<?= e(url('admin/subscriptions')) ?>" class="mb-16px">
+<form method="get" action="<?= e(url('admin/subscriptions')) ?>" class="mb-24px">
     <select class="select" name="status" onchange="this.form.submit()" style="max-width:200px">
         <option value="">All statuses</option>
         <?php foreach ($statuses as $s): ?><option value="<?= e($s) ?>" <?= $s === $status ? 'selected' : '' ?>><?= e(ucfirst(str_replace('_', ' ', $s))) ?></option><?php endforeach; ?>

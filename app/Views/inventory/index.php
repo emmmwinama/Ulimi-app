@@ -49,7 +49,7 @@ $catColor = [
     </div>
 <?php endif; ?>
 
-<form method="get" action="<?= e(url('inventory')) ?>" class="row wrap mb-16px" style="gap:8px">
+<form method="get" action="<?= e(url('inventory')) ?>" class="row wrap mb-24px" style="gap:8px">
     <a href="<?= e(url('inventory')) ?>" class="btn <?= $category === '' ? '' : 'secondary' ?> sm">All</a>
     <?php foreach ($categories as $c): ?>
         <a href="<?= e(url('inventory?category=' . rawurlencode($c))) ?>" class="btn <?= $category === $c ? '' : 'secondary' ?> sm"><?= e($label($c)) ?></a>

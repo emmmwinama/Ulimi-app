@@ -14,7 +14,7 @@ use App\Support\Dates;
     </div>
 </div>
 
-<form method="get" action="<?= e(url('admin/users')) ?>" class="mb-16px">
+<form method="get" action="<?= e(url('admin/users')) ?>" class="mb-24px">
     <input class="input" type="search" name="q" value="<?= e($q) ?>" placeholder="Search name or email…" style="max-width:320px">
 </form>
 

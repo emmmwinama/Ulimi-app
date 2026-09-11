@@ -22,7 +22,7 @@ use App\Support\Money;
     </div>
 </div>
 
-<form method="get" action="<?= e(url('finance')) ?>" class="mb-16px">
+<form method="get" action="<?= e(url('finance')) ?>" class="mb-24px">
     <select class="select" name="season" onchange="this.form.submit()" style="max-width:260px">
         <option value="">All seasons</option>
         <?php foreach ($seasons as $s): ?>

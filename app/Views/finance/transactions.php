@@ -23,7 +23,7 @@ $expense = array_sum(array_map(static fn ($r) => $r['type'] === 'Expense' ? (flo
     <?php endif; ?>
 </div>
 
-<form method="get" action="<?= e(url('finance/transactions')) ?>" class="row wrap mb-16px" style="gap:10px">
+<form method="get" action="<?= e(url('finance/transactions')) ?>" class="row wrap mb-24px" style="gap:10px">
     <select class="select" name="type" onchange="this.form.submit()" style="max-width:160px">
         <option value="">All types</option>
         <option value="Income" <?= $filters['type'] === 'Income' ? 'selected' : '' ?>>Income</option>

@@ -165,7 +165,7 @@ foreach ($rows as $r) {
 </details>
 <?php endif; ?>
 
-<form method="get" action="<?= e(url('activities')) ?>" class="row wrap mb-16px" style="gap:10px">
+<form method="get" action="<?= e(url('activities')) ?>" class="row wrap mb-24px" style="gap:10px">
     <select class="select" name="field_id" onchange="this.form.submit()" style="max-width:200px">
         <option value="">All fields</option>
         <?php foreach ($fields as $f): ?>

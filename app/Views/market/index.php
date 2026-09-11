@@ -15,7 +15,7 @@ use App\Support\Money;
     </div>
 </div>
 
-<form method="get" action="<?= e(url('market')) ?>" class="mb-16px">
+<form method="get" action="<?= e(url('market')) ?>" class="mb-24px">
     <select class="select" name="crop" onchange="this.form.submit()" style="max-width:220px">
         <option value="">All crops</option>
         <?php foreach ($crops as $c): ?><option value="<?= e($c) ?>" <?= $c === $crop ? 'selected' : '' ?>><?= e($c) ?></option><?php endforeach; ?>

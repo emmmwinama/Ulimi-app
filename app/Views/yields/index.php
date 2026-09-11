@@ -27,7 +27,7 @@ $fmtKg = static fn (float $n): string => number_format($n) . ' kg';
     <?php endif; ?>
 </div>
 
-<form method="get" action="<?= e(url('yields')) ?>" class="row wrap mb-16px" style="gap:8px">
+<form method="get" action="<?= e(url('yields')) ?>" class="row wrap mb-24px" style="gap:8px">
     <a href="<?= e(url('yields')) ?>" class="btn <?= $season === '' ? '' : 'secondary' ?> sm"><?= 'All' ?></a>
     <?php foreach ($seasons as $s): ?>
         <a href="<?= e(url('yields?season=' . rawurlencode($s))) ?>" class="btn <?= $season === $s ? '' : 'secondary' ?> sm"><?= e($s) ?></a>
