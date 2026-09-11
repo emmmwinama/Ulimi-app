@@ -20,7 +20,8 @@ final class HarvestYieldRepository
     /** @return array<int,array<string,mixed>> */
     public function forFarm(string $farmId, ?string $cropFieldId = null): array
     {
-        $sql = 'SELECT hy.*, ct.name AS crop_name, f.name AS field_name, cf.season, cf.variety
+        $sql = 'SELECT hy.*, ct.name AS crop_name, f.name AS field_name, cf.season, cf.variety,
+                       cf.area_planted, cf.status AS crop_status
                 FROM harvest_yields hy
                 JOIN crop_fields cf ON cf.id = hy.crop_field_id
                 JOIN crop_types ct ON ct.id = cf.crop_type_id

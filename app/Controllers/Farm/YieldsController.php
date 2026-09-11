@@ -7,6 +7,7 @@ namespace App\Controllers\Farm;
 use App\Controllers\Controller;
 use App\Core\AuditLog;
 use App\Core\Auth;
+use App\Core\Database;
 use App\Core\FarmContext;
 use App\Core\Flash;
 use App\Core\Request;
@@ -27,8 +28,79 @@ final class YieldsController extends Controller
     public function index(Request $request): Response
     {
         $ctx = FarmContext::current();
-        $rows = $this->yields->forFarm($ctx->farmId());
+        $farmId = $ctx->farmId();
+        $rows = $this->yields->forFarm($farmId);
         $totalKg = array_sum(array_map(static fn ($r) => (float) $r['quantity_kg'], $rows));
+        $season = (string) $request->query('season', '');
+        $margin = max(0, min(200, (int) $request->query('margin', 30)));
+
+        $db = Database::instance();
+
+        // Activity cost per crop planting (labour + inputs + other costs).
+        $costByCropField = [];
+        foreach (['activity_labour' => 'total_cost', 'activity_inputs' => 'total_cost', 'activity_other_costs' => 'amount'] as $table => $col) {
+            foreach ($db->select(
+                "SELECT fa.crop_field_id, COALESCE(SUM(t.$col), 0) AS cost
+                 FROM $table t JOIN farm_activities fa ON fa.id = t.activity_id
+                 WHERE fa.farm_id = :fid AND fa.crop_field_id IS NOT NULL
+                 GROUP BY fa.crop_field_id",
+                ['fid' => $farmId],
+            ) as $row) {
+                $costByCropField[$row['crop_field_id']] = ($costByCropField[$row['crop_field_id']] ?? 0.0) + (float) $row['cost'];
+            }
+        }
+
+        $groups = [];
+        $seasons = [];
+        foreach ($rows as $r) {
+            $s = (string) ($r['season'] ?? '');
+            if ($s !== '' && !in_array($s, $seasons, true)) {
+                $seasons[] = $s;
+            }
+            if ($season !== '' && $s !== $season) {
+                continue;
+            }
+            $cfId = (string) $r['crop_field_id'];
+            if (!isset($groups[$cfId])) {
+                $groups[$cfId] = [
+                    'crop_field_id' => $cfId,
+                    'crop_name'     => $r['crop_name'],
+                    'variety'       => $r['variety'],
+                    'field_name'    => $r['field_name'],
+                    'season'        => $r['season'],
+                    'status'        => $r['crop_status'],
+                    'area_planted'  => (float) $r['area_planted'],
+                    'total_yield_kg'=> 0.0,
+                    'total_cost'    => $costByCropField[$cfId] ?? 0.0,
+                    'harvests'      => [],
+                ];
+            }
+            $groups[$cfId]['total_yield_kg'] += (float) $r['quantity_kg'];
+            $groups[$cfId]['harvests'][] = $r;
+        }
+        foreach ($groups as $cfId => &$g) {
+            $g['cost_per_ha'] = $g['area_planted'] > 0 ? $g['total_cost'] / $g['area_planted'] : null;
+            $g['yield_per_ha'] = $g['area_planted'] > 0 ? $g['total_yield_kg'] / $g['area_planted'] : null;
+            $costPerKg = $g['total_yield_kg'] > 0 ? $g['total_cost'] / $g['total_yield_kg'] : 0.0;
+            $g['break_even_per_kg'] = $costPerKg;
+            $g['break_even_per_bag50'] = $costPerKg * 50;
+            $g['break_even_per_tonne'] = $costPerKg * 1000;
+            $suggestedPerKg = $costPerKg * (1 + $margin / 100);
+            $g['suggested_per_kg'] = $suggestedPerKg;
+            $g['suggested_per_bag50'] = $suggestedPerKg * 50;
+            $g['projected_profit'] = ($suggestedPerKg - $costPerKg) * $g['total_yield_kg'];
+        }
+        unset($g);
+
+        // By crop type: aggregate area/yield/cost across all crop_field groups.
+        $byType = [];
+        foreach ($groups as $g) {
+            $name = (string) $g['crop_name'];
+            $byType[$name] ??= ['crop_name' => $name, 'total_yield_kg' => 0.0, 'total_area' => 0.0, 'total_cost' => 0.0];
+            $byType[$name]['total_yield_kg'] += $g['total_yield_kg'];
+            $byType[$name]['total_area'] += $g['area_planted'];
+            $byType[$name]['total_cost'] += $g['total_cost'];
+        }
 
         return $this->view('yields/index', [
             'title'     => 'Yields',
@@ -36,6 +108,11 @@ final class YieldsController extends Controller
             'rows'      => $rows,
             'totalKg'   => $totalKg,
             'canManage' => $ctx->can('yields.manage') && !$ctx->isReadOnly(),
+            'groups'    => array_values($groups),
+            'byType'    => array_values($byType),
+            'seasons'   => $seasons,
+            'season'    => $season,
+            'margin'    => $margin,
         ]);
     }
 
