@@ -17,7 +17,7 @@ use App\Support\Money;
         <p class="lede"><?= e((string) $stats['total_head']) ?> active head across <?= count($types) ?> type<?= count($types) === 1 ? '' : 's' ?></p>
     </div>
     <?php if ($canManage && $types !== []): ?>
-        <a class="btn" href="<?= e(url('livestock/animals/create')) ?>">
+        <a class="btn" href="#add-animal">
             <?= $this->partial('partials/icon', ['name' => 'plus', 'class' => 'ico']) ?> Add animal
         </a>
     <?php endif; ?>
@@ -137,5 +137,32 @@ use App\Support\Money;
         <?php endforeach; ?>
         </tbody>
     </table></div>
+<?php endif; ?>
+
+<?php if ($canManage && $types !== []): ?>
+    <div class="slide-over" id="add-animal">
+        <a href="#" class="scrim" aria-label="Close"></a>
+        <div class="panel">
+            <div class="panel-head">
+                <div>
+                    <h2 class="h3">Add animal</h2>
+                    <p class="small muted mt-8px">Register with tag, breed, sex and acquisition details</p>
+                </div>
+                <a href="#" class="panel-close" aria-label="Close"><?= $this->partial('partials/icon', ['name' => 'x', 'class' => 'ico ico-sm']) ?></a>
+            </div>
+            <form method="post" action="<?= e(url('livestock/animals')) ?>" style="display:contents">
+                <?= csrf_field() ?>
+                <div class="panel-body stack">
+                    <?= $this->partial('partials/livestock/animal', [
+                        'a' => null, 'types' => $types, 'parents' => $parents, 'sexes' => $sexes, 'statuses' => $statuses, 'acqTypes' => $acqTypes,
+                    ]) ?>
+                </div>
+                <div class="panel-foot">
+                    <a href="#" class="btn ghost block">Cancel</a>
+                    <button type="submit" class="btn block">Add animal</button>
+                </div>
+            </form>
+        </div>
+    </div>
 <?php endif; ?>
 <?php $this->stop(); ?>

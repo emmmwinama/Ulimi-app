@@ -38,14 +38,21 @@ final class LivestockController extends Controller
     public function index(Request $request): Response
     {
         $ctx = FarmContext::current();
+        $types = $this->repo->types($ctx->farmId());
+        $canManage = $ctx->can('livestock.manage') && !$ctx->isReadOnly();
+
         return $this->view('livestock/index', [
             'title'     => 'Livestock',
             'active'    => 'livestock',
             'stats'     => $this->stats->forFarm($ctx->farmId()),
-            'types'     => $this->repo->types($ctx->farmId()),
+            'types'     => $types,
             'animals'   => $this->repo->animals($ctx->farmId(), ['status' => (string) $request->query('status', '')]),
             'statusF'   => (string) $request->query('status', ''),
-            'canManage' => $ctx->can('livestock.manage') && !$ctx->isReadOnly(),
+            'canManage' => $canManage,
+            'parents'   => $canManage && $types !== [] ? $this->repo->animals($ctx->farmId(), ['status' => 'Active']) : [],
+            'sexes'     => self::SEX,
+            'statuses'  => self::STATUS,
+            'acqTypes'  => self::ACQ,
         ]);
     }
 
