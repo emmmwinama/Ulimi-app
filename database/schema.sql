@@ -389,6 +389,25 @@ CREATE TABLE IF NOT EXISTS `farm_activities` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ---------------------------------------------------------------------
+-- farm_credit_scores
+-- ---------------------------------------------------------------------
+DROP TABLE IF EXISTS `farm_credit_scores`;
+CREATE TABLE IF NOT EXISTS `farm_credit_scores` (
+  `id` varchar(40) NOT NULL,
+  `farm_id` varchar(40) NOT NULL,
+  `user_id` varchar(40) NOT NULL,
+  `score` int(11) NOT NULL,
+  `grade` varchar(4) NOT NULL,
+  `factors` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL CHECK (json_valid(`factors`)),
+  `generated_at` datetime NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx_fcs_farm` (`farm_id`,`generated_at`),
+  KEY `fk_fcs_user` (`user_id`),
+  CONSTRAINT `fk_fcs_farm` FOREIGN KEY (`farm_id`) REFERENCES `farms` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_fcs_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ---------------------------------------------------------------------
 -- farm_markers
 -- ---------------------------------------------------------------------
 DROP TABLE IF EXISTS `farm_markers`;
@@ -672,6 +691,25 @@ CREATE TABLE IF NOT EXISTS `rate_limits` (
   `expires_at` int(10) unsigned NOT NULL,
   PRIMARY KEY (`bucket`),
   KEY `idx_rate_limits_expires` (`expires_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ---------------------------------------------------------------------
+-- saved_reports
+-- ---------------------------------------------------------------------
+DROP TABLE IF EXISTS `saved_reports`;
+CREATE TABLE IF NOT EXISTS `saved_reports` (
+  `id` varchar(40) NOT NULL,
+  `farm_id` varchar(40) NOT NULL,
+  `user_id` varchar(40) NOT NULL,
+  `name` varchar(120) NOT NULL,
+  `config` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL CHECK (json_valid(`config`)),
+  `created_at` datetime NOT NULL,
+  `updated_at` datetime NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx_sr_farm` (`farm_id`),
+  KEY `fk_sr_user` (`user_id`),
+  CONSTRAINT `fk_sr_farm` FOREIGN KEY (`farm_id`) REFERENCES `farms` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_sr_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ---------------------------------------------------------------------
