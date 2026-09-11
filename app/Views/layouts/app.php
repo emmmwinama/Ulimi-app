@@ -31,15 +31,18 @@ $navBusiness = [
     ['key' => 'livestock', 'label' => 'Livestock', 'href' => url('livestock'),  'icon' => 'cow'],
     ['key' => 'reports',   'label' => 'Reports',   'href' => url('reports'),    'icon' => 'bar-chart'],
 ];
+$navInsights = [
+    ['key' => 'weather',       'label' => 'Weather',       'href' => url('weather'),       'icon' => 'info'],
+    ['key' => 'market',        'label' => 'Market prices', 'href' => url('market'),        'icon' => 'bar-chart'],
+    ['key' => 'documents',     'label' => 'Documents',     'href' => url('documents'),     'icon' => 'file-text'],
+];
 $navPeople = [
     ['key' => 'employees', 'label' => 'Employees', 'href' => url('employees'), 'icon' => 'users'],
     ['key' => 'team',      'label' => 'Team',      'href' => url('team'),      'icon' => 'users'],
 ];
-$navUpcoming = [
-    ['label' => 'Documents', 'icon' => 'file-text'],
-];
 $navManage = [
-    ['key' => 'account', 'label' => 'Account', 'href' => url('account'), 'icon' => 'settings'],
+    ['key' => 'settings', 'label' => 'Farm settings', 'href' => url('settings'), 'icon' => 'settings'],
+    ['key' => 'account',  'label' => 'Account',       'href' => url('account'),  'icon' => 'settings'],
 ];
 ?><!doctype html>
 <html lang="en">
@@ -90,12 +93,12 @@ $navManage = [
         </div>
 
         <div class="nav-group">
-            <div class="eyebrow">Arriving soon</div>
-            <?php foreach ($navUpcoming as $item): ?>
-                <span class="nav-item" aria-disabled="true" style="opacity:.45;cursor:default">
+            <div class="eyebrow">Insights</div>
+            <?php foreach ($navInsights as $item): ?>
+                <a class="nav-item <?= $active === $item['key'] ? 'is-active' : '' ?>" href="<?= e($item['href']) ?>">
                     <?= $this->partial('partials/icon', ['name' => $item['icon'], 'class' => 'ico']) ?>
                     <span><?= e($item['label']) ?></span>
-                </span>
+                </a>
             <?php endforeach; ?>
         </div>
 
@@ -132,6 +135,7 @@ $navManage = [
             <div class="row">
                 <?php if ($ctx !== null): ?>
                     <?= $this->partial('partials/farm-switcher') ?>
+                    <?= $this->partial('partials/notification-bell') ?>
                 <?php endif; ?>
 
                 <details class="chip-select">
