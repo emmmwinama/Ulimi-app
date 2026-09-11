@@ -21,7 +21,7 @@ $fmtKg = static fn (float $n): string => number_format($n) . ' kg';
         <p class="lede"><?= count($groups) ?> crop record<?= count($groups) === 1 ? '' : 's' ?> · <?= $fmtKg($totalKg) ?> total</p>
     </div>
     <?php if ($canManage): ?>
-        <a class="btn" href="<?= e(url('yields/create')) ?>">
+        <a class="btn" href="#add-yield">
             <?= $this->partial('partials/icon', ['name' => 'plus', 'class' => 'ico']) ?> Record yield
         </a>
     <?php endif; ?>
@@ -84,7 +84,7 @@ $fmtKg = static fn (float $n): string => number_format($n) . ' kg';
         </span>
         <div class="h3">No yield records yet</div>
         <p>Record harvests from the crops page or click below.</p>
-        <?php if ($canManage): ?><p class="mt-16px"><a class="btn" href="<?= e(url('yields/create')) ?>">Record a yield</a></p><?php endif; ?>
+        <?php if ($canManage): ?><p class="mt-16px"><a class="btn" href="#add-yield">Record a yield</a></p><?php endif; ?>
     </div>
 <?php else: ?>
     <div class="stack" style="--stack-gap:16px">
@@ -156,7 +156,7 @@ $fmtKg = static fn (float $n): string => number_format($n) . ' kg';
                     <div class="spread mb-12px">
                         <p class="eyebrow">Harvest records</p>
                         <?php if ($canManage): ?>
-                            <a href="<?= e(url('yields/create?crop_field_id=' . rawurlencode((string) $g['crop_field_id']))) ?>" class="small" style="font-weight:700;color:var(--teal)">
+                            <a href="#add-yield-<?= e((string) $g['crop_field_id']) ?>" class="small" style="font-weight:700;color:var(--teal)">
                                 + Add harvest
                             </a>
                         <?php endif; ?>
@@ -176,7 +176,7 @@ $fmtKg = static fn (float $n): string => number_format($n) . ' kg';
                                     </div>
                                     <?php if ($canManage): ?>
                                         <div class="row" style="gap:4px">
-                                            <a href="<?= e(url('yields/' . rawurlencode((string) $y['id']) . '/edit')) ?>" title="Edit"
+                                            <a href="#edit-yield-<?= e((string) $y['id']) ?>" title="Edit"
                                                style="width:28px;height:28px;border-radius:9px;display:grid;place-items:center;background:var(--surface-3);color:var(--text-faint)">
                                                 <?= $this->partial('partials/icon', ['name' => 'pencil', 'class' => 'ico ico-sm']) ?>
                                             </a>
@@ -197,5 +197,81 @@ $fmtKg = static fn (float $n): string => number_format($n) . ' kg';
             </div>
         <?php endforeach; ?>
     </div>
+<?php endif; ?>
+
+<?php if ($canManage): ?>
+    <div class="slide-over" id="add-yield">
+        <a href="#" class="scrim" aria-label="Close"></a>
+        <div class="panel">
+            <div class="panel-head">
+                <div>
+                    <h2 class="h3">Record yield</h2>
+                    <p class="small muted mt-8px">Log a harvest against a crop planting</p>
+                </div>
+                <a href="#" class="panel-close" aria-label="Close"><?= $this->partial('partials/icon', ['name' => 'x', 'class' => 'ico ico-sm']) ?></a>
+            </div>
+            <form method="post" action="<?= e(url('yields')) ?>" style="display:contents">
+                <?= csrf_field() ?>
+                <div class="panel-body stack">
+                    <?= $this->partial('partials/yields/yield', ['row' => null, 'crops' => $allCrops, 'units' => $units, 'preselect' => '']) ?>
+                </div>
+                <div class="panel-foot">
+                    <a href="#" class="btn ghost block">Cancel</a>
+                    <button type="submit" class="btn block">Record yield</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <?php foreach ($groups as $g): ?>
+        <div class="slide-over" id="add-yield-<?= e((string) $g['crop_field_id']) ?>">
+            <a href="#" class="scrim" aria-label="Close"></a>
+            <div class="panel">
+                <div class="panel-head">
+                    <div>
+                        <h2 class="h3">Add harvest</h2>
+                        <p class="small muted mt-8px"><?= e((string) $g['crop_name']) ?> — <?= e((string) $g['field_name']) ?></p>
+                    </div>
+                    <a href="#" class="panel-close" aria-label="Close"><?= $this->partial('partials/icon', ['name' => 'x', 'class' => 'ico ico-sm']) ?></a>
+                </div>
+                <form method="post" action="<?= e(url('yields')) ?>" style="display:contents">
+                    <?= csrf_field() ?>
+                    <div class="panel-body stack">
+                        <?= $this->partial('partials/yields/yield', ['row' => null, 'crops' => $allCrops, 'units' => $units, 'preselect' => (string) $g['crop_field_id']]) ?>
+                    </div>
+                    <div class="panel-foot">
+                        <a href="#" class="btn ghost block">Cancel</a>
+                        <button type="submit" class="btn block">Record yield</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <?php foreach ($g['harvests'] as $y): ?>
+            <div class="slide-over" id="edit-yield-<?= e((string) $y['id']) ?>">
+                <a href="#" class="scrim" aria-label="Close"></a>
+                <div class="panel">
+                    <div class="panel-head">
+                        <div>
+                            <h2 class="h3">Edit yield</h2>
+                            <p class="small muted mt-8px"><?= e((string) $g['crop_name']) ?> — <?= e((string) $g['field_name']) ?></p>
+                        </div>
+                        <a href="#" class="panel-close" aria-label="Close"><?= $this->partial('partials/icon', ['name' => 'x', 'class' => 'ico ico-sm']) ?></a>
+                    </div>
+                    <form method="post" action="<?= e(url('yields/' . rawurlencode((string) $y['id']))) ?>" style="display:contents">
+                        <?= csrf_field() ?>
+                        <?= method_field('PUT') ?>
+                        <div class="panel-body stack">
+                            <?= $this->partial('partials/yields/yield', ['row' => $y, 'crops' => $allCrops, 'units' => $units, 'preselect' => (string) $y['crop_field_id']]) ?>
+                        </div>
+                        <div class="panel-foot">
+                            <a href="#" class="btn ghost block">Cancel</a>
+                            <button type="submit" class="btn block">Save</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        <?php endforeach; ?>
+    <?php endforeach; ?>
 <?php endif; ?>
 <?php $this->stop(); ?>

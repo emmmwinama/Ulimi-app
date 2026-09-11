@@ -102,17 +102,21 @@ final class YieldsController extends Controller
             $byType[$name]['total_cost'] += $g['total_cost'];
         }
 
+        $canManage = $ctx->can('yields.manage') && !$ctx->isReadOnly();
+
         return $this->view('yields/index', [
             'title'     => 'Yields',
             'active'    => 'yields',
             'rows'      => $rows,
             'totalKg'   => $totalKg,
-            'canManage' => $ctx->can('yields.manage') && !$ctx->isReadOnly(),
+            'canManage' => $canManage,
             'groups'    => array_values($groups),
             'byType'    => array_values($byType),
             'seasons'   => $seasons,
             'season'    => $season,
             'margin'    => $margin,
+            'allCrops'  => $canManage ? $this->crops->forFarm($farmId) : [],
+            'units'     => self::UNITS,
         ]);
     }
 
