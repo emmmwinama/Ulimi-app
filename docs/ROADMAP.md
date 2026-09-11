@@ -92,7 +92,7 @@ runtime is available in the build environment. ID columns are `VARCHAR(40)`
 - Server-side polygon area (hectares) + centroid
 - Import maps boundaries / zones / markers (GeoJSON preserved)
 
-## Phase 7 — Reporting, Compliance & Credit  ☐
+## Phase 7 — Reporting, Compliance & Credit  ☑
 - `Services\ReportBuilder` — sections/columns/filters → CSV + hand-built PDF
   (vendored FPDF), brand-compliant cover + footers
 - Canned reports: cashflow, crop/field profitability, cost per ha/kg, trends

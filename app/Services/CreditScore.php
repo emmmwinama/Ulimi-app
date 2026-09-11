@@ -54,10 +54,13 @@ final class CreditScore
 
         $income12  = $one("SELECT COALESCE(SUM(amount),0) FROM transactions WHERE farm_id = :fid AND type='Income'  AND date >= DATE_SUB(CURDATE(), INTERVAL 12 MONTH)");
         $expense12 = $one("SELECT COALESCE(SUM(amount),0) FROM transactions WHERE farm_id = :fid AND type='Expense' AND date >= DATE_SUB(CURDATE(), INTERVAL 12 MONTH)");
-        $activityCost = $one(
-            "SELECT COALESCE((SELECT SUM(total_cost) FROM activity_labour WHERE farm_id=:fid),0)
-                  + COALESCE((SELECT SUM(total_cost) FROM activity_inputs WHERE farm_id=:fid),0)
-                  + COALESCE((SELECT SUM(amount)     FROM activity_other_costs WHERE farm_id=:fid),0)"
+        // Named placeholders aren't reused: native prepares reject a name bound
+        // more than once, so each subquery gets its own (identically-valued) one.
+        $activityCost = (float) $db->scalar(
+            "SELECT COALESCE((SELECT SUM(total_cost) FROM activity_labour WHERE farm_id=:fid1),0)
+                  + COALESCE((SELECT SUM(total_cost) FROM activity_inputs WHERE farm_id=:fid2),0)
+                  + COALESCE((SELECT SUM(amount)     FROM activity_other_costs WHERE farm_id=:fid3),0)",
+            ['fid1' => $farmId, 'fid2' => $farmId, 'fid3' => $farmId],
         );
         $overhead12 = $one("SELECT COALESCE(SUM(amount),0) FROM overhead_expenses WHERE farm_id = :fid AND date >= DATE_SUB(CURDATE(), INTERVAL 12 MONTH)");
         $net12 = $income12 - $expense12 - $overhead12;

@@ -19,6 +19,7 @@ use App\Controllers\Farm\FinanceController;
 use App\Controllers\Farm\InventoryController;
 use App\Controllers\Farm\LivestockController;
 use App\Controllers\Farm\MapController;
+use App\Controllers\Farm\ReportsController;
 use App\Controllers\Farm\TeamController;
 use App\Controllers\Farm\YieldsController;
 use App\Controllers\Onboarding\FarmSetupController;
@@ -197,6 +198,18 @@ $router->group('/livestock', $farm, static function (Router $r): void {
 
     $r->post('/animals/{id}/events/{kind}', [LivestockController::class, 'addEvent'], ['Can:livestock.manage']);
     $r->post('/animals/{id}/events/{kind}/{eventId}/delete', [LivestockController::class, 'deleteEvent'], ['Can:livestock.manage']);
+});
+
+/* --------------------------------------------------------------- reports */
+$router->group('/reports', $farm, static function (Router $r): void {
+    $r->get('', [ReportsController::class, 'index'], ['Can:reports.view']);
+    $r->get('/trends', [ReportsController::class, 'trends'], ['Can:reports.view']);
+    $r->get('/compliance', [ReportsController::class, 'compliance'], ['Can:reports.view']);
+    $r->get('/credit-score', [ReportsController::class, 'creditScore'], ['Can:reports.view']);
+    $r->post('/credit-score/recompute', [ReportsController::class, 'recomputeCreditScore'], ['Can:reports.view']);
+    $r->get('/builder', [ReportsController::class, 'builder'], ['Can:reports.view']);
+    $r->get('/export/{section}', [ReportsController::class, 'exportCsv'], ['Can:reports.view']);
+    $r->get('/pack/{type}', [ReportsController::class, 'pack'], ['Can:reports.view']);
 });
 
 /* --------------------------------------------------------------- account */
