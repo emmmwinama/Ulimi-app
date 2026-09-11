@@ -75,8 +75,10 @@
     --font: "Nunito", "Segoe UI", Arial, sans-serif;
     --mono: ui-monospace, "SF Mono", "Cascadia Mono", Menlo, Consolas, monospace;
 
-    --sidebar-w:       256px;
-    --sidebar-w-admin: 240px;
+    --sidebar-w:           256px;
+    --sidebar-w-admin:     240px;
+    --sidebar-w-collapsed: 80px;
+    --sidebar-w-admin-collapsed: 72px;
     --topbar-h:    64px;
     --tap:         44px;
     --btn-h:       40px;
@@ -163,14 +165,45 @@
   /* =====================================================================
      App shell
      ===================================================================== */
-  .app { min-height: 100vh; display: grid; grid-template-columns: var(--sidebar-w) 1fr; }
+  .app { min-height: 100vh; display: grid; grid-template-columns: var(--sidebar-w) 1fr; transition: grid-template-columns .22s ease; }
+  .app.sidebar-collapsed { grid-template-columns: var(--sidebar-w-collapsed) 1fr; }
+  .admin-shell.sidebar-collapsed { grid-template-columns: var(--sidebar-w-admin-collapsed) 1fr; }
 
   .sidebar {
     background: linear-gradient(180deg, #0F172A 0%, #111827 55%, #0B1120 100%);
     display: flex; flex-direction: column;
     position: sticky; top: 0; height: 100vh;
     border-right: 1px solid rgba(255,255,255,.05);
+    overflow: visible;
   }
+
+  /* Floating collapse toggle — a circular button straddling the sidebar edge. */
+  .collapse-toggle {
+    position: absolute; right: -14px; top: 76px; z-index: 10;
+    width: 28px; height: 28px; border-radius: 999px;
+    display: grid; place-items: center; cursor: pointer;
+    background: linear-gradient(135deg, var(--sky-600), var(--navy));
+    border: 2px solid rgba(255,255,255,.15); box-shadow: 0 2px 8px rgba(0,0,0,.3);
+    color: #fff; transition: transform .15s ease;
+  }
+  .collapse-toggle .ico { width: 13px; height: 13px; transition: transform .22s ease; }
+  .sidebar-collapsed .collapse-toggle .ico { transform: rotate(180deg); }
+  .admin-shell .collapse-toggle { background: #1E293B; border-color: #334155; }
+
+  /* Collapsed state: center everything, hide text labels, keep icons. */
+  .sidebar-collapsed .sidebar .brand { justify-content: center; padding: 0; }
+  .sidebar-collapsed .sidebar .brand .text { display: none; }
+  .sidebar-collapsed .sidebar .switcher-slot { display: flex; justify-content: center; padding: 8px; }
+  .sidebar-collapsed .sidebar .farm-switcher summary { width: 44px; height: 44px; min-height: 44px; padding: 0; justify-content: center; }
+  .sidebar-collapsed .sidebar .farm-switcher .who,
+  .sidebar-collapsed .sidebar .farm-switcher summary > .ico { display: none; }
+  .sidebar-collapsed .sidebar .nav-group > .eyebrow { display: none; }
+  .sidebar-collapsed .sidebar .nav-group > .items { padding: 0 12px; }
+  .sidebar-collapsed .sidebar .nav-item { justify-content: center; padding: 10px; }
+  .sidebar-collapsed .sidebar .nav-item span { display: none; }
+  .sidebar-collapsed .sidebar .foot .userchip { justify-content: center; padding: 8px; }
+  .sidebar-collapsed .sidebar .userchip .who,
+  .sidebar-collapsed .sidebar .userchip .signout { display: none; }
 
   .sidebar .brand {
     display: flex; align-items: center; gap: 12px; flex: none;
@@ -347,6 +380,7 @@
       backdrop-filter: blur(1px);
     }
     .shell-toggle { display: inline-grid; }
+    .collapse-toggle { display: none; }
   }
 
   /* =====================================================================

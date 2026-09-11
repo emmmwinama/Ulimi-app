@@ -24,6 +24,7 @@ $paths = [
     'shield'      => '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/>',
     'shield-check'=> '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/><path d="m9 12 2 2 4-4"/>',
     'chevron-right'=> '<polyline points="9 18 15 12 9 6"/>',
+    'chevron-left'=> '<polyline points="15 18 9 12 15 6"/>',
     'sun'         => '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/>',
     'wheat'       => '<path d="M12 22V12"/><path d="M9 8c0-2 1.5-3 3-4 1.5 1 3 2 3 4s-1.5 3-3 3-3-1-3-3Z"/><path d="M8 13c0-1.5 1-2.5 4-3 3 .5 4 1.5 4 3s-1.5 2.5-4 2.5S8 14.5 8 13Z"/>',
     'trend-up'    => '<polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/>',

@@ -27,7 +27,11 @@ final class FieldRepository
         return $this->db->select(
             'SELECT f.*,
                     (SELECT COUNT(*) FROM crop_fields cf
-                       WHERE cf.field_id = f.id AND cf.is_archived = 0) AS active_crops
+                       WHERE cf.field_id = f.id AND cf.is_archived = 0) AS active_crops,
+                    (SELECT GROUP_CONCAT(DISTINCT ct.name ORDER BY ct.name SEPARATOR ", ")
+                       FROM crop_fields cf2
+                       JOIN crop_types ct ON ct.id = cf2.crop_type_id
+                       WHERE cf2.field_id = f.id AND cf2.is_archived = 0) AS crop_names
              FROM fields f
              WHERE f.farm_id = :fid
              ORDER BY f.name ASC',

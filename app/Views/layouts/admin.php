@@ -59,6 +59,10 @@ $navGroups = [
             </span>
         </div>
 
+        <button type="button" class="collapse-toggle" data-collapse-toggle aria-label="Collapse sidebar">
+            <?= $this->partial('partials/icon', ['name' => 'chevron-left', 'class' => 'ico']) ?>
+        </button>
+
         <nav class="nav-scroll" aria-label="Main">
             <?php foreach ($navGroups as $group): ?>
                 <div class="nav-group">

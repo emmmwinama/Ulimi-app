@@ -17,6 +17,19 @@
     });
   }
 
+  /* ---- desktop sidebar collapse ---- */
+  var collapseToggle = document.querySelector("[data-collapse-toggle]");
+  if (shell && collapseToggle) {
+    var storageKey = shell.classList.contains("admin-shell") ? "agv-admin-sidebar-collapsed" : "agv-sidebar-collapsed";
+    if (localStorage.getItem(storageKey) === "1") {
+      shell.classList.add("sidebar-collapsed");
+    }
+    collapseToggle.addEventListener("click", function () {
+      var collapsed = shell.classList.toggle("sidebar-collapsed");
+      try { localStorage.setItem(storageKey, collapsed ? "1" : "0"); } catch (err) {}
+    });
+  }
+
   /* ---- auto-dismiss flash messages ---- */
   document.querySelectorAll("[data-flash]").forEach(function (el) {
     setTimeout(function () {
