@@ -27,12 +27,19 @@ final class DocumentsController extends Controller
     {
         $ctx = FarmContext::current();
         $type = (string) $request->query('type', '');
+        $all = $this->documents->forFarm($ctx->farmId(), null);
+        $counts = array_fill_keys(self::TYPES, 0);
+        foreach ($all as $d) {
+            $counts[$d['type']] = ($counts[$d['type']] ?? 0) + 1;
+        }
         return $this->view('documents/index', [
             'title'     => 'Documents',
             'active'    => 'documents',
-            'documents' => $this->documents->forFarm($ctx->farmId(), $type ?: null),
+            'documents' => $type === '' ? $all : array_values(array_filter($all, static fn ($d) => $d['type'] === $type)),
             'types'     => self::TYPES,
             'type'      => $type,
+            'counts'    => $counts,
+            'total'     => count($all),
             'canManage' => $ctx->can('documents.manage') && !$ctx->isReadOnly(),
         ]);
     }

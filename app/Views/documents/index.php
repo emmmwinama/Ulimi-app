@@ -3,10 +3,16 @@
  * @var array<int,array<string,mixed>> $documents
  * @var list<string> $types @var string $type
  * @var bool $canManage
+ * @var array<string,int> $counts
+ * @var int $total
  */
 $this->layout('layouts/app');
 use App\Support\Dates;
 $label = static fn (string $t): string => ucfirst($t);
+$typeIcon = [
+    'deed' => 'file-text', 'certificate' => 'shield-check', 'receipt' => 'wallet',
+    'contract' => 'file-text', 'photo' => 'map', 'other' => 'file-text',
+];
 $fmtSize = static function (?int $b): string {
     if ($b === null) return '—';
     if ($b < 1024) return $b . ' B';
@@ -52,12 +58,17 @@ $fmtSize = static function (?int $b): string {
 </div>
 <?php endif; ?>
 
-<form method="get" action="<?= e(url('documents')) ?>" class="mb-16">
-    <select class="select" name="type" onchange="this.form.submit()" style="max-width:200px">
-        <option value="">All types</option>
-        <?php foreach ($types as $t): ?><option value="<?= e($t) ?>" <?= $t === $type ? 'selected' : '' ?>><?= e($label($t)) ?></option><?php endforeach; ?>
-    </select>
-</form>
+<div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:16px">
+    <a href="<?= e(url('documents')) ?>" class="row" style="justify-content:center;min-height:56px;border-radius:16px;font-weight:700;font-size:.875rem;<?= $type === '' ? 'background:var(--sky-600);color:#fff' : 'background:var(--surface);border:1px solid var(--line);color:var(--text-soft)' ?>">
+        All (<?= $total ?>)
+    </a>
+    <?php foreach ($types as $t): ?>
+        <a href="<?= e(url('documents?type=' . rawurlencode($t))) ?>" class="row" style="justify-content:center;gap:6px;min-height:56px;border-radius:16px;font-weight:700;font-size:.875rem;<?= $type === $t ? 'background:var(--sky-600);color:#fff' : 'background:var(--surface);border:1px solid var(--line);color:var(--text-soft)' ?>">
+            <?= $this->partial('partials/icon', ['name' => $typeIcon[$t] ?? 'file-text', 'class' => 'ico ico-sm']) ?>
+            <span class="nowrap"><?= e($label($t)) ?> (<?= $counts[$t] ?? 0 ?>)</span>
+        </a>
+    <?php endforeach; ?>
+</div>
 
 <?php if ($documents === []): ?>
     <div class="empty"><div class="h3">No documents</div><p>Upload receipts, certificates, contracts and evidence photos here.</p></div>
