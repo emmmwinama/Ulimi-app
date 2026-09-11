@@ -14,36 +14,34 @@ $active = $active ?? '';
 $user   = Auth::user() ?? [];
 $ctx    = FarmContext::has() ? FarmContext::current() : null;
 
-$path = parse_url((string) ($_SERVER['REQUEST_URI'] ?? '/'), PHP_URL_PATH) ?: '/';
-
-/** @var list<array{key:string,label:string,href:string,icon:string}> $navMain */
-$navMain = [
+/** @var list<array{key:string,label:string,href:string,icon:string}> $navCommand */
+$navCommand = [
     ['key' => 'dashboard',  'label' => 'Dashboard',  'href' => url('dashboard'),  'icon' => 'gauge'],
     ['key' => 'fields',     'label' => 'Fields',     'href' => url('fields'),     'icon' => 'sprout'],
     ['key' => 'map',        'label' => 'Farm map',   'href' => url('map'),        'icon' => 'map'],
     ['key' => 'crops',      'label' => 'Crops',      'href' => url('crops'),      'icon' => 'sprout'],
     ['key' => 'activities', 'label' => 'Activities', 'href' => url('activities'), 'icon' => 'leaf'],
     ['key' => 'yields',     'label' => 'Yields',     'href' => url('yields'),     'icon' => 'sprout'],
+    ['key' => 'finance',    'label' => 'Finance',    'href' => url('finance'),    'icon' => 'wallet'],
+    ['key' => 'inventory',  'label' => 'Inventory',  'href' => url('inventory'),  'icon' => 'boxes'],
+    ['key' => 'livestock',  'label' => 'Livestock',  'href' => url('livestock'),  'icon' => 'cow'],
+    ['key' => 'reports',    'label' => 'Reports',    'href' => url('reports'),    'icon' => 'bar-chart'],
 ];
-$navBusiness = [
-    ['key' => 'finance',   'label' => 'Finance',   'href' => url('finance'),    'icon' => 'wallet'],
-    ['key' => 'inventory', 'label' => 'Inventory', 'href' => url('inventory'),  'icon' => 'boxes'],
-    ['key' => 'livestock', 'label' => 'Livestock', 'href' => url('livestock'),  'icon' => 'cow'],
-    ['key' => 'reports',   'label' => 'Reports',   'href' => url('reports'),    'icon' => 'bar-chart'],
+$navAccount = [
+    ['key' => 'weather',    'label' => 'Weather',       'href' => url('weather'),    'icon' => 'sun'],
+    ['key' => 'market',     'label' => 'Market prices',  'href' => url('market'),    'icon' => 'bar-chart'],
+    ['key' => 'documents',  'label' => 'Documents',      'href' => url('documents'), 'icon' => 'file-text'],
+    ['key' => 'employees',  'label' => 'Employees',      'href' => url('employees'), 'icon' => 'users'],
+    ['key' => 'team',       'label' => 'Team',           'href' => url('team'),      'icon' => 'users'],
+    ['key' => 'settings',   'label' => 'Farm settings',  'href' => url('settings'),  'icon' => 'settings'],
+    ['key' => 'account',    'label' => 'Account',        'href' => url('account'),   'icon' => 'settings'],
 ];
-$navInsights = [
-    ['key' => 'weather',       'label' => 'Weather',       'href' => url('weather'),       'icon' => 'info'],
-    ['key' => 'market',        'label' => 'Market prices', 'href' => url('market'),        'icon' => 'bar-chart'],
-    ['key' => 'documents',     'label' => 'Documents',     'href' => url('documents'),     'icon' => 'file-text'],
+$navGroups = [
+    ['label' => 'Command center', 'items' => $navCommand],
+    ['label' => 'Account',        'items' => $navAccount],
 ];
-$navPeople = [
-    ['key' => 'employees', 'label' => 'Employees', 'href' => url('employees'), 'icon' => 'users'],
-    ['key' => 'team',      'label' => 'Team',      'href' => url('team'),      'icon' => 'users'],
-];
-$navManage = [
-    ['key' => 'settings', 'label' => 'Farm settings', 'href' => url('settings'), 'icon' => 'settings'],
-    ['key' => 'account',  'label' => 'Account',       'href' => url('account'),  'icon' => 'settings'],
-];
+
+$initials = Str::initials((string) ($user['name'] ?? $user['email'] ?? '?'));
 ?><!doctype html>
 <html lang="en">
 <head>
@@ -59,67 +57,49 @@ $navManage = [
 <div class="app" data-shell>
     <aside class="sidebar" aria-label="Primary">
         <div class="brand">
-            <span class="mark"><?= $this->partial('partials/icon', ['name' => 'shield', 'class' => 'ico']) ?></span>
-            AgriVault
+            <span class="mark"><?= $this->partial('partials/icon', ['name' => 'shield-check', 'class' => 'ico']) ?></span>
+            <span class="text">
+                <span><?= e('AgriVault') ?></span>
+                <span class="tag">Farm Records</span>
+            </span>
         </div>
 
-        <nav class="nav-group" aria-label="Main">
-            <?php foreach ($navMain as $item): ?>
-                <a class="nav-item <?= $active === $item['key'] ? 'is-active' : '' ?>" href="<?= e($item['href']) ?>">
-                    <?= $this->partial('partials/icon', ['name' => $item['icon'], 'class' => 'ico']) ?>
-                    <span><?= e($item['label']) ?></span>
-                </a>
+        <?php if ($ctx !== null): ?>
+            <div class="switcher-slot">
+                <?= $this->partial('partials/farm-switcher') ?>
+            </div>
+        <?php endif; ?>
+
+        <nav class="nav-scroll" aria-label="Main">
+            <?php foreach ($navGroups as $group): ?>
+                <div class="nav-group">
+                    <div class="eyebrow"><?= e($group['label']) ?></div>
+                    <div class="items">
+                        <?php foreach ($group['items'] as $item): ?>
+                            <a class="nav-item <?= $active === $item['key'] ? 'is-active' : '' ?>" href="<?= e($item['href']) ?>">
+                                <?= $this->partial('partials/icon', ['name' => $item['icon'], 'class' => 'ico']) ?>
+                                <span><?= e($item['label']) ?></span>
+                            </a>
+                        <?php endforeach; ?>
+                    </div>
+                </div>
             <?php endforeach; ?>
         </nav>
 
-        <div class="nav-group">
-            <div class="eyebrow">Business</div>
-            <?php foreach ($navBusiness as $item): ?>
-                <a class="nav-item <?= $active === $item['key'] ? 'is-active' : '' ?>" href="<?= e($item['href']) ?>">
-                    <?= $this->partial('partials/icon', ['name' => $item['icon'], 'class' => 'ico']) ?>
-                    <span><?= e($item['label']) ?></span>
-                </a>
-            <?php endforeach; ?>
-        </div>
-
-        <div class="nav-group">
-            <div class="eyebrow">People</div>
-            <?php foreach ($navPeople as $item): ?>
-                <a class="nav-item <?= $active === $item['key'] ? 'is-active' : '' ?>" href="<?= e($item['href']) ?>">
-                    <?= $this->partial('partials/icon', ['name' => $item['icon'], 'class' => 'ico']) ?>
-                    <span><?= e($item['label']) ?></span>
-                </a>
-            <?php endforeach; ?>
-        </div>
-
-        <div class="nav-group">
-            <div class="eyebrow">Insights</div>
-            <?php foreach ($navInsights as $item): ?>
-                <a class="nav-item <?= $active === $item['key'] ? 'is-active' : '' ?>" href="<?= e($item['href']) ?>">
-                    <?= $this->partial('partials/icon', ['name' => $item['icon'], 'class' => 'ico']) ?>
-                    <span><?= e($item['label']) ?></span>
-                </a>
-            <?php endforeach; ?>
-        </div>
-
-        <div class="nav-group">
-            <div class="eyebrow">Manage</div>
-            <?php foreach ($navManage as $item): ?>
-                <a class="nav-item <?= $active === $item['key'] ? 'is-active' : '' ?>" href="<?= e($item['href']) ?>">
-                    <?= $this->partial('partials/icon', ['name' => $item['icon'], 'class' => 'ico']) ?>
-                    <span><?= e($item['label']) ?></span>
-                </a>
-            <?php endforeach; ?>
-        </div>
-
-        <div style="margin-top:auto">
-            <form method="post" action="<?= e(url('logout')) ?>">
-                <?= csrf_field() ?>
-                <button type="submit" class="nav-item">
-                    <?= $this->partial('partials/icon', ['name' => 'log-out', 'class' => 'ico']) ?>
-                    <span>Sign out</span>
-                </button>
-            </form>
+        <div class="foot">
+            <div class="userchip">
+                <span class="avatar"><?= e($initials) ?></span>
+                <div class="who">
+                    <div class="name"><?= e((string) ($user['name'] ?? 'Account')) ?></div>
+                    <div class="email"><?= e((string) ($user['email'] ?? '')) ?></div>
+                </div>
+                <form method="post" action="<?= e(url('logout')) ?>">
+                    <?= csrf_field() ?>
+                    <button type="submit" class="signout" title="Sign out" aria-label="Sign out">
+                        <?= $this->partial('partials/icon', ['name' => 'log-out', 'class' => 'ico']) ?>
+                    </button>
+                </form>
+            </div>
         </div>
     </aside>
 
@@ -129,33 +109,20 @@ $navManage = [
                 <button type="button" class="shell-toggle" data-shell-toggle aria-label="Toggle navigation">
                     <?= $this->partial('partials/icon', ['name' => 'menu', 'class' => 'ico']) ?>
                 </button>
-                <span class="page-title"><?= e($title) ?></span>
+                <div class="crumbs">
+                    <span class="app-name">AgriVault</span>
+                    <?= $this->partial('partials/icon', ['name' => 'chevron-right', 'class' => 'ico sep']) ?>
+                    <span class="page"><?= e($title) ?></span>
+                </div>
             </div>
 
             <div class="row">
                 <?php if ($ctx !== null): ?>
-                    <?= $this->partial('partials/farm-switcher') ?>
+                    <a href="<?= e(url('weather')) ?>" class="icon-btn" aria-label="Weather">
+                        <?= $this->partial('partials/icon', ['name' => 'sun', 'class' => 'ico']) ?>
+                    </a>
                     <?= $this->partial('partials/notification-bell') ?>
                 <?php endif; ?>
-
-                <details class="chip-select">
-                    <summary>
-                        <?= e(Str::initials((string) ($user['name'] ?? $user['email'] ?? '?'))) ?>
-                        <?= $this->partial('partials/icon', ['name' => 'chevron-down', 'class' => 'ico']) ?>
-                    </summary>
-                    <div class="menu">
-                        <div style="padding:8px 10px">
-                            <div style="font-weight:700"><?= e((string) ($user['name'] ?? 'Account')) ?></div>
-                            <div class="small muted"><?= e((string) ($user['email'] ?? '')) ?></div>
-                        </div>
-                        <hr>
-                        <a href="<?= e(url('account')) ?>">Account settings</a>
-                        <form method="post" action="<?= e(url('logout')) ?>">
-                            <?= csrf_field() ?>
-                            <button type="submit">Sign out</button>
-                        </form>
-                    </div>
-                </details>
             </div>
         </header>
 

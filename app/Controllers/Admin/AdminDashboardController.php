@@ -37,7 +37,8 @@ final class AdminDashboardController extends Controller
         );
 
         return $this->view('admin/dashboard', [
-            'title'  => 'Admin',
+            'title'  => 'Overview',
+            'active' => 'dashboard',
             'admin'  => AdminAuth::admin(),
             'stats'  => $stats,
             'recent' => $recent,

@@ -30,6 +30,7 @@ final class AdminSubscriptionsController extends Controller
         $status = (string) $request->query('status', '');
         return $this->view('admin/subscriptions/index', [
             'title'    => 'Subscriptions',
+            'active'   => 'subscriptions',
             'rows'     => $this->subscriptions->allWithUser($status),
             'status'   => $status,
             'statuses' => self::STATUSES,
@@ -47,6 +48,7 @@ final class AdminSubscriptionsController extends Controller
         }
         return $this->view('admin/subscriptions/show', [
             'title'    => (string) $sub['user_name'],
+            'active'   => 'subscriptions',
             'sub'      => $sub,
             'tiers'    => $this->subscriptions->allTiers(),
             'payments' => $this->payments->forSubscription($id),

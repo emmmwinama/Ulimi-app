@@ -22,6 +22,7 @@ final class AdminInquiriesController extends Controller
     {
         return $this->view('admin/inquiries/index', [
             'title'   => 'Inquiries',
+            'active'  => 'inquiries',
             'tab'     => (string) $request->query('tab', 'contact'),
             'contacts'=> $this->inquiries->contacts(),
             'demos'   => $this->inquiries->demos(),

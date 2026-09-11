@@ -17,7 +17,7 @@ $authed = Auth::check();
 <header class="pub-header">
     <div class="container spread" style="width:100%">
         <a class="brand" href="<?= e(url('/')) ?>">
-            <span class="mark"><?= $this->partial('partials/icon', ['name' => 'shield', 'class' => 'ico']) ?></span>
+            <span class="mark"><?= $this->partial('partials/icon', ['name' => 'shield-check', 'class' => 'ico']) ?></span>
             AgriVault
         </a>
         <nav class="row">

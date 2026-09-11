@@ -24,14 +24,15 @@ final class AdminTiersController extends Controller
     public function index(Request $request): Response
     {
         return $this->view('admin/tiers/index', [
-            'title' => 'Tiers',
-            'tiers' => $this->subscriptions->allTiers(),
+            'title'  => 'Tiers',
+            'active' => 'tiers',
+            'tiers'  => $this->subscriptions->allTiers(),
         ]);
     }
 
     public function create(Request $request): Response
     {
-        return $this->view('admin/tiers/form', ['title' => 'Add tier', 'tier' => null]);
+        return $this->view('admin/tiers/form', ['title' => 'Add tier', 'active' => 'tiers', 'tier' => null]);
     }
 
     public function store(Request $request): Response
@@ -53,7 +54,7 @@ final class AdminTiersController extends Controller
             Flash::error('Tier not found.');
             return $this->redirect(url('admin/tiers'));
         }
-        return $this->view('admin/tiers/form', ['title' => 'Edit tier', 'tier' => $tier]);
+        return $this->view('admin/tiers/form', ['title' => 'Edit tier', 'active' => 'tiers', 'tier' => $tier]);
     }
 
     public function update(Request $request): Response

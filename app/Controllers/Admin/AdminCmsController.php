@@ -28,6 +28,7 @@ final class AdminCmsController extends Controller
     {
         return $this->view('admin/cms/index', [
             'title'        => 'Site content',
+            'active'       => 'cms',
             'tab'          => (string) $request->query('tab', 'content'),
             'content'      => $this->cms->allContentRows(),
             'pages'        => $this->cms->pages(),

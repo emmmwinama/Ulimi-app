@@ -21,7 +21,7 @@ final class AdminMarketController extends Controller
 
     public function index(Request $request): Response
     {
-        return $this->view('admin/market/index', ['title' => 'Market data', 'rows' => $this->prices->all()]);
+        return $this->view('admin/market/index', ['title' => 'Market data', 'active' => 'market', 'rows' => $this->prices->all()]);
     }
 
     public function store(Request $request): Response

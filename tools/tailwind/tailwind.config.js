@@ -4,16 +4,16 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        navy: { DEFAULT: "#0B1220", 700: "#18233A", 600: "#2A3A57" },
-        blue: { DEFAULT: "#0284C7", 600: "#0369A1", 50: "#E0F2FE" },
-        cyan: { DEFAULT: "#06B6D4" },
-        teal: { DEFAULT: "#0D9488" },
-        danger: { DEFAULT: "#DC2626", 50: "#FEF2F2" },
+        navy: { DEFAULT: "#0F172A", 700: "#111827", 600: "#475569" },
+        blue: { DEFAULT: "#2563EB", 600: "#1D4ED8", 50: "#EFF6FF" },
+        sky: { DEFAULT: "#0EA5E9", 600: "#0284C7" },
+        teal: { DEFAULT: "#0F766E" },
+        danger: { DEFAULT: "#DC2626", 50: "#FFF1F2" },
         amber: { DEFAULT: "#B45309", 50: "#FFFBEB" },
-        ice: "#F7F9FC",
+        ice: "#F8FAFC",
       },
       fontFamily: {
-        sans: ["Inter", "Segoe UI", "Roboto", "-apple-system", "BlinkMacSystemFont", "Helvetica Neue", "Arial", "sans-serif"],
+        sans: ["Nunito", "Segoe UI", "Arial", "sans-serif"],
         mono: ["ui-monospace", "SF Mono", "Cascadia Mono", "Menlo", "Consolas", "monospace"],
       },
       boxShadow: {

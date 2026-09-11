@@ -15,7 +15,7 @@ $title = $title ?? 'Sign in';
 <div class="auth">
     <aside class="brandside">
         <div class="brand">
-            <span class="mark"><?= $this->partial('partials/icon', ['name' => 'shield', 'class' => 'ico']) ?></span>
+            <span class="mark"><?= $this->partial('partials/icon', ['name' => 'shield-check', 'class' => 'ico']) ?></span>
             AgriVault
         </div>
         <div>
@@ -26,7 +26,7 @@ $title = $title ?? 'Sign in';
                 <li><?= $this->partial('partials/icon', ['name' => 'check', 'class' => 'ico']) ?> Team access with role-based permissions</li>
             </ul>
         </div>
-        <p class="small" style="color:#64748B">&copy; <?= e(date('Y')) ?> AgriVault</p>
+        <p class="small" style="color:rgba(255,255,255,.45)">&copy; <?= e(date('Y')) ?> AgriVault</p>
     </aside>
     <main class="formside" id="form">
         <div class="formcard">

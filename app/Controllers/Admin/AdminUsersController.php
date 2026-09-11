@@ -23,6 +23,7 @@ final class AdminUsersController extends Controller
         $q = (string) $request->query('q', '');
         return $this->view('admin/users/index', [
             'title'  => 'Users',
+            'active' => 'users',
             'users'  => $this->users->all($q),
             'q'      => $q,
             'counts' => $this->users->counts(),
@@ -38,9 +39,10 @@ final class AdminUsersController extends Controller
             return $this->redirect(url('admin/users'));
         }
         return $this->view('admin/users/show', [
-            'title' => (string) ($user['name'] ?: $user['email']),
-            'user'  => $user,
-            'farms' => $this->users->farmsFor($id),
+            'title'  => (string) ($user['name'] ?: $user['email']),
+            'active' => 'users',
+            'user'   => $user,
+            'farms'  => $this->users->farmsFor($id),
         ]);
     }
 

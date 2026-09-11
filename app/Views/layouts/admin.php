@@ -1,8 +1,9 @@
 <?php
 /**
  * Admin back-office shell. Separate from the customer app shell — different
- * nav, different session domain (App\Core\AdminAuth), visually distinguished
- * with an amber "ADMIN" mark so nobody confuses the two areas.
+ * nav, different session domain (App\Core\AdminAuth). Visually distinguished
+ * from the customer app only by a solid slate sidebar (vs. the gradient one)
+ * and the "Admin" breadcrumb, matching the reference build.
  *
  * @var string $title
  * @var string $active
@@ -13,14 +14,29 @@ $title = $title ?? 'Admin';
 $active = $active ?? '';
 $admin = AdminAuth::admin() ?? [];
 
-$nav = [
-    ['key' => 'dashboard',     'label' => 'Overview',      'href' => url('admin'),                  'icon' => 'gauge'],
-    ['key' => 'users',         'label' => 'Users',         'href' => url('admin/users'),             'icon' => 'users'],
-    ['key' => 'subscriptions', 'label' => 'Subscriptions', 'href' => url('admin/subscriptions'),     'icon' => 'wallet'],
-    ['key' => 'tiers',         'label' => 'Tiers',         'href' => url('admin/tiers'),             'icon' => 'boxes'],
-    ['key' => 'market',        'label' => 'Market data',   'href' => url('admin/market'),            'icon' => 'bar-chart'],
-    ['key' => 'cms',           'label' => 'Site content',  'href' => url('admin/cms'),               'icon' => 'file-text'],
-    ['key' => 'inquiries',     'label' => 'Inquiries',     'href' => url('admin/inquiries'),         'icon' => 'mail'],
+$navGroups = [
+    [
+        'label' => 'Management',
+        'items' => [
+            ['key' => 'dashboard',     'label' => 'Overview',      'href' => url('admin'),               'icon' => 'gauge'],
+            ['key' => 'users',         'label' => 'Users',         'href' => url('admin/users'),         'icon' => 'users'],
+            ['key' => 'subscriptions', 'label' => 'Subscriptions', 'href' => url('admin/subscriptions'), 'icon' => 'wallet'],
+        ],
+    ],
+    [
+        'label' => 'Configuration',
+        'items' => [
+            ['key' => 'tiers',  'label' => 'Tiers',         'href' => url('admin/tiers'),  'icon' => 'boxes'],
+            ['key' => 'market', 'label' => 'Market data',   'href' => url('admin/market'), 'icon' => 'bar-chart'],
+        ],
+    ],
+    [
+        'label' => 'Content',
+        'items' => [
+            ['key' => 'cms',       'label' => 'Site content', 'href' => url('admin/cms'),       'icon' => 'file-text'],
+            ['key' => 'inquiries', 'label' => 'Inquiries',    'href' => url('admin/inquiries'), 'icon' => 'mail'],
+        ],
+    ],
 ];
 ?><!doctype html>
 <html lang="en">
@@ -30,38 +46,61 @@ $nav = [
     <meta name="robots" content="noindex, nofollow">
     <title><?= e($title) ?> — AgriVault Admin</title>
     <link rel="stylesheet" href="<?= e(asset('app.css')) ?>">
-    <style>.sidebar{background:#1C1206}.sidebar a.nav-item.is-active{background:#B45309}</style>
 </head>
 <body>
 <a class="skip-link" href="#main">Skip to content</a>
-<div class="app" data-shell>
+<div class="app admin-shell" data-shell>
     <aside class="sidebar" aria-label="Admin">
         <div class="brand">
-            <span class="mark" style="background:linear-gradient(150deg,#B45309,#F59E0B)"><?= $this->partial('partials/icon', ['name' => 'shield', 'class' => 'ico']) ?></span>
-            AgriVault <span class="badge amber" style="margin-left:4px">ADMIN</span>
+            <span class="mark"><?= $this->partial('partials/icon', ['name' => 'shield-check', 'class' => 'ico']) ?></span>
+            <span class="text">
+                <span>AgriVault</span>
+                <span class="tag">Farm Records</span>
+            </span>
         </div>
-        <nav class="nav-group" aria-label="Main">
-            <?php foreach ($nav as $item): ?>
-                <a class="nav-item <?= $active === $item['key'] ? 'is-active' : '' ?>" href="<?= e($item['href']) ?>">
-                    <?= $this->partial('partials/icon', ['name' => $item['icon'], 'class' => 'ico']) ?>
-                    <span><?= e($item['label']) ?></span>
-                </a>
+
+        <nav class="nav-scroll" aria-label="Main">
+            <?php foreach ($navGroups as $group): ?>
+                <div class="nav-group">
+                    <div class="eyebrow"><?= e($group['label']) ?></div>
+                    <div class="items">
+                        <?php foreach ($group['items'] as $item): ?>
+                            <a class="nav-item <?= $active === $item['key'] ? 'is-active' : '' ?>" href="<?= e($item['href']) ?>">
+                                <?= $this->partial('partials/icon', ['name' => $item['icon'], 'class' => 'ico']) ?>
+                                <span><?= e($item['label']) ?></span>
+                            </a>
+                        <?php endforeach; ?>
+                    </div>
+                </div>
             <?php endforeach; ?>
         </nav>
-        <div style="margin-top:auto">
+
+        <div class="foot">
             <form method="post" action="<?= e(url('admin/logout')) ?>">
                 <?= csrf_field() ?>
-                <button type="submit" class="nav-item"><?= $this->partial('partials/icon', ['name' => 'log-out', 'class' => 'ico']) ?><span>Sign out</span></button>
+                <button type="submit" class="nav-item">
+                    <?= $this->partial('partials/icon', ['name' => 'log-out', 'class' => 'ico']) ?>
+                    <span>Sign out</span>
+                </button>
             </form>
         </div>
     </aside>
+
     <div class="main">
         <header class="topbar">
             <div class="row">
-                <button type="button" class="shell-toggle" data-shell-toggle aria-label="Toggle navigation"><?= $this->partial('partials/icon', ['name' => 'menu', 'class' => 'ico']) ?></button>
-                <span class="page-title"><?= e($title) ?></span>
+                <button type="button" class="shell-toggle" data-shell-toggle aria-label="Toggle navigation">
+                    <?= $this->partial('partials/icon', ['name' => 'menu', 'class' => 'ico']) ?>
+                </button>
+                <div class="crumbs">
+                    <span class="app-name">Admin</span>
+                    <?= $this->partial('partials/icon', ['name' => 'chevron-right', 'class' => 'ico sep']) ?>
+                    <span class="page"><?= e($title) ?></span>
+                </div>
             </div>
-            <div class="row"><span class="small muted"><?= e((string) ($admin['name'] ?? '')) ?></span></div>
+            <div class="row">
+                <span class="small muted"><?= e((string) ($admin['name'] ?? '')) ?></span>
+            </div>
         </header>
         <main class="content" id="main"><?= $this->yieldContent() ?></main>
     </div>
