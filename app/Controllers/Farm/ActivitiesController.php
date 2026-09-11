@@ -44,14 +44,51 @@ final class ActivitiesController extends Controller
             'to'       => $this->dateOrEmpty((string) $request->query('to', '')),
         ];
 
+        $rows = $this->activities->forFarm($ctx->farmId(), $filters);
+
+        $byType = [];
+        $byField = [];
+        $bySeason = [];
+        $activeCount = 0;
+        foreach ($rows as $r) {
+            $type = (string) $r['activity_type'];
+            $byType[$type] ??= ['type' => $type, 'count' => 0, 'total_cost' => 0.0];
+            $byType[$type]['count']++;
+            $byType[$type]['total_cost'] += (float) $r['total_cost'];
+
+            $fieldName = (string) $r['field_name'];
+            $byField[$fieldName] ??= ['name' => $fieldName, 'count' => 0, 'total_cost' => 0.0];
+            $byField[$fieldName]['count']++;
+            $byField[$fieldName]['total_cost'] += (float) $r['total_cost'];
+
+            $season = (string) ($r['season'] ?? '');
+            if ($season !== '') {
+                $bySeason[$season] ??= ['season' => $season, 'count' => 0, 'total_cost' => 0.0];
+                $bySeason[$season]['count']++;
+                $bySeason[$season]['total_cost'] += (float) $r['total_cost'];
+            }
+
+            $historical = (int) ($r['crop_archived'] ?? 0) === 1 || (string) ($r['crop_status'] ?? '') === 'Harvested';
+            if (!$historical) {
+                $activeCount++;
+            }
+        }
+        usort($byType, static fn ($a, $b) => $b['count'] <=> $a['count']);
+        usort($byField, static fn ($a, $b) => $b['count'] <=> $a['count']);
+        usort($bySeason, static fn ($a, $b) => $b['count'] <=> $a['count']);
+
         return $this->view('activities/index', [
-            'title'     => 'Activities',
-            'active'    => 'activities',
-            'rows'      => $this->activities->forFarm($ctx->farmId(), $filters),
-            'fields'    => $this->fields->forFarm($ctx->farmId()),
-            'types'     => self::TYPES,
-            'filters'   => $filters,
-            'canManage' => $ctx->can('activities.manage') && !$ctx->isReadOnly(),
+            'title'       => 'Activities',
+            'active'      => 'activities',
+            'rows'        => $rows,
+            'fields'      => $this->fields->forFarm($ctx->farmId()),
+            'types'       => self::TYPES,
+            'filters'     => $filters,
+            'canManage'   => $ctx->can('activities.manage') && !$ctx->isReadOnly(),
+            'byType'      => array_values($byType),
+            'byField'     => array_values($byField),
+            'bySeason'    => array_values($bySeason),
+            'activeCount' => $activeCount,
         ]);
     }
 

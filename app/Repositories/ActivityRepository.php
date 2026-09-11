@@ -52,6 +52,11 @@ final class ActivityRepository
 
         return $this->db->select(
             'SELECT a.*, f.name AS field_name, ct.name AS crop_name,
+                    cf.variety AS crop_variety, cf.season AS season,
+                    cf.status AS crop_status, cf.is_archived AS crop_archived,
+                    COALESCE(l.sum, 0) AS labour_cost,
+                    COALESCE(i.sum, 0) AS input_cost,
+                    COALESCE(o.sum, 0) AS other_cost,
                     COALESCE(l.sum, 0) + COALESCE(i.sum, 0) + COALESCE(o.sum, 0) AS total_cost
              FROM farm_activities a
              JOIN fields f ON f.id = a.field_id

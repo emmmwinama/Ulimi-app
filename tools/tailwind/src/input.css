@@ -125,6 +125,14 @@
     display: inline-block;
   }
   svg.ico-sm { width: 14px; height: 14px; }
+
+  /* Disclosure widgets (<details>/<summary>) used as expand/collapse UI
+     throughout — analytics toggle, activity rows, archive popovers. */
+  summary { cursor: pointer; }
+  summary::-webkit-details-marker { display: none; }
+  summary::marker { content: ""; }
+  .row-chevron { transition: transform .15s ease; }
+  details[open] > summary .row-chevron { transform: rotate(180deg); }
 }
 
 @layer components {
