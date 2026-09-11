@@ -24,7 +24,7 @@ $mappedCount = count(array_filter($fields, static fn ($f) => !empty($f['boundary
             <?= $this->partial('partials/icon', ['name' => 'map', 'class' => 'ico']) ?> Farm map
         </a>
         <?php if ($canManage): ?>
-            <a class="btn" href="<?= e(url('fields/create')) ?>">
+            <a class="btn" href="#add-field">
                 <?= $this->partial('partials/icon', ['name' => 'plus', 'class' => 'ico']) ?> Add field
             </a>
         <?php endif; ?>
@@ -39,7 +39,7 @@ $mappedCount = count(array_filter($fields, static fn ($f) => !empty($f['boundary
         <div class="h3">No fields yet</div>
         <p>Add your land parcels — area, soil type and location. Crops, activities and maps all hang off fields.</p>
         <?php if ($canManage): ?>
-            <p class="mt-16px"><a class="btn" href="<?= e(url('fields/create')) ?>">Add your first field</a></p>
+            <p class="mt-16px"><a class="btn" href="#add-field">Add your first field</a></p>
         <?php endif; ?>
     </div>
 <?php else: ?>
@@ -113,7 +113,7 @@ $mappedCount = count(array_filter($fields, static fn ($f) => !empty($f['boundary
                             <?= $this->partial('partials/icon', ['name' => 'map', 'class' => 'ico ico-sm']) ?>
                         </a>
                         <?php if ($canManage): ?>
-                            <a href="<?= e(url('fields/' . rawurlencode((string) $f['id']) . '/edit')) ?>" title="Edit"
+                            <a href="#edit-field-<?= e((string) $f['id']) ?>" title="Edit"
                                style="width:28px;height:28px;border-radius:9px;display:grid;place-items:center;background:var(--surface-3);color:var(--text-faint)">
                                 <?= $this->partial('partials/icon', ['name' => 'pencil', 'class' => 'ico ico-sm']) ?>
                             </a>
@@ -131,5 +131,56 @@ $mappedCount = count(array_filter($fields, static fn ($f) => !empty($f['boundary
             </div>
         <?php endforeach; ?>
     </div>
+<?php endif; ?>
+
+<?php if ($canManage): ?>
+    <div class="slide-over" id="add-field">
+        <a href="#" class="scrim" aria-label="Close"></a>
+        <div class="panel">
+            <div class="panel-head">
+                <div>
+                    <h2 class="h3">Add new field</h2>
+                    <p class="small muted mt-8px">Fill in the field details below</p>
+                </div>
+                <a href="#" class="panel-close" aria-label="Close"><?= $this->partial('partials/icon', ['name' => 'x', 'class' => 'ico ico-sm']) ?></a>
+            </div>
+            <form method="post" action="<?= e(url('fields')) ?>" style="display:contents">
+                <?= csrf_field() ?>
+                <div class="panel-body stack">
+                    <?= $this->partial('partials/fields/fields', ['field' => null]) ?>
+                </div>
+                <div class="panel-foot">
+                    <a href="#" class="btn ghost block">Cancel</a>
+                    <button type="submit" class="btn block">Add field</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <?php foreach ($fields as $f): ?>
+        <div class="slide-over" id="edit-field-<?= e((string) $f['id']) ?>">
+            <a href="#" class="scrim" aria-label="Close"></a>
+            <div class="panel">
+                <div class="panel-head">
+                    <div>
+                        <h2 class="h3">Edit field</h2>
+                        <p class="small muted mt-8px">Update <?= e((string) $f['name']) ?>’s details</p>
+                    </div>
+                    <a href="#" class="panel-close" aria-label="Close"><?= $this->partial('partials/icon', ['name' => 'x', 'class' => 'ico ico-sm']) ?></a>
+                </div>
+                <form method="post" action="<?= e(url('fields/' . rawurlencode((string) $f['id']))) ?>" style="display:contents">
+                    <?= csrf_field() ?>
+                    <?= method_field('PUT') ?>
+                    <div class="panel-body stack">
+                        <?= $this->partial('partials/fields/fields', ['field' => $f]) ?>
+                    </div>
+                    <div class="panel-foot">
+                        <a href="#" class="btn ghost block">Cancel</a>
+                        <button type="submit" class="btn block">Save changes</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    <?php endforeach; ?>
 <?php endif; ?>
 <?php $this->stop(); ?>

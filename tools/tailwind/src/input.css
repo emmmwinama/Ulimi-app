@@ -538,6 +538,39 @@
   }
   .flash-stack .alert { box-shadow: var(--shadow-lg); background: var(--surface); animation: agv-pop .16s ease-out; }
 
+  /* =====================================================================
+     Slide-over panels — right-side "Add / Edit" forms, no JS. Each list
+     page embeds one <div class="slide-over" id="..."> per form and links
+     to it as `#the-id`; :target shows it, a scrim/✕ link back to `#`
+     (or the page's own path) hides it. Matches the reference's client-
+     side slide-over panels without a parallel JS form/validation layer.
+     ===================================================================== */
+  .slide-over { position: fixed; inset: 0; z-index: 200; display: none; }
+  .slide-over:target { display: block; }
+  .slide-over .scrim {
+    position: absolute; inset: 0; background: rgba(11,18,32,.45);
+    backdrop-filter: blur(2px); animation: agv-fade .18s ease-out;
+  }
+  .slide-over .panel {
+    position: absolute; top: 0; right: 0; bottom: 0; width: 440px; max-width: 92vw;
+    background: var(--surface); box-shadow: -8px 0 40px rgba(15,23,42,.18);
+    display: flex; flex-direction: column; animation: agv-slide-in .22s ease-out;
+  }
+  .slide-over .panel-head {
+    padding: 18px 24px; border-bottom: 1px solid var(--line); background: var(--surface-2);
+    display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; flex: none;
+  }
+  .slide-over .panel-close {
+    width: 32px; height: 32px; border-radius: 10px; flex: none;
+    display: grid; place-items: center; background: var(--surface); border: 1px solid var(--line); color: var(--text-faint);
+  }
+  .slide-over .panel-close:hover { background: var(--surface-3); color: var(--text); text-decoration: none; }
+  .slide-over .panel-body { padding: 22px 24px; overflow-y: auto; flex: 1; min-height: 0; }
+  .slide-over .panel-foot { padding: 16px 24px; border-top: 1px solid var(--line); flex: none; display: flex; gap: 10px; }
+  @keyframes agv-slide-in { from { transform: translateX(100%); } to { transform: translateX(0); } }
+  @keyframes agv-fade { from { opacity: 0; } to { opacity: 1; } }
+  @media (max-width: 560px) { .slide-over .panel { width: 100%; max-width: 100%; } }
+
   /* empty states */
   .empty {
     text-align: center; padding: 52px 28px; color: var(--text-faint);
