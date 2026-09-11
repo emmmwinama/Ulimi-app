@@ -23,11 +23,27 @@ use App\Support\Money;
     <?php endif; ?>
 </div>
 
-<div class="grid cols-4 mb-24">
-    <div class="stat"><div class="label">Active head</div><div class="value"><?= e((string) $stats['total_head']) ?></div></div>
-    <div class="stat"><div class="label">Production value</div><div class="value" style="font-size:1.1rem"><?= e(Money::compact($stats['production_value'])) ?></div></div>
-    <div class="stat"><div class="label">Expenses</div><div class="value" style="font-size:1.1rem"><?= e(Money::compact($stats['expenses'])) ?></div></div>
-    <div class="stat"><div class="label">Sales</div><div class="value" style="font-size:1.1rem"><?= e(Money::compact($stats['sales'])) ?></div></div>
+<div class="grid cols-4 mb-16">
+    <div class="stat">
+        <div class="icon-row"><span class="icon-box" style="background:var(--teal-pale)"><?= $this->partial('partials/icon', ['name' => 'cow', 'class' => 'ico']) ?></span></div>
+        <div class="value" style="font-size:1.4rem"><?= e((string) $stats['total_head']) ?></div>
+        <div class="label">Active head</div>
+    </div>
+    <div class="stat">
+        <div class="icon-row"><span class="icon-box" style="background:var(--blue-050);color:var(--blue)"><?= $this->partial('partials/icon', ['name' => 'trend-up', 'class' => 'ico']) ?></span></div>
+        <div class="value" style="font-size:1.4rem"><?= e(Money::compact($stats['production_value'])) ?></div>
+        <div class="label">Production value</div>
+    </div>
+    <div class="stat">
+        <div class="icon-row"><span class="icon-box" style="background:var(--red-050);color:var(--red-text)"><?= $this->partial('partials/icon', ['name' => 'trend-down', 'class' => 'ico']) ?></span></div>
+        <div class="value" style="font-size:1.4rem"><?= e(Money::compact($stats['expenses'])) ?></div>
+        <div class="label">Expenses</div>
+    </div>
+    <div class="stat">
+        <div class="icon-row"><span class="icon-box" style="background:var(--teal-pale)"><?= $this->partial('partials/icon', ['name' => 'wallet', 'class' => 'ico']) ?></span></div>
+        <div class="value" style="font-size:1.4rem"><?= e(Money::compact($stats['sales'])) ?></div>
+        <div class="label">Sales</div>
+    </div>
 </div>
 
 <div class="grid cols-2 mb-24">
