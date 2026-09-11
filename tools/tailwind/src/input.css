@@ -292,7 +292,7 @@
     font-size: .6rem; font-weight: 800; display: grid; place-items: center; line-height: 1;
   }
 
-  .content { padding: 26px 24px 56px; max-width: 1320px; }
+  .content { padding: 26px 24px 56px; max-width: 1320px; margin-inline: auto; }
   .content-narrow { max-width: 760px; }
 
   /* farm switcher + user menu */
