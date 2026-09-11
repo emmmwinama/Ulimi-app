@@ -21,7 +21,8 @@ final class InventoryRepository
     public function forFarm(string $farmId, ?string $category = null): array
     {
         $sql = 'SELECT i.*,
-                       (SELECT COALESCE(SUM(s.quantity_sold), 0) FROM inventory_sales s WHERE s.inventory_item_id = i.id) AS sold_qty
+                       (SELECT COALESCE(SUM(s.quantity_sold), 0) FROM inventory_sales s WHERE s.inventory_item_id = i.id) AS sold_qty,
+                       (SELECT COALESCE(SUM(s.total_amount), 0) FROM inventory_sales s WHERE s.inventory_item_id = i.id) AS sold_revenue
                 FROM inventory_items i WHERE i.farm_id = :fid';
         $bind = ['fid' => $farmId];
         if ($category !== null && $category !== '') {

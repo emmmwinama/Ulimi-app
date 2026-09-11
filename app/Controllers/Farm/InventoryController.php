@@ -29,13 +29,28 @@ final class InventoryController extends Controller
     {
         $ctx = FarmContext::current();
         $category = (string) $request->query('category', '');
+        $items = $this->inventory->forFarm($ctx->farmId(), $category ?: null);
+
+        $byCategory = [];
+        $totalRevenue = 0.0;
+        foreach ($this->inventory->forFarm($ctx->farmId()) as $it) {
+            $cat = (string) $it['category'];
+            $byCategory[$cat] ??= ['category' => $cat, 'count' => 0, 'total_revenue' => 0.0];
+            $byCategory[$cat]['count']++;
+            $byCategory[$cat]['total_revenue'] += (float) $it['sold_revenue'];
+            $totalRevenue += (float) $it['sold_revenue'];
+        }
+        usort($byCategory, static fn ($a, $b) => $b['count'] <=> $a['count']);
+
         return $this->view('inventory/index', [
-            'title'      => 'Inventory',
-            'active'     => 'inventory',
-            'items'      => $this->inventory->forFarm($ctx->farmId(), $category ?: null),
-            'categories' => self::CATEGORIES,
-            'category'   => $category,
-            'canManage'  => $ctx->can('inventory.manage') && !$ctx->isReadOnly(),
+            'title'        => 'Inventory',
+            'active'       => 'inventory',
+            'items'        => $items,
+            'categories'   => self::CATEGORIES,
+            'category'     => $category,
+            'canManage'    => $ctx->can('inventory.manage') && !$ctx->isReadOnly(),
+            'byCategory'   => $byCategory,
+            'totalRevenue' => $totalRevenue,
         ]);
     }
 
