@@ -18,9 +18,14 @@ use App\Controllers\Farm\FieldsController;
 use App\Controllers\Farm\FinanceController;
 use App\Controllers\Farm\InventoryController;
 use App\Controllers\Farm\LivestockController;
+use App\Controllers\Farm\DocumentsController;
 use App\Controllers\Farm\MapController;
+use App\Controllers\Farm\MarketController;
+use App\Controllers\Farm\NotificationsController;
 use App\Controllers\Farm\ReportsController;
+use App\Controllers\Farm\SettingsController;
 use App\Controllers\Farm\TeamController;
+use App\Controllers\Farm\WeatherController;
 use App\Controllers\Farm\YieldsController;
 use App\Controllers\Onboarding\FarmSetupController;
 use App\Controllers\Public\HomeController;
@@ -210,6 +215,34 @@ $router->group('/reports', $farm, static function (Router $r): void {
     $r->get('/builder', [ReportsController::class, 'builder'], ['Can:reports.view']);
     $r->get('/export/{section}', [ReportsController::class, 'exportCsv'], ['Can:reports.view']);
     $r->get('/pack/{type}', [ReportsController::class, 'pack'], ['Can:reports.view']);
+});
+
+/* ------------------------------------------------------------- documents */
+$router->group('/documents', $farm, static function (Router $r): void {
+    $r->get('', [DocumentsController::class, 'index'], ['Can:documents.view']);
+    $r->post('', [DocumentsController::class, 'store'], ['Can:documents.manage']);
+    $r->get('/{id}/download', [DocumentsController::class, 'download'], ['Can:documents.view']);
+    $r->post('/{id}/delete', [DocumentsController::class, 'destroy'], ['Can:documents.manage']);
+});
+
+/* --------------------------------------------------------------- weather */
+$router->get('/weather', [WeatherController::class, 'show'], [...$farm, 'Can:fields.view']);
+
+/* ---------------------------------------------------------------- market */
+$router->get('/market', [MarketController::class, 'index'], [...$farm, 'Can:crops.view']);
+
+/* --------------------------------------------------------- notifications */
+$router->group('/notifications', $farm, static function (Router $r): void {
+    $r->get('', [NotificationsController::class, 'index']);
+    $r->post('/{id}/read', [NotificationsController::class, 'markRead']);
+    $r->post('/read-all', [NotificationsController::class, 'markAllRead']);
+});
+
+/* -------------------------------------------------------- farm settings */
+$router->group('/settings', $farm, static function (Router $r): void {
+    $r->get('', [SettingsController::class, 'edit']);
+    $r->post('', [SettingsController::class, 'update']);
+    $r->post('/delete', [SettingsController::class, 'destroy']);
 });
 
 /* --------------------------------------------------------------- account */

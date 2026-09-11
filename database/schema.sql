@@ -408,6 +408,30 @@ CREATE TABLE IF NOT EXISTS `farm_credit_scores` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ---------------------------------------------------------------------
+-- farm_documents
+-- ---------------------------------------------------------------------
+DROP TABLE IF EXISTS `farm_documents`;
+CREATE TABLE IF NOT EXISTS `farm_documents` (
+  `id` varchar(40) NOT NULL,
+  `farm_id` varchar(40) NOT NULL,
+  `name` varchar(200) NOT NULL,
+  `type` varchar(40) NOT NULL DEFAULT 'other',
+  `asset_id` varchar(64) NOT NULL,
+  `mime_type` varchar(120) NOT NULL,
+  `size` int(11) DEFAULT NULL,
+  `linked_to` varchar(40) DEFAULT NULL,
+  `linked_type` varchar(40) DEFAULT NULL,
+  `notes` varchar(500) DEFAULT NULL,
+  `uploaded_by` varchar(40) NOT NULL,
+  `uploaded_at` datetime NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx_doc_farm` (`farm_id`),
+  KEY `fk_doc_user` (`uploaded_by`),
+  CONSTRAINT `fk_doc_farm` FOREIGN KEY (`farm_id`) REFERENCES `farms` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_doc_user` FOREIGN KEY (`uploaded_by`) REFERENCES `users` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ---------------------------------------------------------------------
 -- farm_markers
 -- ---------------------------------------------------------------------
 DROP TABLE IF EXISTS `farm_markers`;
@@ -639,6 +663,53 @@ CREATE TABLE IF NOT EXISTS `mail_queue` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ---------------------------------------------------------------------
+-- market_prices
+-- ---------------------------------------------------------------------
+DROP TABLE IF EXISTS `market_prices`;
+CREATE TABLE IF NOT EXISTS `market_prices` (
+  `id` varchar(40) NOT NULL,
+  `crop_name` varchar(120) NOT NULL,
+  `variety` varchar(120) DEFAULT NULL,
+  `unit` varchar(20) NOT NULL DEFAULT 'kg',
+  `price_min` decimal(12,2) NOT NULL DEFAULT 0.00,
+  `price_max` decimal(12,2) NOT NULL DEFAULT 0.00,
+  `price_avg` decimal(12,2) NOT NULL DEFAULT 0.00,
+  `market` varchar(120) NOT NULL DEFAULT '',
+  `region` varchar(120) NOT NULL DEFAULT '',
+  `currency` varchar(3) NOT NULL DEFAULT 'MWK',
+  `season` varchar(60) DEFAULT NULL,
+  `recorded_at` datetime NOT NULL,
+  `source` varchar(60) NOT NULL DEFAULT 'ADMARC',
+  `is_active` tinyint(1) NOT NULL DEFAULT 1,
+  PRIMARY KEY (`id`),
+  KEY `idx_mp_crop` (`crop_name`,`is_active`),
+  KEY `idx_mp_recorded` (`recorded_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ---------------------------------------------------------------------
+-- notifications
+-- ---------------------------------------------------------------------
+DROP TABLE IF EXISTS `notifications`;
+CREATE TABLE IF NOT EXISTS `notifications` (
+  `id` varchar(40) NOT NULL,
+  `user_id` varchar(40) NOT NULL,
+  `farm_id` varchar(40) NOT NULL,
+  `type` varchar(40) NOT NULL,
+  `dedupe_key` varchar(160) NOT NULL,
+  `title` varchar(160) NOT NULL,
+  `message` varchar(500) NOT NULL,
+  `is_read` tinyint(1) NOT NULL DEFAULT 0,
+  `link` varchar(255) DEFAULT NULL,
+  `created_at` datetime NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uniq_notif_dedupe` (`user_id`,`dedupe_key`),
+  KEY `idx_notif_user` (`user_id`,`is_read`,`created_at`),
+  KEY `fk_notif_farm` (`farm_id`),
+  CONSTRAINT `fk_notif_farm` FOREIGN KEY (`farm_id`) REFERENCES `farms` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_notif_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ---------------------------------------------------------------------
 -- overhead_expenses
 -- ---------------------------------------------------------------------
 DROP TABLE IF EXISTS `overhead_expenses`;
@@ -854,6 +925,20 @@ CREATE TABLE IF NOT EXISTS `users` (
   `updated_at` datetime NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `uniq_users_email` (`email`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ---------------------------------------------------------------------
+-- weather_cache
+-- ---------------------------------------------------------------------
+DROP TABLE IF EXISTS `weather_cache`;
+CREATE TABLE IF NOT EXISTS `weather_cache` (
+  `id` varchar(40) NOT NULL,
+  `farm_id` varchar(40) NOT NULL,
+  `data` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL CHECK (json_valid(`data`)),
+  `cached_at` datetime NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uniq_weather_farm` (`farm_id`),
+  CONSTRAINT `fk_weather_farm` FOREIGN KEY (`farm_id`) REFERENCES `farms` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ---------------------------------------------------------------------
