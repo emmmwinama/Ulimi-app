@@ -13,10 +13,12 @@ use App\Core\Flash;
 use App\Core\Request;
 use App\Core\Response;
 use App\Repositories\CropFieldRepository;
+use App\Repositories\FieldRepository;
 use App\Services\Ai;
 use App\Services\CreditScore;
 use App\Services\FinanceSummary;
 use App\Services\ReportBuilder;
+use App\Services\ReportsAnalytics;
 use App\Services\Traceability;
 
 final class ReportsController extends Controller
@@ -29,12 +31,19 @@ final class ReportsController extends Controller
         'insurance' => ['label' => 'Insurance file', 'sections' => ['fields', 'crops', 'activities', 'livestock']],
     ];
 
+    private const DASHBOARD_TABS = [
+        'overview', 'crops', 'finance', 'analytics', 'yields',
+        'overhead', 'trends', 'performance', 'breakeven', 'comparison',
+    ];
+
     public function __construct(
         private readonly ReportBuilder $builder = new ReportBuilder(),
         private readonly CropFieldRepository $crops = new CropFieldRepository(),
+        private readonly FieldRepository $fields = new FieldRepository(),
         private readonly CreditScore $creditScore = new CreditScore(),
         private readonly Traceability $traceability = new Traceability(),
         private readonly FinanceSummary $finance = new FinanceSummary(),
+        private readonly ReportsAnalytics $analytics = new ReportsAnalytics(),
         private readonly Ai $ai = new Ai(),
     ) {
     }
@@ -44,6 +53,36 @@ final class ReportsController extends Controller
         $ctx = FarmContext::current();
         $farmId = $ctx->farmId();
         $db = Database::instance();
+
+        $tab = (string) $request->query('tab', 'overview');
+        if (!in_array($tab, self::DASHBOARD_TABS, true)) {
+            $tab = 'overview';
+        }
+
+        $filters = [
+            'season'        => (string) $request->query('season', ''),
+            'archived'      => (string) $request->query('archived', 'active'),
+            'field_id'      => (string) $request->query('field_id', ''),
+            'crop_field_id' => (string) $request->query('crop_field_id', ''),
+            'from'          => (string) $request->query('from', ''),
+            'to'            => (string) $request->query('to', ''),
+        ];
+        if (!in_array($filters['archived'], ['active', 'archived', 'both'], true)) {
+            $filters['archived'] = 'active';
+        }
+
+        $dashboard = $this->analytics->build($farmId, $filters);
+
+        $allSeasons = $dashboard['trends']['season_summaries'];
+        $compareA = (string) $request->query('compare_a', '');
+        $compareB = (string) $request->query('compare_b', '');
+        $seasonKeys = array_keys($allSeasons);
+        if ($compareA === '' || !isset($allSeasons[$compareA])) {
+            $compareA = $seasonKeys !== [] ? $seasonKeys[count($seasonKeys) - 1] : '';
+        }
+        if ($compareB === '' && count($seasonKeys) >= 2) {
+            $compareB = $seasonKeys[count($seasonKeys) - 2];
+        }
 
         $totals = $this->finance->totals($farmId);
         $trend = $this->finance->monthlyTrend($farmId);
@@ -110,8 +149,18 @@ final class ReportsController extends Controller
         );
 
         return $this->view('reports/index', [
-            'title'    => 'Reports',
-            'active'   => 'reports',
+            'title'      => 'Reports',
+            'active'     => 'reports',
+            'tab'        => $tab,
+            'filters'    => $filters,
+            'dashboard'  => $dashboard,
+            'compareA'   => $compareA,
+            'compareB'   => $compareB,
+            'filterFields' => $this->fields->forFarm($farmId),
+            'filterCrops'  => array_merge(
+                $this->crops->forFarm($farmId, ['archived' => false]),
+                $this->crops->forFarm($farmId, ['archived' => true]),
+            ),
             'packs'    => self::PACKS,
             'canBuild' => $ctx->feature('custom_reports'),
             'totals'   => $totals,

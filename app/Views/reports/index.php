@@ -8,15 +8,43 @@
  * @var list<array{name:string,net:float}> $seasons
  * @var list<array{name:string,area:float}> $crops
  * @var string|null $insight
+ * @var string $tab
+ * @var array{season:string,archived:string,field_id:string,crop_field_id:string,from:string,to:string} $filters
+ * @var array<string,mixed> $dashboard
+ * @var string $compareA
+ * @var string $compareB
+ * @var array<int,array<string,mixed>> $filterFields
+ * @var array<int,array<string,mixed>> $filterCrops
  */
 $this->layout('layouts/app');
 use App\Support\Money;
+
+$tabUrl = static function (string $t) use ($filters, $compareA, $compareB) {
+    $q = array_filter(array_merge($filters, ['tab' => $t, 'compare_a' => $compareA, 'compare_b' => $compareB]), static fn ($v) => $v !== '');
+    return url('reports') . '?' . http_build_query($q);
+};
+
+$tabs = [
+    'overview'    => 'Overview',
+    'crops'       => 'Crop summary',
+    'finance'     => 'Financials',
+    'analytics'   => 'Analytics',
+    'yields'      => 'Yields',
+    'overhead'    => 'Overhead',
+    'trends'      => 'Yield trends',
+    'performance' => 'Crop performance',
+    'breakeven'   => 'Break-even',
+    'comparison'  => 'Season compare',
+];
+
+$hasActiveFilters = $filters['season'] !== '' || $filters['archived'] !== 'active' || $filters['field_id'] !== ''
+    || $filters['crop_field_id'] !== '' || $filters['from'] !== '' || $filters['to'] !== '';
 ?>
 <?php $this->start('content'); ?>
 <div class="page-head">
     <div>
         <h1 class="h1">Reports</h1>
-        <p class="lede">Evidence packs, trends, compliance and credit-readiness — built from your real records.</p>
+        <p class="lede">Costs from activities · overhead allocated by area · revenue from sales.</p>
     </div>
 </div>
 
@@ -30,140 +58,66 @@ use App\Support\Money;
     </div>
 <?php endif; ?>
 
-<div class="grid cols-4 mb-16px">
-    <div class="stat">
-        <div class="icon-row"><span class="icon-box" style="background:var(--teal-pale)"><?= $this->partial('partials/icon', ['name' => 'trend-up', 'class' => 'ico']) ?></span></div>
-        <div class="value" style="font-size:1.3rem;color:var(--teal)"><?= e(Money::compact($totals['income'])) ?></div>
-        <div class="label">Income</div>
-    </div>
-    <div class="stat">
-        <div class="icon-row"><span class="icon-box" style="background:var(--red-050);color:var(--red-text)"><?= $this->partial('partials/icon', ['name' => 'trend-down', 'class' => 'ico']) ?></span></div>
-        <div class="value" style="font-size:1.3rem"><?= e(Money::compact($totals['total_cost'])) ?></div>
-        <div class="label">Total cost</div>
-    </div>
-    <div class="stat">
-        <div class="icon-row">
-            <span class="icon-box" style="background:<?= $totals['net'] >= 0 ? 'var(--teal-pale)' : 'var(--red-050)' ?>;color:<?= $totals['net'] >= 0 ? 'var(--teal)' : 'var(--red-text)' ?>">
-                <?= $this->partial('partials/icon', ['name' => $totals['net'] >= 0 ? 'trend-up' : 'trend-down', 'class' => 'ico']) ?>
-            </span>
-        </div>
-        <div class="value" style="font-size:1.3rem;color:<?= $totals['net'] >= 0 ? 'var(--teal)' : 'var(--red)' ?>"><?= e(Money::compact($totals['net'])) ?></div>
-        <div class="label">Net margin</div>
-    </div>
-    <div class="stat">
-        <div class="icon-row"><span class="icon-box" style="background:var(--blue-050);color:var(--blue)"><?= $this->partial('partials/icon', ['name' => 'wheat', 'class' => 'ico']) ?></span></div>
-        <div class="value" style="font-size:1.3rem"><?= e(number_format($yieldKg)) ?> kg</div>
-        <div class="label">Total yield</div>
-    </div>
-</div>
-
-<div class="card mb-16px">
-    <div class="card-head"><h2 class="h2">Income vs cost — trailing 12 months</h2></div>
-    <div class="card-body">
-        <?= $this->partial('partials/barchart', ['series' => $trend]) ?>
-    </div>
-</div>
-
-<?php if ($seasons !== [] || $crops !== []): ?>
-<div class="grid cols-2 mb-16px">
-    <div class="card"><div class="card-body">
-        <p class="eyebrow mb-16px">Season profitability</p>
-        <?php if ($seasons === []): ?>
-            <p class="small muted">No seasonal transactions recorded yet.</p>
-        <?php else: ?>
-            <div class="stack" style="--stack-gap:10px">
-                <?php
-                $maxSeason = max(array_map(static fn ($s) => abs($s['net']), $seasons) ?: [1]) ?: 1;
-                foreach ($seasons as $s):
-                    $width = max(6, (int) round(abs($s['net']) / $maxSeason * 100));
-                    $positive = $s['net'] >= 0;
-                ?>
-                    <div>
-                        <div class="spread small" style="font-weight:700;color:var(--text-soft);margin-bottom:4px">
-                            <span><?= e($s['name']) ?></span>
-                            <span style="color:<?= $positive ? 'var(--teal)' : 'var(--red)' ?>"><?= $positive ? '+' : '-' ?><?= e(Money::format(abs($s['net']))) ?></span>
-                        </div>
-                        <div style="height:10px;background:var(--surface-3);border-radius:999px;overflow:hidden">
-                            <div style="height:100%;width:<?= $width ?>%;background:<?= $positive ? 'var(--teal)' : 'var(--red)' ?>;border-radius:999px"></div>
-                        </div>
-                    </div>
-                <?php endforeach; ?>
-            </div>
-        <?php endif; ?>
-    </div></div>
-
-    <div class="card"><div class="card-body">
-        <p class="eyebrow mb-16px">Crop area mix</p>
-        <?php if ($crops === []): ?>
-            <p class="small muted">No crops planted yet.</p>
-        <?php else: ?>
-            <div class="stack" style="--stack-gap:10px">
-                <?php
-                $maxArea = max(array_map(static fn ($c) => (float) $c['area'], $crops) ?: [1]) ?: 1;
-                foreach ($crops as $c):
-                    $width = max(6, (int) round((float) $c['area'] / $maxArea * 100));
-                ?>
-                    <div>
-                        <div class="spread small" style="font-weight:700;color:var(--text-soft);margin-bottom:4px">
-                            <span><?= e((string) $c['name']) ?></span>
-                            <span><?= e(number_format((float) $c['area'], 1)) ?> ha</span>
-                        </div>
-                        <div style="height:10px;background:var(--surface-3);border-radius:999px;overflow:hidden">
-                            <div style="height:100%;width:<?= $width ?>%;background:var(--blue);border-radius:999px"></div>
-                        </div>
-                    </div>
-                <?php endforeach; ?>
-            </div>
-        <?php endif; ?>
-    </div></div>
-</div>
-<?php endif; ?>
-
-<div class="grid cols-2 mb-24px">
-    <div class="card">
-        <div class="card-head"><h2 class="h2">Record packs</h2></div>
-        <div class="card-body">
-            <p class="small muted mb-16px">Curated, printable evidence for a specific audience. Open one, filter by season, then use your browser’s Print to save as PDF.</p>
-            <div class="grid cols-2" style="gap:10px">
-                <?php foreach ($packs as $key => $p): ?>
-                    <a href="<?= e(url('reports/pack/' . $key)) ?>" class="row" style="gap:10px;padding:12px 14px;border-radius:16px;background:var(--surface-2);border:1px solid var(--line)">
-                        <span style="width:32px;height:32px;border-radius:10px;background:var(--teal-pale);color:var(--teal);display:grid;place-items:center;flex:none">
-                            <?= $this->partial('partials/icon', ['name' => 'file-text', 'class' => 'ico ico-sm']) ?>
-                        </span>
-                        <span class="small" style="font-weight:800;color:var(--text)"><?= e($p['label']) ?></span>
-                    </a>
-                <?php endforeach; ?>
-            </div>
-        </div>
-    </div>
-
-    <div class="card">
-        <div class="card-head"><h2 class="h2">Analytics</h2></div>
-        <div class="card-body stack">
-            <?php
-            $analytics = [
-                ['href' => url('reports/trends'), 'icon' => 'bar-chart', 'label' => 'Cashflow trends'],
-                ['href' => url('reports/compliance'), 'icon' => 'check-circle', 'label' => 'Compliance checklist'],
-                ['href' => url('reports/credit-score'), 'icon' => 'trend-up', 'label' => 'Credit readiness score'],
-            ];
-            foreach ($analytics as $a):
-            ?>
-                <a href="<?= e($a['href']) ?>" class="row" style="gap:10px;padding:12px 14px;border-radius:16px;background:var(--surface-2);border:1px solid var(--line)">
-                    <span style="width:32px;height:32px;border-radius:10px;background:var(--blue-050);color:#1E40AF;display:grid;place-items:center;flex:none">
-                        <?= $this->partial('partials/icon', ['name' => $a['icon'], 'class' => 'ico ico-sm']) ?>
-                    </span>
-                    <span class="small" style="font-weight:800;color:var(--text)"><?= e($a['label']) ?></span>
-                </a>
+<form method="get" action="<?= e(url('reports')) ?>" class="row wrap mb-16px" style="gap:10px;align-items:flex-end">
+    <input type="hidden" name="tab" value="<?= e($tab) ?>">
+    <div>
+        <label class="hint" style="display:block;margin-bottom:4px">Season</label>
+        <select class="select" name="season" onchange="this.form.submit()" style="max-width:220px">
+            <option value="">All seasons</option>
+            <?php foreach ($dashboard['all_seasons'] as $s): ?>
+                <option value="<?= e($s) ?>" <?= $filters['season'] === $s ? 'selected' : '' ?>><?= e($s) ?></option>
             <?php endforeach; ?>
-            <?php if ($canBuild): ?>
-                <a class="btn block mt-8px" href="<?= e(url('reports/builder')) ?>">
-                    <?= $this->partial('partials/icon', ['name' => 'plus', 'class' => 'ico']) ?> Custom report builder
-                </a>
-            <?php else: ?>
-                <div class="alert info"><?= $this->partial('partials/icon', ['name' => 'info', 'class' => 'ico']) ?>
-                    <div>Custom reports aren’t included in your current plan.</div></div>
-            <?php endif; ?>
-        </div>
+        </select>
     </div>
+    <div>
+        <label class="hint" style="display:block;margin-bottom:4px">Records</label>
+        <select class="select" name="archived" onchange="this.form.submit()" style="max-width:160px">
+            <option value="active" <?= $filters['archived'] === 'active' ? 'selected' : '' ?>>Active</option>
+            <option value="archived" <?= $filters['archived'] === 'archived' ? 'selected' : '' ?>>Archived</option>
+            <option value="both" <?= $filters['archived'] === 'both' ? 'selected' : '' ?>>Both</option>
+        </select>
+    </div>
+    <div>
+        <label class="hint" style="display:block;margin-bottom:4px">Field</label>
+        <select class="select" name="field_id" onchange="this.form.submit()" style="max-width:200px">
+            <option value="">All fields</option>
+            <?php foreach ($filterFields as $f): ?>
+                <option value="<?= e((string) $f['id']) ?>" <?= $filters['field_id'] === (string) $f['id'] ? 'selected' : '' ?>><?= e((string) $f['name']) ?></option>
+            <?php endforeach; ?>
+        </select>
+    </div>
+    <div>
+        <label class="hint" style="display:block;margin-bottom:4px">Crop</label>
+        <select class="select" name="crop_field_id" onchange="this.form.submit()" style="max-width:220px">
+            <option value="">All crops</option>
+            <?php foreach ($filterCrops as $c): ?>
+                <?php if ($filters['field_id'] !== '' && (string) $c['field_id'] !== $filters['field_id']) continue; ?>
+                <option value="<?= e((string) $c['id']) ?>" <?= $filters['crop_field_id'] === (string) $c['id'] ? 'selected' : '' ?>>
+                    <?= e((string) $c['crop_name']) ?><?= $c['variety'] ? ' ' . e((string) $c['variety']) : '' ?> — <?= e((string) $c['field_name']) ?>
+                </option>
+            <?php endforeach; ?>
+        </select>
+    </div>
+    <div>
+        <label class="hint" style="display:block;margin-bottom:4px">From</label>
+        <input class="input" type="date" name="from" value="<?= e($filters['from']) ?>" style="max-width:160px">
+    </div>
+    <div>
+        <label class="hint" style="display:block;margin-bottom:4px">To</label>
+        <input class="input" type="date" name="to" value="<?= e($filters['to']) ?>" style="max-width:160px">
+    </div>
+    <button class="btn secondary sm" type="submit">Filter</button>
+    <?php if ($hasActiveFilters): ?><a class="btn ghost sm" href="<?= e(url('reports') . '?tab=' . e($tab)) ?>">Clear filters</a><?php endif; ?>
+</form>
+
+<div class="tabs mb-16px">
+    <?php foreach ($tabs as $key => $label): ?>
+        <a class="tab <?= $tab === $key ? 'active' : '' ?>" href="<?= e($tabUrl($key)) ?>"><?= e($label) ?></a>
+    <?php endforeach; ?>
 </div>
+
+<?= $this->partial('partials/reports/tabs/' . $tab, [
+    'dashboard' => $dashboard, 'compareA' => $compareA, 'compareB' => $compareB,
+    'packs' => $packs, 'canBuild' => $canBuild, 'filters' => $filters,
+]) ?>
 <?php $this->stop(); ?>

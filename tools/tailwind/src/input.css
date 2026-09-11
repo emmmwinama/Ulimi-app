@@ -507,6 +507,16 @@
   .badge.amber { background: var(--amber-050); color: var(--amber); }
   .badge.red   { background: var(--red-050); color: var(--red-text); }
 
+  /* tab bar (reports dashboard) */
+  .tabs { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; }
+  .tab {
+    flex: none; height: 40px; padding: 0 18px; border-radius: 12px;
+    font-size: .875rem; font-weight: 800; white-space: nowrap;
+    background: var(--surface); color: var(--text-soft); border: 1.5px solid var(--line);
+  }
+  .tab:hover { background: var(--surface-2); text-decoration: none; }
+  .tab.active { background: var(--teal); color: #fff; border-color: transparent; }
+
   /* tables */
   .table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: var(--radius-lg); background: var(--surface); }
   table.data { width: 100%; border-collapse: collapse; font-size: .865rem; }
