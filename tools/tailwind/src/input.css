@@ -405,6 +405,7 @@
   .card > .card-head {
     padding: 16px 20px; border-bottom: 1px solid var(--line);
     display: flex; justify-content: space-between; align-items: center; gap: 12px;
+    background: var(--surface-2); border-radius: var(--radius-lg) var(--radius-lg) 0 0;
   }
   .card > .card-body { padding: 20px; }
   .card > .card-foot { padding: 14px 20px; border-top: 1px solid var(--line); background: var(--surface-2); border-radius: 0 0 var(--radius-lg) var(--radius-lg); }
