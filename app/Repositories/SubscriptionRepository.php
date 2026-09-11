@@ -94,4 +94,95 @@ final class SubscriptionRepository
             'updated_at' => Dates::nowUtc(),
         ], ['id' => $id]);
     }
+
+    /* ------------------------------------------------------------- admin */
+
+    /** @return array<int,array<string,mixed>> */
+    public function allWithUser(string $status = ''): array
+    {
+        $sql = 'SELECT s.*, u.name AS user_name, u.email AS user_email, t.name AS tier_name, t.price_monthly
+                FROM subscriptions s
+                JOIN users u ON u.id = s.user_id
+                JOIN subscription_tiers t ON t.id = s.tier_id';
+        $bind = [];
+        if ($status !== '') {
+            $sql .= ' WHERE s.status = :status';
+            $bind['status'] = $status;
+        }
+        $sql .= ' ORDER BY s.created_at DESC LIMIT 200';
+        return $this->db->select($sql, $bind);
+    }
+
+    /** @return array<string,mixed>|null */
+    public function find(string $id): ?array
+    {
+        return $this->db->selectOne(
+            'SELECT s.*, u.name AS user_name, u.email AS user_email, t.name AS tier_name
+             FROM subscriptions s
+             JOIN users u ON u.id = s.user_id
+             JOIN subscription_tiers t ON t.id = s.tier_id
+             WHERE s.id = :id LIMIT 1',
+            ['id' => $id],
+        );
+    }
+
+    /** @return array<int,array<string,mixed>> all tiers, active or not, for an admin picker */
+    public function allTiers(): array
+    {
+        return $this->db->select('SELECT * FROM subscription_tiers ORDER BY sort_order ASC, price_monthly ASC');
+    }
+
+    public function changeTier(string $id, string $tierId): void
+    {
+        $this->db->update('subscriptions', ['tier_id' => $tierId, 'updated_at' => Dates::nowUtc()], ['id' => $id]);
+    }
+
+    public function extendEndDate(string $id, string $endDate): void
+    {
+        $this->db->update('subscriptions', ['end_date' => $endDate, 'updated_at' => Dates::nowUtc()], ['id' => $id]);
+    }
+
+    public function counts(): array
+    {
+        $rows = $this->db->select('SELECT status, COUNT(*) AS n FROM subscriptions GROUP BY status');
+        $out = [];
+        foreach ($rows as $r) {
+            $out[(string) $r['status']] = (int) $r['n'];
+        }
+        return $out;
+    }
+
+    /* --------------------------------------------------------- tier admin */
+
+    /** @return array<string,mixed>|null */
+    public function findTier(string $id): ?array
+    {
+        return $this->db->selectOne('SELECT * FROM subscription_tiers WHERE id = :id LIMIT 1', ['id' => $id]);
+    }
+
+    public function tierInUse(string $id): bool
+    {
+        return $this->db->scalar('SELECT 1 FROM subscriptions WHERE tier_id = :id LIMIT 1', ['id' => $id]) !== false;
+    }
+
+    /** @param array<string,mixed> $data */
+    public function createTier(array $data): string
+    {
+        $id = Ulid::generate();
+        $data['id'] = $id;
+        $data['created_at'] = Dates::nowUtc();
+        $this->db->insert('subscription_tiers', $data);
+        return $id;
+    }
+
+    /** @param array<string,mixed> $data */
+    public function updateTier(string $id, array $data): void
+    {
+        $this->db->update('subscription_tiers', $data, ['id' => $id]);
+    }
+
+    public function deleteTier(string $id): int
+    {
+        return $this->db->delete('subscription_tiers', ['id' => $id]);
+    }
 }

@@ -4,7 +4,13 @@ declare(strict_types=1);
 
 use App\Controllers\Account\ProfileController;
 use App\Controllers\Admin\AdminAuthController;
+use App\Controllers\Admin\AdminCmsController;
 use App\Controllers\Admin\AdminDashboardController;
+use App\Controllers\Admin\AdminInquiriesController;
+use App\Controllers\Admin\AdminMarketController;
+use App\Controllers\Admin\AdminSubscriptionsController;
+use App\Controllers\Admin\AdminTiersController;
+use App\Controllers\Admin\AdminUsersController;
 use App\Controllers\Auth\ActivationController;
 use App\Controllers\Auth\LoginController;
 use App\Controllers\Auth\PasswordResetController;
@@ -91,7 +97,7 @@ $router->post('/farm/switch', [FarmSwitchController::class, 'switch'], $farm);
 $router->group('/fields', $farm, static function (Router $r): void {
     $r->get('', [FieldsController::class, 'index'], ['Can:fields.view']);
     $r->get('/create', [FieldsController::class, 'create'], ['Can:fields.manage']);
-    $r->post('', [FieldsController::class, 'store'], ['Can:fields.manage']);
+    $r->post('', [FieldsController::class, 'store'], ['Can:fields.manage', 'SubscriptionLimit:fields']);
     $r->get('/{id}/edit', [FieldsController::class, 'edit'], ['Can:fields.manage']);
     $r->put('/{id}', [FieldsController::class, 'update'], ['Can:fields.manage']);
     $r->post('/{id}/delete', [FieldsController::class, 'destroy'], ['Can:fields.manage']);
@@ -114,7 +120,7 @@ $router->group('', $farm, static function (Router $r): void {
 $router->group('/crops', $farm, static function (Router $r): void {
     $r->get('', [CropsController::class, 'index'], ['Can:crops.view']);
     $r->get('/create', [CropsController::class, 'create'], ['Can:crops.manage']);
-    $r->post('', [CropsController::class, 'store'], ['Can:crops.manage']);
+    $r->post('', [CropsController::class, 'store'], ['Can:crops.manage', 'SubscriptionLimit:crops']);
     $r->get('/{id}', [CropsController::class, 'show'], ['Can:crops.view']);
     $r->get('/{id}/edit', [CropsController::class, 'edit'], ['Can:crops.manage']);
     $r->put('/{id}', [CropsController::class, 'update'], ['Can:crops.manage']);
@@ -125,6 +131,8 @@ $router->group('/crops', $farm, static function (Router $r): void {
 /* ------------------------------------------------------------------ team */
 $router->group('/team', $farm, static function (Router $r): void {
     $r->get('', [TeamController::class, 'index'], ['Can:team.view']);
+    // Team-size limit is enforced in TeamController::invite itself (friendlier
+    // flash-message UX than the generic middleware 403 page).
     $r->post('/invite', [TeamController::class, 'invite'], ['Can:team.manage']);
     $r->post('/{memberId}/role', [TeamController::class, 'updateRole'], ['Can:team.manage']);
     $r->post('/{memberId}/remove', [TeamController::class, 'remove'], ['Can:team.manage']);
@@ -134,7 +142,7 @@ $router->group('/team', $farm, static function (Router $r): void {
 $router->group('/activities', $farm, static function (Router $r): void {
     $r->get('', [ActivitiesController::class, 'index'], ['Can:activities.view']);
     $r->get('/create', [ActivitiesController::class, 'create'], ['Can:activities.manage']);
-    $r->post('', [ActivitiesController::class, 'store'], ['Can:activities.manage']);
+    $r->post('', [ActivitiesController::class, 'store'], ['Can:activities.manage', 'SubscriptionLimit:activities']);
     $r->get('/{id}', [ActivitiesController::class, 'show'], ['Can:activities.view']);
     $r->get('/{id}/edit', [ActivitiesController::class, 'edit'], ['Can:activities.manage']);
     $r->put('/{id}', [ActivitiesController::class, 'update'], ['Can:activities.manage']);
@@ -145,7 +153,7 @@ $router->group('/activities', $farm, static function (Router $r): void {
 $router->group('/employees', $farm, static function (Router $r): void {
     $r->get('', [EmployeesController::class, 'index'], ['Can:employees.view']);
     $r->get('/create', [EmployeesController::class, 'create'], ['Can:employees.manage']);
-    $r->post('', [EmployeesController::class, 'store'], ['Can:employees.manage']);
+    $r->post('', [EmployeesController::class, 'store'], ['Can:employees.manage', 'SubscriptionLimit:employees']);
     $r->get('/{id}/edit', [EmployeesController::class, 'edit'], ['Can:employees.manage']);
     $r->put('/{id}', [EmployeesController::class, 'update'], ['Can:employees.manage']);
     $r->post('/{id}/delete', [EmployeesController::class, 'destroy'], ['Can:employees.manage']);
@@ -166,7 +174,7 @@ $router->group('/finance', $farm, static function (Router $r): void {
     $r->get('', [FinanceController::class, 'overview'], ['Can:finance.view']);
     $r->get('/transactions', [FinanceController::class, 'transactions'], ['Can:finance.view']);
     $r->get('/transactions/create', [FinanceController::class, 'createTransaction'], ['Can:finance.manage']);
-    $r->post('/transactions', [FinanceController::class, 'storeTransaction'], ['Can:finance.manage']);
+    $r->post('/transactions', [FinanceController::class, 'storeTransaction'], ['Can:finance.manage', 'SubscriptionLimit:finance']);
     $r->get('/transactions/{id}/edit', [FinanceController::class, 'editTransaction'], ['Can:finance.manage']);
     $r->put('/transactions/{id}', [FinanceController::class, 'updateTransaction'], ['Can:finance.manage']);
     $r->post('/transactions/{id}/delete', [FinanceController::class, 'destroyTransaction'], ['Can:finance.manage']);
@@ -258,7 +266,45 @@ $router->group('/admin', ['SecurityHeaders', 'VerifyCsrf'], static function (Rou
     $r->post('/login', [AdminAuthController::class, 'login'], ['Throttle:login']);
     $r->post('/logout', [AdminAuthController::class, 'logout'], ['AuthenticateAdmin']);
 
-    $r->get('', [AdminDashboardController::class, 'index'], ['AuthenticateAdmin']);
+    $r->group('', ['AuthenticateAdmin'], static function (Router $r): void {
+        $r->get('', [AdminDashboardController::class, 'index']);
+
+        $r->get('/users', [AdminUsersController::class, 'index']);
+        $r->get('/users/{id}', [AdminUsersController::class, 'show']);
+        $r->post('/users/{id}/toggle-active', [AdminUsersController::class, 'toggleActive']);
+
+        $r->get('/subscriptions', [AdminSubscriptionsController::class, 'index']);
+        $r->get('/subscriptions/{id}', [AdminSubscriptionsController::class, 'show']);
+        $r->post('/subscriptions/{id}/status', [AdminSubscriptionsController::class, 'updateStatus']);
+        $r->post('/subscriptions/{id}/tier', [AdminSubscriptionsController::class, 'changeTier']);
+        $r->post('/subscriptions/{id}/extend', [AdminSubscriptionsController::class, 'extend']);
+        $r->post('/subscriptions/{id}/payments', [AdminSubscriptionsController::class, 'recordPayment']);
+
+        $r->get('/tiers', [AdminTiersController::class, 'index']);
+        $r->get('/tiers/create', [AdminTiersController::class, 'create']);
+        $r->post('/tiers', [AdminTiersController::class, 'store']);
+        $r->get('/tiers/{id}/edit', [AdminTiersController::class, 'edit']);
+        $r->put('/tiers/{id}', [AdminTiersController::class, 'update']);
+        $r->post('/tiers/{id}/delete', [AdminTiersController::class, 'destroy']);
+
+        $r->get('/market', [AdminMarketController::class, 'index']);
+        $r->post('/market', [AdminMarketController::class, 'store']);
+        $r->put('/market/{id}', [AdminMarketController::class, 'update']);
+        $r->post('/market/{id}/delete', [AdminMarketController::class, 'destroy']);
+
+        $r->get('/cms', [AdminCmsController::class, 'index']);
+        $r->post('/cms/content/{key}', [AdminCmsController::class, 'updateContent']);
+        $r->post('/cms/pages', [AdminCmsController::class, 'savePage']);
+        $r->post('/cms/pages/{id}/delete', [AdminCmsController::class, 'deletePage']);
+        $r->post('/cms/features', [AdminCmsController::class, 'saveFeature']);
+        $r->post('/cms/features/{id}/delete', [AdminCmsController::class, 'deleteFeature']);
+        $r->post('/cms/testimonials', [AdminCmsController::class, 'saveTestimonial']);
+        $r->post('/cms/testimonials/{id}/delete', [AdminCmsController::class, 'deleteTestimonial']);
+
+        $r->get('/inquiries', [AdminInquiriesController::class, 'index']);
+        $r->post('/inquiries/contact/{id}/status', [AdminInquiriesController::class, 'updateContactStatus']);
+        $r->post('/inquiries/demo/{id}/status', [AdminInquiriesController::class, 'updateDemoStatus']);
+    });
 });
 
 /* --------------------------------------------------- public CMS-ish pages */

@@ -112,7 +112,7 @@ runtime is available in the build environment. ID columns are `VARCHAR(40)`
 - Seasonal templates (activity / payroll / sales) by crop
 - Settings (farm, account, password, danger zone)
 
-## Phase 9 — Admin Back Office  ☐
+## Phase 9 — Admin Back Office  ☑
 - Schema `011_cms`: `site_content`, `cms_pages`, `cms_features`, `cms_media`,
   `testimonials`, `contact_submissions`, `demo_bookings`
 - Admin: users (+ activation), tiers, subscriptions (+ lazy auto-expiry),

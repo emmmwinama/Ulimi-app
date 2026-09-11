@@ -272,6 +272,67 @@ CREATE TABLE IF NOT EXISTS `auth_tokens` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ---------------------------------------------------------------------
+-- cms_features
+-- ---------------------------------------------------------------------
+DROP TABLE IF EXISTS `cms_features`;
+CREATE TABLE IF NOT EXISTS `cms_features` (
+  `id` varchar(40) NOT NULL,
+  `icon` varchar(40) NOT NULL DEFAULT 'leaf',
+  `title` varchar(160) NOT NULL,
+  `description` text NOT NULL,
+  `sort_order` int(11) NOT NULL DEFAULT 0,
+  `is_active` tinyint(1) NOT NULL DEFAULT 1,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ---------------------------------------------------------------------
+-- cms_media
+-- ---------------------------------------------------------------------
+DROP TABLE IF EXISTS `cms_media`;
+CREATE TABLE IF NOT EXISTS `cms_media` (
+  `id` varchar(40) NOT NULL,
+  `key` varchar(80) NOT NULL,
+  `url` varchar(500) NOT NULL,
+  `type` varchar(20) NOT NULL DEFAULT 'image',
+  `label` varchar(160) NOT NULL DEFAULT '',
+  `updated_at` datetime NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uniq_cms_media_key` (`key`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ---------------------------------------------------------------------
+-- cms_pages
+-- ---------------------------------------------------------------------
+DROP TABLE IF EXISTS `cms_pages`;
+CREATE TABLE IF NOT EXISTS `cms_pages` (
+  `id` varchar(40) NOT NULL,
+  `slug` varchar(80) NOT NULL,
+  `title` varchar(160) NOT NULL,
+  `content` longtext NOT NULL,
+  `is_public` tinyint(1) NOT NULL DEFAULT 1,
+  `updated_at` datetime NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uniq_cms_pages_slug` (`slug`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ---------------------------------------------------------------------
+-- contact_submissions
+-- ---------------------------------------------------------------------
+DROP TABLE IF EXISTS `contact_submissions`;
+CREATE TABLE IF NOT EXISTS `contact_submissions` (
+  `id` varchar(40) NOT NULL,
+  `name` varchar(160) NOT NULL,
+  `email` varchar(190) NOT NULL,
+  `message` text NOT NULL,
+  `status` varchar(20) NOT NULL DEFAULT 'new',
+  `notes` text DEFAULT NULL,
+  `created_at` datetime NOT NULL,
+  `replied_at` datetime DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx_contact_status` (`status`,`created_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ---------------------------------------------------------------------
 -- crop_fields
 -- ---------------------------------------------------------------------
 DROP TABLE IF EXISTS `crop_fields`;
@@ -316,6 +377,24 @@ CREATE TABLE IF NOT EXISTS `crop_types` (
   UNIQUE KEY `uniq_crop_types_scope_name` (`farm_id`,`name`),
   KEY `idx_crop_types_farm` (`farm_id`),
   CONSTRAINT `fk_crop_types_farm` FOREIGN KEY (`farm_id`) REFERENCES `farms` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ---------------------------------------------------------------------
+-- demo_bookings
+-- ---------------------------------------------------------------------
+DROP TABLE IF EXISTS `demo_bookings`;
+CREATE TABLE IF NOT EXISTS `demo_bookings` (
+  `id` varchar(40) NOT NULL,
+  `name` varchar(160) NOT NULL,
+  `email` varchar(190) NOT NULL,
+  `farm` varchar(160) NOT NULL DEFAULT '',
+  `message` text DEFAULT NULL,
+  `status` varchar(20) NOT NULL DEFAULT 'pending',
+  `notes` text DEFAULT NULL,
+  `booked_for` datetime DEFAULT NULL,
+  `created_at` datetime NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx_demo_status` (`status`,`created_at`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ---------------------------------------------------------------------
@@ -802,6 +881,21 @@ CREATE TABLE IF NOT EXISTS `sessions` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ---------------------------------------------------------------------
+-- site_content
+-- ---------------------------------------------------------------------
+DROP TABLE IF EXISTS `site_content`;
+CREATE TABLE IF NOT EXISTS `site_content` (
+  `key` varchar(80) NOT NULL,
+  `value` text NOT NULL,
+  `type` varchar(20) NOT NULL DEFAULT 'text',
+  `group` varchar(40) NOT NULL DEFAULT 'general',
+  `label` varchar(160) DEFAULT NULL,
+  `updated_at` datetime NOT NULL,
+  `updated_by` varchar(40) DEFAULT NULL,
+  PRIMARY KEY (`key`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ---------------------------------------------------------------------
 -- subscriptions
 -- ---------------------------------------------------------------------
 DROP TABLE IF EXISTS `subscriptions`;
@@ -870,6 +964,22 @@ CREATE TABLE IF NOT EXISTS `subscription_tiers` (
   `created_at` datetime NOT NULL,
   PRIMARY KEY (`id`),
   KEY `idx_tiers_visible` (`is_active`,`is_public`,`sort_order`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ---------------------------------------------------------------------
+-- testimonials
+-- ---------------------------------------------------------------------
+DROP TABLE IF EXISTS `testimonials`;
+CREATE TABLE IF NOT EXISTS `testimonials` (
+  `id` varchar(40) NOT NULL,
+  `quote` text NOT NULL,
+  `name` varchar(120) NOT NULL,
+  `role` varchar(120) NOT NULL DEFAULT '',
+  `initials` varchar(4) NOT NULL DEFAULT '',
+  `is_active` tinyint(1) NOT NULL DEFAULT 1,
+  `sort_order` int(11) NOT NULL DEFAULT 0,
+  `created_at` datetime NOT NULL,
+  PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ---------------------------------------------------------------------
