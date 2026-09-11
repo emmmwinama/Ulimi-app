@@ -130,24 +130,40 @@ $alerts = array_filter([
 
 <div class="grid cols-4">
     <div class="stat">
-        <div class="label">Total fields</div>
+        <div class="icon-row">
+            <span class="icon-box" style="background:#EBF5EC"><?= $this->partial('partials/icon', ['name' => 'map', 'class' => 'ico']) ?></span>
+        </div>
         <div class="value"><?= e((string) $stats['fields']) ?></div>
-        <div class="delta muted"><?= e(number_format((float) $stats['total_area'], 1)) ?> ha total</div>
+        <div class="label">Total fields</div>
+        <div class="delta"><?= e(number_format((float) $stats['total_area'], 1)) ?> ha total</div>
     </div>
     <div class="stat">
-        <div class="label">Active crops</div>
+        <div class="icon-row">
+            <span class="icon-box" style="background:#EBF5EC"><?= $this->partial('partials/icon', ['name' => 'sprout', 'class' => 'ico']) ?></span>
+        </div>
         <div class="value"><?= e((string) $stats['active_crops']) ?></div>
-        <div class="delta muted"><?= e((string) $stats['harvested_crops']) ?> harvested</div>
+        <div class="label">Active crops</div>
+        <div class="delta"><?= e((string) $stats['harvested_crops']) ?> harvested</div>
     </div>
     <div class="stat">
-        <div class="label">Total yield</div>
+        <div class="icon-row">
+            <span class="icon-box" style="background:#E0F2FE"><?= $this->partial('partials/icon', ['name' => 'wheat', 'class' => 'ico']) ?></span>
+        </div>
         <div class="value"><?= e(number_format((float) $stats['total_yield_kg'])) ?> kg</div>
-        <div class="delta muted">All harvests</div>
+        <div class="label">Total yield</div>
+        <div class="delta">All harvests</div>
     </div>
     <div class="stat">
-        <div class="label">Net income</div>
+        <div class="icon-row">
+            <span class="icon-box" style="background:<?= $netPositive ? '#EBF5EC' : '#FFF1F2' ?>"><?= $this->partial('partials/icon', ['name' => 'wallet', 'class' => 'ico']) ?></span>
+            <span class="badge <?= $netPositive ? 'green' : 'red' ?>">
+                <?= $this->partial('partials/icon', ['name' => $netPositive ? 'trend-up' : 'trend-down', 'class' => 'ico']) ?>
+                <?= $netPositive ? 'Profit' : 'Loss' ?>
+            </span>
+        </div>
         <div class="value" style="color:<?= $netPositive ? 'var(--green-text)' : 'var(--red-text)' ?>"><?= e(Money::format(abs((float) $stats['net']))) ?></div>
-        <div class="delta <?= $netPositive ? 'up' : 'down' ?>"><?= $netPositive ? 'Profitable' : 'Running at loss' ?></div>
+        <div class="label">Net income</div>
+        <div class="delta"><?= $netPositive ? 'Profitable' : 'Running at loss' ?></div>
     </div>
 </div>
 

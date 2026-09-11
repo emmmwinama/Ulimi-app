@@ -75,9 +75,12 @@
     --font: "Nunito", "Segoe UI", Arial, sans-serif;
     --mono: ui-monospace, "SF Mono", "Cascadia Mono", Menlo, Consolas, monospace;
 
-    --sidebar-w:   264px;
+    --sidebar-w:       256px;
+    --sidebar-w-admin: 240px;
     --topbar-h:    64px;
     --tap:         44px;
+    --btn-h:       40px;
+    --input-h:     48px;
   }
 
   *, *::before, *::after { box-sizing: border-box; }
@@ -128,8 +131,8 @@
   .skip-link:focus { @apply translate-y-0; }
 
   /* ---------- typography ---------- */
-  .h1 { font-size: 1.75rem; font-weight: 900; letter-spacing: -.03em; color: var(--navy); line-height: 1.2; }
-  .h2 { font-size: 1.15rem; font-weight: 800; color: var(--navy); letter-spacing: -.01em; }
+  .h1 { font-size: 1.625rem; font-weight: 900; letter-spacing: -.04em; color: var(--navy); line-height: 1.2; }
+  .h2 { font-size: 1.25rem; font-weight: 800; color: var(--navy); letter-spacing: normal; }
   .h3 { font-size: .97rem;  font-weight: 800; color: var(--navy); }
   .eyebrow { font-size: .72rem; font-weight: 800; letter-spacing: .09em; text-transform: uppercase; color: var(--text-faint); }
   .muted  { color: var(--text-faint); }
@@ -176,7 +179,7 @@
     border-bottom: 1px solid rgba(255,255,255,.08);
   }
   .sidebar .brand .mark,
-  .auth .brandside .brand .mark,
+  .auth .brandside .mark,
   .pub-header .brand .mark {
     display: grid; place-items: center; flex: none;
   }
@@ -192,12 +195,23 @@
     flex: none; padding: 8px 12px;
     border-bottom: 1px solid rgba(255,255,255,.06);
   }
-  .sidebar .switcher-slot .chip-select summary {
-    width: 100%; justify-content: space-between;
-    background: rgba(255,255,255,.06); border-color: rgba(255,255,255,.12); color: #fff;
+  .sidebar .farm-switcher summary {
+    width: 100%; min-height: 56px; height: auto; justify-content: space-between; gap: 12px;
+    padding: 8px 12px; border-radius: 16px; border: 1px solid rgba(255,255,255,.1);
+    background: rgba(255,255,255,.08); color: #fff;
   }
-  .sidebar .switcher-slot .chip-select summary:hover { border-color: rgba(255,255,255,.25); }
-  .sidebar .switcher-slot .chip-select summary .ico { color: rgba(255,255,255,.55); }
+  .sidebar .farm-switcher summary:hover { border-color: rgba(255,255,255,.22); }
+  .farm-switcher summary > .ico { color: rgba(255,255,255,.55); flex: none; }
+  .farm-switcher .avatar {
+    width: 40px; height: 40px; border-radius: 16px; flex: none;
+    background: rgba(14,165,233,.2); color: #E0F2FE;
+    box-shadow: inset 0 0 0 1px rgba(125,211,252,.2);
+    display: grid; place-items: center; font-weight: 900; font-size: .875rem;
+  }
+  .farm-switcher .who { flex: 1; min-width: 0; text-align: left; display: flex; flex-direction: column; }
+  .farm-switcher .who .name { font-size: .875rem; font-weight: 900; color: #fff; line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .farm-switcher .who .loc { font-size: .6875rem; color: #CBD5E1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .farm-switcher .who .role { font-size: .75rem; color: #BAE6FD; text-transform: capitalize; }
 
   .sidebar nav.nav-scroll {
     flex: 1; min-height: 0; overflow-y: auto; padding: 8px 0;
@@ -359,11 +373,14 @@
     transition: box-shadow .18s ease, transform .18s ease;
   }
   .stat:hover { box-shadow: var(--shadow-md); transform: translateY(-1px); }
-  .stat .label { font-size: .75rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--text-faint); }
-  .stat .value { font-size: 2rem; font-weight: 900; color: var(--navy); margin-top: 8px; letter-spacing: -.04em; line-height: 1; }
-  .stat .delta { font-size: .8rem; font-weight: 700; margin-top: 6px; }
-  .stat .delta.up { color: var(--green-text); }
-  .stat .delta.down { color: var(--red-text); }
+  .stat .icon-row { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 12px; }
+  .stat .icon-box { width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center; color: var(--teal); flex: none; }
+  .stat .icon-box .ico { width: 18px; height: 18px; }
+  .stat .label { font-size: .75rem; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--text-faint); margin-top: 4px; }
+  .stat .value { font-size: 2rem; font-weight: 900; color: var(--navy); letter-spacing: -.04em; line-height: 1; }
+  .stat .delta { font-size: .75rem; font-weight: 400; margin-top: 2px; color: var(--text-hint); }
+  .stat .delta.up { color: var(--green-text); font-weight: 700; }
+  .stat .delta.down { color: var(--red-text); font-weight: 700; }
 
   /* buttons */
   .btn {
@@ -371,7 +388,7 @@
     --btn-fg: #fff; --btn-bd: transparent;
     --btn-shadow: 0 2px 8px rgba(37,99,235,.22);
     display: inline-flex; align-items: center; justify-content: center; gap: 8px;
-    min-height: var(--tap); padding: 0 20px;
+    min-height: var(--btn-h); padding: 0 20px;
     border-radius: var(--radius); border: 1px solid var(--btn-bd);
     background: var(--btn-bg); color: var(--btn-fg);
     font-weight: 700; font-size: .875rem; cursor: pointer;
@@ -400,7 +417,7 @@
   .field .err  { font-size: .8rem; color: var(--red); margin-top: 6px; font-weight: 600; }
 
   .input, .select, .textarea {
-    width: 100%; min-height: var(--tap);
+    width: 100%; min-height: var(--input-h);
     padding: 10px 14px;
     border: 1.5px solid var(--line); border-radius: var(--radius);
     background: var(--surface-2); color: var(--text); font: inherit; font-size: .9rem;
@@ -434,6 +451,7 @@
     font-size: .7rem; font-weight: 700; letter-spacing: .02em;
     background: var(--surface-3); color: var(--text-soft); border: 1px solid transparent;
   }
+  .badge .ico { width: 10px; height: 10px; }
   .badge.blue  { background: var(--blue-050); color: #1E40AF; }
   .badge.green { background: var(--green-050); color: var(--green-text); }
   .badge.amber { background: var(--amber-050); color: var(--amber); }
@@ -486,7 +504,7 @@
      ===================================================================== */
   .auth { min-height: 100vh; display: grid; grid-template-columns: 1.05fr 1fr; background: #1A3D1F; }
   .auth .brandside {
-    color: var(--text-invert); padding: 60px; display: flex; flex-direction: column; justify-content: space-between;
+    color: var(--text-invert); padding: 60px; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; gap: 32px;
     position: relative; overflow: hidden;
     background: #1A3D1F;
   }
@@ -495,26 +513,33 @@
     background-image: repeating-radial-gradient(circle at 20% 15%, transparent 0, transparent 54px, rgba(255,255,255,.35) 55px, transparent 56px);
     background-size: 220px 220px;
   }
-  .auth .brandside .brand { display: flex; align-items: center; gap: 12px; font-weight: 800; font-size: 1.15rem; position: relative; letter-spacing: -.01em; }
-  .auth .brandside .brand .mark {
-    width: 44px; height: 44px; border-radius: 20px;
+  .auth .pitch-wrap { position: relative; display: flex; flex-direction: column; align-items: center; max-width: 380px; }
+  .auth .brandside .mark {
+    width: 80px; height: 80px; border-radius: 24px;
     background: rgba(255,255,255,.1); color: #E0F2FE;
+    margin-bottom: 24px;
   }
+  .auth .brandside .mark .ico { width: 34px; height: 34px; }
   .auth .brandside .pitch { font-size: 1.8rem; font-weight: 800; line-height: 1.2; max-width: 18ch; letter-spacing: -.02em; position: relative; }
-  .auth .brandside ul { list-style: none; padding: 0; margin: 20px 0 0; display: grid; gap: 11px; color: rgba(255,255,255,.85); font-size: .92rem; position: relative; }
+  .auth .brandside ul { list-style: none; padding: 0; margin: 20px 0 0; display: grid; gap: 11px; color: rgba(255,255,255,.85); font-size: .92rem; position: relative; text-align: left; }
   .auth .brandside li { display: flex; gap: 10px; align-items: center; }
   .auth .brandside li .ico { color: #7DD68A; width: 17px; height: 17px; flex: none; }
 
-  .auth .formside { background: var(--ice); display: flex; align-items: center; justify-content: center; padding: 40px 24px; }
-  .auth .formcard { width: 100%; max-width: 400px; }
-  .auth .formcard .h1 { margin-bottom: 6px; }
-  .auth .formcard .sub { color: var(--text-faint); margin-bottom: 24px; font-size: .92rem; }
+  .auth .formside { background: var(--surface); display: flex; align-items: center; justify-content: center; padding: 40px 32px; }
+  .auth .formcard { width: 100%; max-width: 384px; }
+  .auth .form-brand { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 1.25rem; color: var(--navy); letter-spacing: -.01em; margin-bottom: 40px; }
+  .auth .form-brand .mark {
+    width: 40px; height: 40px; border-radius: 16px; display: grid; place-items: center; flex: none;
+    background: var(--navy); color: #BAE6FD;
+  }
+  .auth .formcard .h1 { font-size: 1.5rem; font-weight: 700; letter-spacing: normal; margin-bottom: 8px; }
+  .auth .formcard .sub { color: var(--text-faint); margin-bottom: 32px; font-size: .875rem; }
   .auth .altline { text-align: center; margin-top: 20px; font-size: .875rem; color: var(--text-faint); }
 
   /* auth CTAs use the brand green, not the in-app teal/blue gradient */
   .auth .btn { --btn-bg: #1A3D1F; --btn-shadow: none; }
   .auth .btn:hover { --btn-bg: #2D5C35; box-shadow: 0 8px 20px -6px rgba(26,61,31,.35); }
-  .auth .input:focus, .auth .select:focus, .auth .textarea:focus { border-color: #1A3D1F; box-shadow: 0 0 0 3px rgba(26,61,31,.12); }
+  .auth .input:focus, .auth .select:focus, .auth .textarea:focus { border-color: #3D8C47; box-shadow: 0 0 0 2px rgba(61,140,71,.1); }
   .auth a { color: #1A3D1F; font-weight: 700; }
 
   @media (max-width: 860px) {
@@ -526,13 +551,13 @@
      Public landing
      ===================================================================== */
   .pub-header {
-    height: 68px; display: flex; align-items: center; justify-content: space-between;
-    border-bottom: 1px solid var(--line); background: rgba(255,255,255,.85); backdrop-filter: blur(12px);
+    height: 64px; display: flex; align-items: center; justify-content: space-between;
+    border-bottom: 1px solid var(--line); background: rgba(247,246,242,.95); backdrop-filter: blur(16px);
     position: sticky; top: 0; z-index: 30;
   }
   .pub-header .brand { display: flex; align-items: center; gap: 10px; font-weight: 800; color: var(--navy); letter-spacing: -.01em; }
   .pub-header .brand .mark {
-    width: 36px; height: 36px; border-radius: 14px;
+    width: 36px; height: 36px; border-radius: 12px;
     background: linear-gradient(135deg, #1A3D1F, #3D8C47); color: #fff;
   }
   .pub-header .brand .mark svg.ico { width: 18px; height: 18px; }
@@ -595,9 +620,24 @@
      reference: the only differentiators from the customer app are the
      solid (non-gradient) sidebar and the "Admin" breadcrumb).
      ===================================================================== */
+  .admin-shell { grid-template-columns: var(--sidebar-w-admin) 1fr; }
   .admin-shell .sidebar { background: #1E293B; box-shadow: 4px 0 20px rgba(0,0,0,.15); }
   .admin-shell .sidebar .brand { border-bottom-color: rgba(255,255,255,.08); }
   .admin-shell .topbar { background: rgba(241,245,249,.95); }
+
+  .admin-shell .sidebar .nav-group > .eyebrow { font-size: .5625rem; letter-spacing: .15em; color: rgba(148,163,184,.5); }
+  .admin-shell .sidebar a.nav-item,
+  .admin-shell .sidebar button.nav-item { border-radius: 12px; color: rgba(148,163,184,.8); }
+  .admin-shell .sidebar a.nav-item:hover,
+  .admin-shell .sidebar button.nav-item:hover { background: rgba(255,255,255,.06); color: rgba(255,255,255,.9); }
+  .admin-shell .sidebar a.nav-item.is-active { background: rgba(255,255,255,.12); color: #fff; box-shadow: none; text-shadow: none; }
+  .admin-shell .sidebar .foot .nav-item { color: rgba(148,163,184,.7); }
+  .admin-shell .sidebar .foot .nav-item:hover { background: rgba(239,68,68,.1); color: #FCA5A5; }
+
+  .admin-shell .topbar .avatar {
+    width: 32px; height: 32px; border-radius: 12px; background: #1E293B; color: #fff;
+    display: grid; place-items: center; font-weight: 900; font-size: .75rem; flex: none;
+  }
 
   /* =====================================================================
      Utilities (small, curated additions on top of Tailwind's own)

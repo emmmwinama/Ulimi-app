@@ -7,10 +7,15 @@ use App\Repositories\FarmRepository;
 $ctx = FarmContext::current();
 $farms = (new FarmRepository())->forUser((string) Auth::id());
 ?>
-<details class="chip-select">
+<?php $location = trim((string) ($ctx->farm['location'] ?? '')); ?>
+<details class="chip-select farm-switcher">
     <summary>
-        <?= $this->partial('partials/icon', ['name' => 'leaf', 'class' => 'ico']) ?>
-        <span class="hide-sm"><?= e($ctx->farmName()) ?></span>
+        <span class="avatar"><?= e(mb_strtoupper(mb_substr($ctx->farmName(), 0, 1))) ?></span>
+        <span class="who">
+            <span class="name"><?= e($ctx->farmName()) ?></span>
+            <span class="loc"><?= $location !== '' ? e($location) : 'Location not set' ?></span>
+            <span class="role"><?= e(str_replace('_', ' ', $ctx->authz->role)) ?></span>
+        </span>
         <?= $this->partial('partials/icon', ['name' => 'chevron-down', 'class' => 'ico']) ?>
     </summary>
     <div class="menu">

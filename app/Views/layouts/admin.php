@@ -100,6 +100,7 @@ $navGroups = [
             </div>
             <div class="row">
                 <span class="small muted"><?= e((string) ($admin['name'] ?? '')) ?></span>
+                <span class="avatar"><?= e(strtoupper(substr((string) ($admin['name'] ?? 'A'), 0, 1))) ?></span>
             </div>
         </header>
         <main class="content" id="main"><?= $this->yieldContent() ?></main>

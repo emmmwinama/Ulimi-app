@@ -14,11 +14,8 @@ $title = $title ?? 'Sign in';
 <a class="skip-link" href="#form">Skip to form</a>
 <div class="auth">
     <aside class="brandside">
-        <div class="brand">
+        <div class="pitch-wrap">
             <span class="mark"><?= $this->partial('partials/icon', ['name' => 'shield-check', 'class' => 'ico']) ?></span>
-            AgriVault
-        </div>
-        <div>
             <p class="pitch">The record vault your farm can prove.</p>
             <ul>
                 <li><?= $this->partial('partials/icon', ['name' => 'check', 'class' => 'ico']) ?> Field, crop, activity &amp; finance records in one place</li>
@@ -26,10 +23,14 @@ $title = $title ?? 'Sign in';
                 <li><?= $this->partial('partials/icon', ['name' => 'check', 'class' => 'ico']) ?> Team access with role-based permissions</li>
             </ul>
         </div>
-        <p class="small" style="color:rgba(255,255,255,.45)">&copy; <?= e(date('Y')) ?> AgriVault</p>
+        <p class="small" style="color:rgba(255,255,255,.45);text-align:center">&copy; <?= e(date('Y')) ?> AgriVault</p>
     </aside>
     <main class="formside" id="form">
         <div class="formcard">
+            <div class="form-brand">
+                <span class="mark"><?= $this->partial('partials/icon', ['name' => 'shield-check', 'class' => 'ico']) ?></span>
+                AgriVault
+            </div>
             <?= $this->yieldContent() ?>
         </div>
     </main>
