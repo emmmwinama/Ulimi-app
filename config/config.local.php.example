@@ -40,6 +40,14 @@ return [
         'from_name'  => 'AgriVault',
     ],
 
+    // Optional. Enables the AI report-insight panel (App\Services\Ai). Get a
+    // free key at https://console.groq.com — no card required. Leave the key
+    // empty (or omit this whole block) to keep the feature off; nothing else
+    // depends on it.
+    'ai' => [
+        'api_key' => '',
+    ],
+
     // Comma-free list of proxy IPs whose X-Forwarded-For we trust for client IP.
     // Leave empty unless the host sits behind a known reverse proxy / Cloudflare.
     'trusted_proxies' => [],

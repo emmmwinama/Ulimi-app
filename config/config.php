@@ -83,6 +83,16 @@ return [
         'path' => null,  // resolved to storage/uploads in bootstrap
     ],
 
+    'ai' => [
+        // Groq's free tier serves open-weight models (Llama 3.3, etc.) over an
+        // OpenAI-compatible endpoint at no cost, with generous rate limits —
+        // no local model runtime needed, which a free shared host couldn't run
+        // anyway. Feature no-ops (hidden, not broken) when api_key is empty.
+        'api_key'  => '',  // REQUIRED via config.local.php to enable AI features
+        'base_url' => 'https://api.groq.com/openai/v1',
+        'model'    => 'llama-3.3-70b-versatile',
+    ],
+
     'trusted_proxies' => [],
 
     'paths' => [], // filled in by bootstrap.php

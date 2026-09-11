@@ -7,11 +7,13 @@ namespace App\Controllers\Farm;
 use App\Controllers\Controller;
 use App\Core\AuditLog;
 use App\Core\Auth;
+use App\Core\Database;
 use App\Core\FarmContext;
 use App\Core\Flash;
 use App\Core\Request;
 use App\Core\Response;
 use App\Repositories\CropFieldRepository;
+use App\Services\Ai;
 use App\Services\CreditScore;
 use App\Services\FinanceSummary;
 use App\Services\ReportBuilder;
@@ -33,17 +35,91 @@ final class ReportsController extends Controller
         private readonly CreditScore $creditScore = new CreditScore(),
         private readonly Traceability $traceability = new Traceability(),
         private readonly FinanceSummary $finance = new FinanceSummary(),
+        private readonly Ai $ai = new Ai(),
     ) {
     }
 
     public function index(Request $request): Response
     {
         $ctx = FarmContext::current();
+        $farmId = $ctx->farmId();
+        $db = Database::instance();
+
+        $totals = $this->finance->totals($farmId);
+        $trend = $this->finance->monthlyTrend($farmId);
+
+        $yieldKg = (float) $db->scalar(
+            "SELECT COALESCE(SUM(hy.quantity_kg), 0) FROM harvest_yields hy
+             JOIN crop_fields cf ON cf.id = hy.crop_field_id WHERE cf.farm_id = :fid",
+            ['fid' => $farmId],
+        );
+
+        // Season net revenue (income + activity cost, matching the dashboard's
+        // own season math) for the profitability bars.
+        $seasonMap = [];
+        foreach ($db->select(
+            "SELECT season, type, COALESCE(SUM(amount), 0) AS amt
+             FROM transactions WHERE farm_id = :fid AND season IS NOT NULL AND season != ''
+             GROUP BY season, type",
+            ['fid' => $farmId],
+        ) as $row) {
+            $seasonMap[$row['season']] ??= ['income' => 0.0, 'expense' => 0.0];
+            if ($row['type'] === 'Income') {
+                $seasonMap[$row['season']]['income'] = (float) $row['amt'];
+            } else {
+                $seasonMap[$row['season']]['expense'] = (float) $row['amt'];
+            }
+        }
+        $seasons = [];
+        foreach ($seasonMap as $name => $s) {
+            $seasons[] = ['name' => (string) $name, 'net' => $s['income'] - $s['expense']];
+        }
+        usort($seasons, static fn ($a, $b) => strcmp((string) $b['name'], (string) $a['name']));
+        $seasons = array_slice($seasons, 0, 6);
+
+        // Crop area mix for the same period.
+        $cropRows = $db->select(
+            "SELECT ct.name, COALESCE(SUM(cf.area_planted), 0) AS area
+             FROM crop_fields cf JOIN crop_types ct ON ct.id = cf.crop_type_id
+             WHERE cf.farm_id = :fid AND cf.is_archived = 0
+             GROUP BY ct.name ORDER BY area DESC LIMIT 6",
+            ['fid' => $farmId],
+        );
+
+        $insight = $this->ai->insight(
+            $farmId,
+            'reports_overview',
+            'Summarise this farm\'s overall financial and production performance for its owner: '
+                . 'highlight whether it is profitable, the biggest cost driver, and one concrete '
+                . 'suggestion grounded in the numbers given.',
+            [
+                'income' => $totals['income'],
+                'total_cost' => $totals['total_cost'],
+                'net' => $totals['net'],
+                'cost_breakdown' => [
+                    'expense_transactions' => $totals['expense_tx'],
+                    'activity_costs' => $totals['activity_cost'],
+                    'overheads' => $totals['overhead'],
+                ],
+                'top_expense_categories' => array_slice($totals['by_category'], 0, 5, true),
+                'total_yield_kg' => $yieldKg,
+                'season_net_revenue' => $seasons,
+                'crop_area_mix_ha' => $cropRows,
+                'currency' => 'MWK',
+            ],
+        );
+
         return $this->view('reports/index', [
-            'title'   => 'Reports',
-            'active'  => 'reports',
-            'packs'   => self::PACKS,
-            'canBuild'=> $ctx->feature('custom_reports'),
+            'title'    => 'Reports',
+            'active'   => 'reports',
+            'packs'    => self::PACKS,
+            'canBuild' => $ctx->feature('custom_reports'),
+            'totals'   => $totals,
+            'trend'    => $trend,
+            'yieldKg'  => $yieldKg,
+            'seasons'  => $seasons,
+            'crops'    => $cropRows,
+            'insight'  => $insight,
         ]);
     }
 

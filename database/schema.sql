@@ -91,6 +91,22 @@ CREATE TABLE IF NOT EXISTS `admin_users` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ---------------------------------------------------------------------
+-- ai_insights_cache
+-- ---------------------------------------------------------------------
+DROP TABLE IF EXISTS `ai_insights_cache`;
+CREATE TABLE IF NOT EXISTS `ai_insights_cache` (
+  `id` varchar(40) NOT NULL,
+  `farm_id` varchar(40) NOT NULL,
+  `kind` varchar(40) NOT NULL,
+  `content` text NOT NULL,
+  `model` varchar(80) NOT NULL,
+  `cached_at` datetime NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uniq_ai_farm_kind` (`farm_id`,`kind`),
+  CONSTRAINT `fk_ai_farm` FOREIGN KEY (`farm_id`) REFERENCES `farms` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ---------------------------------------------------------------------
 -- animals
 -- ---------------------------------------------------------------------
 DROP TABLE IF EXISTS `animals`;
