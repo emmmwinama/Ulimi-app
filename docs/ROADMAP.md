@@ -120,7 +120,7 @@ runtime is available in the build environment. ID columns are `VARCHAR(40)`
 - Enforce `SubscriptionLimit` across every write path + feature-flag gates
 - Admin audit log view
 
-## Phase 10 — Public Site & CMS-driven Pages  ☐
+## Phase 10 — Public Site & CMS-driven Pages  ☑
 - CMS-backed landing (hero, features, testimonials, pricing)
 - `/{slug}` pages: about, blog, careers, press, privacy, terms, security,
   changelog, roadmap, support

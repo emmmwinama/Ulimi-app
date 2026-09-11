@@ -34,6 +34,7 @@ use App\Controllers\Farm\TeamController;
 use App\Controllers\Farm\WeatherController;
 use App\Controllers\Farm\YieldsController;
 use App\Controllers\Onboarding\FarmSetupController;
+use App\Controllers\Public\ContactController;
 use App\Controllers\Public\HomeController;
 use App\Controllers\Public\PageController;
 use App\Controllers\SystemController;
@@ -58,6 +59,8 @@ $router->get('/health', [SystemController::class, 'health'], ['SecurityHeaders']
 
 /* ---------------------------------------------------------------- public */
 $router->get('/', [HomeController::class, 'index'], $web);
+$router->post('/contact', [ContactController::class, 'submitContact'], [...$web, 'Throttle:form']);
+$router->post('/demo', [ContactController::class, 'submitDemo'], [...$web, 'Throttle:form']);
 
 /* ------------------------------------------------------------------ auth */
 $router->group('', $guest, static function (Router $r): void {

@@ -7,35 +7,32 @@ namespace App\Controllers\Public;
 use App\Controllers\Controller;
 use App\Core\Request;
 use App\Core\Response;
+use App\Repositories\CmsRepository;
 
 /**
- * CMS-driven static pages (about, privacy, terms, security, …).
- *
- * Phase 1: a hardcoded allowlist with placeholder copy so footer links resolve.
- * Phase 10 replaces the body with content from the `cms_pages` table.
+ * CMS-driven static pages — content comes from the `cms_pages` table
+ * (Phase 9 admin, seeded in Phase 9 with about/privacy/terms/security).
+ * Any slug not present and public in the database is a 404.
  */
 final class PageController extends Controller
 {
-    private const PAGES = [
-        'about'     => 'About AgriVault',
-        'privacy'   => 'Privacy Policy',
-        'terms'     => 'Terms of Service',
-        'security'  => 'Security',
-        'support'   => 'Support',
-    ];
+    public function __construct(private readonly CmsRepository $cms = new CmsRepository())
+    {
+    }
 
     public function show(Request $request): Response
     {
         $slug = (string) $request->route('slug', '');
+        $page = $this->cms->pageBySlug($slug);
 
-        if (!array_key_exists($slug, self::PAGES)) {
+        if ($page === null) {
             return $this->view('errors/404', [], 404);
         }
 
         return $this->view('pages/generic', [
-            'title'   => self::PAGES[$slug],
-            'heading' => self::PAGES[$slug],
-            'slug'    => $slug,
+            'title'   => (string) $page['title'],
+            'heading' => (string) $page['title'],
+            'body'    => (string) $page['content'],
         ]);
     }
 }
