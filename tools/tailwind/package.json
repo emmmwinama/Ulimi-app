@@ -1,0 +1,13 @@
+{
+  "name": "agrivault-styles",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Local-only Tailwind build for AgriVault. The host never runs this — only public/assets/app.css (the compiled output) is deployed.",
+  "scripts": {
+    "build": "tailwindcss -i src/input.css -o ../../public/assets/app.css --minify",
+    "watch": "tailwindcss -i src/input.css -o ../../public/assets/app.css --watch"
+  },
+  "devDependencies": {
+    "tailwindcss": "^3.4.13"
+  }
+}
