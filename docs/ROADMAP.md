@@ -101,7 +101,7 @@ runtime is available in the build environment. ID columns are `VARCHAR(40)`
 - `Services\CreditScore` — cashflow / activity-cost / revenue factors, grade
 - Compliance checklist (evidence-gap view)
 
-## Phase 8 — Ancillary Services  ☐
+## Phase 8 — Ancillary Services  ☑
 - Schema `010_support`: `market_prices`, `weather_cache`, `farm_documents`,
   `notifications`, `farm_credit_scores`, seasonal `templates`
 - Weather: Open-Meteo, 3-hour DB cache, farm-location aware

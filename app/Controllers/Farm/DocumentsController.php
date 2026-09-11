@@ -92,10 +92,16 @@ final class DocumentsController extends Controller
         AuditLog::user('document.downloaded', (string) Auth::id(), ['document_id' => $doc['id']], $ctx->farmId(), $request->ip());
 
         $body = (string) file_get_contents($path);
+        $ext = pathinfo((string) $doc['asset_id'], PATHINFO_EXTENSION);
+        $filename = self::asciiFilename((string) $doc['name']);
+        if ($ext !== '' && !str_ends_with(strtolower($filename), '.' . strtolower($ext))) {
+            $filename .= '.' . $ext;
+        }
+
         return Response::make($body, 200)
             ->header('Content-Type', (string) $doc['mime_type'])
             ->header('Content-Length', (string) strlen($body))
-            ->header('Content-Disposition', 'attachment; filename="' . self::asciiFilename((string) $doc['name']) . '"')
+            ->header('Content-Disposition', 'attachment; filename="' . $filename . '"')
             ->header('X-Content-Type-Options', 'nosniff')
             ->header('Cache-Control', 'private, no-store');
     }
