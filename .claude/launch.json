@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "ulimi",
+      "runtimeExecutable": "php",
+      "runtimeArgs": ["-S", "localhost:8750", "-t", "public"],
+      "port": 8750
+    }
+  ]
+}
