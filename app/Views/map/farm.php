@@ -38,10 +38,24 @@ $config = [
         'location_lat' => (float) $f['location_lat'], 'location_lng' => (float) $f['location_lng'], 'name' => $f['name'],
     ], $data['fields']),
 ];
+
+$boundaryByField = [];
+foreach ($data['boundaries'] as $b) {
+    $boundaryByField[(string) $b['field_id']] = $b;
+}
+$mappedCount = 0;
+$totalMappedHa = 0.0;
+foreach ($fields as $f) {
+    if (isset($boundaryByField[(string) $f['id']])) {
+        $mappedCount++;
+        $totalMappedHa += (float) $boundaryByField[(string) $f['id']]['area_ha'];
+    }
+}
+$fieldColors = ['#16A34A', '#2563EB', '#0284C7', '#9333EA', '#DC2626', '#0891B2', '#EA580C', '#65A30D'];
 ?>
 <?php $this->start('head'); ?>
 <link rel="stylesheet" href="<?= e(asset('vendor/leaflet/leaflet.css')) ?>">
-<style>#map{height:560px;border-radius:14px;border:1px solid var(--line)}</style>
+<style>#map{height:100%;min-height:560px}</style>
 <?php $this->stop(); ?>
 
 <?php $this->start('content'); ?>
@@ -54,8 +68,63 @@ $config = [
     </div>
 </div>
 
-<div id="map" class="mb-16"></div>
-<script type="application/json" id="map-config"><?= json_encode($config, JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP) ?></script>
+<div class="map-shell mb-16">
+    <div id="map"></div>
+    <script type="application/json" id="map-config"><?= json_encode($config, JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP) ?></script>
+
+    <aside class="map-fields-panel">
+        <div class="map-fields-head">
+            <p style="font-size:.875rem;font-weight:900;color:var(--text)">All fields</p>
+            <p style="font-size:.75rem;color:var(--text-faint)"><?= $mappedCount ?> mapped · <?= count($fields) - $mappedCount ?> unmapped</p>
+        </div>
+        <div class="grid cols-2" style="gap:10px;padding:14px;border-bottom:1px solid var(--line)">
+            <div style="background:var(--teal-pale);border-radius:12px;padding:10px">
+                <p style="font-size:.625rem;font-weight:900;text-transform:uppercase;letter-spacing:.05em;color:var(--teal);margin-bottom:2px">Mapped area</p>
+                <p style="font-size:1.05rem;font-weight:900;color:var(--teal)"><?= e(number_format($totalMappedHa, 2)) ?> ha</p>
+            </div>
+            <div style="background:var(--surface-2);border-radius:12px;padding:10px">
+                <p style="font-size:.625rem;font-weight:900;text-transform:uppercase;letter-spacing:.05em;color:var(--text-faint);margin-bottom:2px">Total fields</p>
+                <p style="font-size:1.05rem;font-weight:900;color:var(--text)"><?= count($fields) ?></p>
+            </div>
+        </div>
+        <div class="map-fields-list">
+            <?php foreach ($fields as $idx => $f):
+                $boundary = $boundaryByField[(string) $f['id']] ?? null;
+                $mapped = $boundary !== null;
+                $color = $fieldColors[$idx % count($fieldColors)];
+                $cropNames = array_filter(array_map('trim', explode(',', (string) ($f['crop_names'] ?? ''))));
+            ?>
+                <div style="background:var(--surface-2);border:1.5px solid var(--line);border-radius:12px;padding:12px;margin-bottom:10px">
+                    <div class="spread" style="margin-bottom:6px">
+                        <div class="row" style="gap:8px">
+                            <span style="width:11px;height:11px;border-radius:999px;flex:none;background:<?= $mapped ? $color : '#CBD5E1' ?>"></span>
+                            <span style="font-size:.8rem;font-weight:800;color:var(--text)"><?= e((string) $f['name']) ?></span>
+                        </div>
+                        <span class="badge <?= $mapped ? 'green' : '' ?>" style="font-size:.6rem"><?= $mapped ? 'Mapped' : 'No boundary' ?></span>
+                    </div>
+                    <p style="font-size:.7rem;color:var(--text-faint);margin-bottom:6px">
+                        <?= $mapped ? e(number_format((float) $boundary['area_ha'], 2)) . ' ha' : e(number_format((float) $f['total_area'], 2)) . ' ha (record)' ?>
+                        <?= $f['soil_type'] ? ' · ' . e((string) $f['soil_type']) : '' ?>
+                    </p>
+                    <?php if ($cropNames !== []): ?>
+                        <div class="row wrap" style="gap:4px;margin-bottom:6px">
+                            <?php foreach ($cropNames as $name): ?>
+                                <span class="badge green" style="font-size:.6rem"><?= e($name) ?></span>
+                            <?php endforeach; ?>
+                        </div>
+                    <?php endif; ?>
+                    <a href="<?= e(url('fields/' . rawurlencode((string) $f['id']) . '/map')) ?>" class="row" style="gap:4px;font-size:.7rem;font-weight:800;color:<?= $mapped ? $color : 'var(--teal)' ?>">
+                        <?= $this->partial('partials/icon', ['name' => 'map', 'class' => 'ico ico-sm']) ?>
+                        <?= $mapped ? 'Edit map' : 'Draw boundary' ?> →
+                    </a>
+                </div>
+            <?php endforeach; ?>
+            <?php if ($fields === []): ?>
+                <p class="small muted">No fields yet.</p>
+            <?php endif; ?>
+        </div>
+    </aside>
+</div>
 
 <div class="grid cols-2">
     <?php if ($canManage): ?>
