@@ -90,7 +90,46 @@ alongside the code for the import, then delete it from the server.
   needs nothing extra. A very quiet site can hit `/health` from an external
   uptime monitor every few minutes to keep the mail queue moving.
 - **Backups**: schedule a daily dump in the host panel if available; otherwise
-  export via phpMyAdmin weekly and before every schema change.
+  export via phpMyAdmin weekly and before every schema change. Store the
+  export **off the host** (a synced folder, email-to-self, whatever is
+  reachable) — a backup that only lives next to the database it backs up
+  doesn't survive the failure modes that matter (disk loss, account
+  suspension, a bad migration).
+- **Restore drill**: before trusting a backup, prove it restores. Locally:
+  `mysql -u root new_db_name < your_export.sql`, then point
+  `config/config.local.php` at `new_db_name` and confirm the app boots and
+  shows real data. Do this once after the first backup and after any schema
+  change large enough to worry about.
 - **Updates**: upload changed files, then run `php database/migrate.php`
   (locally against remote, or new `*.sql` via phpMyAdmin) for any new
   migrations.
+
+## 8. Go-live checklist
+
+Run through this once, in order, before pointing real farmers at the site.
+
+- [ ] `docs/SECURITY-REVIEW.md` read; the shared-hosting caveat in §"Known
+      gaps" is an accepted, understood trade-off for this launch
+- [ ] `config.local.php`: `app.env = production`, `app.debug = false`,
+      a freshly generated `app.key` (not reused from local dev)
+- [ ] `mail.driver = smtp` with real provider credentials — send yourself a
+      test activation and password-reset email and confirm both arrive
+- [ ] HTTPS confirmed working (padlock, `curl -I` shows the HSTS header from
+      §6 above); HTTP requests redirect to HTTPS
+- [ ] `php database/make_admin.php` run once for your own admin login; the
+      password recorded somewhere safe (a password manager, not a note in
+      the repo)
+- [ ] Default/demo data reviewed: the seeded subscription tiers, market
+      prices and CMS copy (`docs/`'s seed files) reflect real pricing and
+      real marketing copy, not placeholders
+- [ ] If importing `live.sqlite`: imported, `--dry-run` output reviewed
+      first, then `live.sqlite` **deleted from the server** after import
+      (it is not needed at runtime and contains real farm data)
+- [ ] A first backup taken and restored locally per §7's drill
+- [ ] `storage/`, `config/`, `database/`, `vendor/` confirmed not
+      web-reachable from the live domain (the checks in §6 above)
+- [ ] One end-to-end pass as a real user on the live domain: register →
+      activate → onboarding → add a field → log an activity → add a
+      transaction → view a record pack → sign out
+- [ ] Support/contact email in `site_content` (`contact_email`) is one you
+      actually monitor

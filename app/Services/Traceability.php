@@ -83,8 +83,10 @@ final class Traceability
     public function complianceChecklist(string $farmId): array
     {
         $db = $this->db();
+        // $t is always a literal at the call site below, never external input —
+        // quoteIdent() is defence in depth, not the only guard.
         $c = static fn (string $t, string $extra = '') => (int) $db->scalar(
-            "SELECT COUNT(*) FROM {$t} WHERE farm_id = :fid {$extra}",
+            "SELECT COUNT(*) FROM {$db->quoteIdent($t)} WHERE farm_id = :fid {$extra}",
             ['fid' => $farmId],
         );
 

@@ -36,17 +36,24 @@ $paths = [
  | 2. Autoloader + helpers
  |
  | Hand-rolled PSR-4: App\Foo\Bar  ->  app/Foo/Bar.php
- | (no Composer on the target host).
+ | (no Composer on the target host). The same map style covers the one
+ | vendored library (PHPMailer) at its own namespace prefix.
  * ------------------------------------------------------------------------- */
 spl_autoload_register(static function (string $class) use ($paths): void {
-    $prefix = 'App\\';
-    if (!str_starts_with($class, $prefix)) {
+    $map = [
+        'App\\' => $paths['app'] . '/',
+        'PHPMailer\\PHPMailer\\' => $paths['vendor'] . '/phpmailer/src/',
+    ];
+    foreach ($map as $prefix => $baseDir) {
+        if (!str_starts_with($class, $prefix)) {
+            continue;
+        }
+        $relative = substr($class, strlen($prefix));
+        $file = $baseDir . str_replace('\\', '/', $relative) . '.php';
+        if (is_file($file)) {
+            require $file;
+        }
         return;
-    }
-    $relative = substr($class, strlen($prefix));
-    $file = $paths['app'] . '/' . str_replace('\\', '/', $relative) . '.php';
-    if (is_file($file)) {
-        require $file;
     }
 });
 
