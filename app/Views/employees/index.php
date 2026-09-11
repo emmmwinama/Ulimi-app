@@ -25,7 +25,7 @@ $roleBadge = [
         <p class="lede"><?= count($active) ?> active · <?= count($employees) ?> total<?= $monthlyPayroll > 0 ? ' · ' . e(Money::format($monthlyPayroll)) . '/month payroll' : '' ?></p>
     </div>
     <?php if ($canManage): ?>
-        <a class="btn" href="<?= e(url('employees/create')) ?>">
+        <a class="btn" href="#add-employee">
             <?= $this->partial('partials/icon', ['name' => 'plus', 'class' => 'ico']) ?> Add employee
         </a>
     <?php endif; ?>
@@ -53,7 +53,7 @@ $roleBadge = [
         </span>
         <div class="h3">No employees</div>
         <p>Add your workers and their pay rates so activity labour can be costed.</p>
-        <?php if ($canManage): ?><p class="mt-16px"><a class="btn" href="<?= e(url('employees/create')) ?>">Add an employee</a></p><?php endif; ?>
+        <?php if ($canManage): ?><p class="mt-16px"><a class="btn" href="#add-employee">Add an employee</a></p><?php endif; ?>
     </div>
 <?php else: ?>
     <div class="grid cols-3">
@@ -74,7 +74,7 @@ $roleBadge = [
                     </div>
                     <?php if ($canManage): ?>
                         <div class="row" style="gap:4px">
-                            <a href="<?= e(url('employees/' . rawurlencode((string) $e['id']) . '/edit')) ?>" title="Edit"
+                            <a href="#edit-employee-<?= e((string) $e['id']) ?>" title="Edit"
                                style="width:28px;height:28px;border-radius:9px;display:grid;place-items:center;background:var(--surface-3);color:var(--text-faint)">
                                 <?= $this->partial('partials/icon', ['name' => 'pencil', 'class' => 'ico ico-sm']) ?>
                             </a>
@@ -99,5 +99,56 @@ $roleBadge = [
             </div></div>
         <?php endforeach; ?>
     </div>
+<?php endif; ?>
+
+<?php if ($canManage): ?>
+    <div class="slide-over" id="add-employee">
+        <a href="#" class="scrim" aria-label="Close"></a>
+        <div class="panel">
+            <div class="panel-head">
+                <div>
+                    <h2 class="h3">Add employee</h2>
+                    <p class="small muted mt-8px">Add a worker and their pay rate</p>
+                </div>
+                <a href="#" class="panel-close" aria-label="Close"><?= $this->partial('partials/icon', ['name' => 'x', 'class' => 'ico ico-sm']) ?></a>
+            </div>
+            <form method="post" action="<?= e(url('employees')) ?>" style="display:contents">
+                <?= csrf_field() ?>
+                <div class="panel-body stack">
+                    <?= $this->partial('partials/employees/employee', ['employee' => null]) ?>
+                </div>
+                <div class="panel-foot">
+                    <a href="#" class="btn ghost block">Cancel</a>
+                    <button type="submit" class="btn block">Add employee</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <?php foreach ($employees as $e): ?>
+        <div class="slide-over" id="edit-employee-<?= e((string) $e['id']) ?>">
+            <a href="#" class="scrim" aria-label="Close"></a>
+            <div class="panel">
+                <div class="panel-head">
+                    <div>
+                        <h2 class="h3">Edit employee</h2>
+                        <p class="small muted mt-8px"><?= e((string) $e['name']) ?></p>
+                    </div>
+                    <a href="#" class="panel-close" aria-label="Close"><?= $this->partial('partials/icon', ['name' => 'x', 'class' => 'ico ico-sm']) ?></a>
+                </div>
+                <form method="post" action="<?= e(url('employees/' . rawurlencode((string) $e['id']))) ?>" style="display:contents">
+                    <?= csrf_field() ?>
+                    <?= method_field('PUT') ?>
+                    <div class="panel-body stack">
+                        <?= $this->partial('partials/employees/employee', ['employee' => $e]) ?>
+                    </div>
+                    <div class="panel-foot">
+                        <a href="#" class="btn ghost block">Cancel</a>
+                        <button type="submit" class="btn block">Save</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    <?php endforeach; ?>
 <?php endif; ?>
 <?php $this->stop(); ?>
