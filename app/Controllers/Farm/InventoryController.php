@@ -153,11 +153,14 @@ final class InventoryController extends Controller
         }
 
         $data = $this->validate($request, [
-            'quantity_sold'  => ['required', 'numeric', 'min:0.001', 'max:100000000'],
-            'price_per_unit' => ['required', 'numeric', 'min:0', 'max:100000000'],
-            'sale_date'      => ['required', 'date'],
-            'buyer_name'     => ['max:160'],
-            'notes'          => ['max:500'],
+            'quantity_sold'     => ['required', 'numeric', 'min:0.001', 'max:100000000'],
+            'price_per_unit'    => ['required', 'numeric', 'min:0', 'max:100000000'],
+            'sale_date'         => ['required', 'date'],
+            'buyer_name'        => ['max:160'],
+            'collection_point'  => ['max:160'],
+            'transport_method'  => ['max:80'],
+            'pickup_date'       => ['date'],
+            'notes'             => ['max:500'],
         ]);
         if ($data instanceof Response) {
             return $data;
@@ -200,6 +203,9 @@ final class InventoryController extends Controller
                     'price_per_unit'    => $price,
                     'total_amount'      => $total,
                     'buyer_name'        => ($data['buyer_name'] ?? '') !== '' ? trim((string) $data['buyer_name']) : null,
+                    'collection_point'  => ($data['collection_point'] ?? '') !== '' ? trim((string) $data['collection_point']) : null,
+                    'transport_method'  => ($data['transport_method'] ?? '') !== '' ? trim((string) $data['transport_method']) : null,
+                    'pickup_date'       => ($data['pickup_date'] ?? '') !== '' ? date('Y-m-d', (int) strtotime((string) $data['pickup_date'])) : null,
                     'sale_date'         => $saleDate,
                     'notes'             => ($data['notes'] ?? '') !== '' ? trim((string) $data['notes']) : null,
                 ]);
@@ -221,10 +227,15 @@ final class InventoryController extends Controller
             'category'              => ['required', 'in:' . implode(',', self::CATEGORIES)],
             'unit'                  => ['required', 'max:20'],
             'quantity'              => ['required', 'numeric', 'min:0', 'max:100000000'],
+            'reorder_threshold'     => ['numeric', 'min:0', 'max:100000000'],
             'acquisition_unit_cost' => ['numeric', 'min:0', 'max:100000000'],
             'acquired_at'           => ['date'],
             'unit_weight'           => ['numeric', 'min:0', 'max:100000'],
             'season'                => ['max:60'],
+            'batch_number'          => ['max:60'],
+            'expiry_date'           => ['date'],
+            'supplier_name'         => ['max:160'],
+            'supplier_contact'      => ['max:160'],
             'notes'                 => ['max:500'],
         ]);
         if ($data instanceof Response) {
@@ -235,10 +246,15 @@ final class InventoryController extends Controller
             'category'              => (string) $data['category'],
             'unit'                  => trim((string) $data['unit']),
             'quantity'              => (float) $data['quantity'],
+            'reorder_threshold'     => isset($data['reorder_threshold']) && $data['reorder_threshold'] !== '' ? (float) $data['reorder_threshold'] : null,
             'acquisition_unit_cost' => isset($data['acquisition_unit_cost']) && $data['acquisition_unit_cost'] !== '' ? (float) $data['acquisition_unit_cost'] : null,
             'acquired_at'           => isset($data['acquired_at']) && $data['acquired_at'] !== '' ? date('Y-m-d', (int) strtotime((string) $data['acquired_at'])) : null,
             'unit_weight'           => isset($data['unit_weight']) && $data['unit_weight'] !== '' ? (float) $data['unit_weight'] : null,
             'season'                => isset($data['season']) && $data['season'] !== '' ? trim((string) $data['season']) : null,
+            'batch_number'          => isset($data['batch_number']) && $data['batch_number'] !== '' ? trim((string) $data['batch_number']) : null,
+            'expiry_date'           => isset($data['expiry_date']) && $data['expiry_date'] !== '' ? date('Y-m-d', (int) strtotime((string) $data['expiry_date'])) : null,
+            'supplier_name'         => isset($data['supplier_name']) && $data['supplier_name'] !== '' ? trim((string) $data['supplier_name']) : null,
+            'supplier_contact'      => isset($data['supplier_contact']) && $data['supplier_contact'] !== '' ? trim((string) $data['supplier_contact']) : null,
             'notes'                 => isset($data['notes']) && $data['notes'] !== '' ? trim((string) $data['notes']) : null,
         ];
     }

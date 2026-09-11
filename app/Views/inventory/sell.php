@@ -27,6 +27,9 @@ $id = rawurlencode((string) $item['id']);
             <?= $this->partial('partials/field', ['name' => 'price_per_unit', 'label' => 'Price per unit', 'type' => 'number', 'step' => 'any', 'inputmode' => 'decimal', 'required' => true]) ?>
             <?= $this->partial('partials/field', ['name' => 'sale_date', 'label' => 'Sale date', 'type' => 'date', 'required' => true, 'value' => date('Y-m-d')]) ?>
             <?= $this->partial('partials/field', ['name' => 'buyer_name', 'label' => 'Buyer (optional)']) ?>
+            <?= $this->partial('partials/field', ['name' => 'collection_point', 'label' => 'Collection point (optional)', 'placeholder' => 'Where the buyer collects it']) ?>
+            <?= $this->partial('partials/field', ['name' => 'transport_method', 'label' => 'Transport (optional)', 'placeholder' => 'Own truck, buyer pickup, courier']) ?>
+            <?= $this->partial('partials/field', ['name' => 'pickup_date', 'label' => 'Pickup date (optional)', 'type' => 'date']) ?>
             <div class="field" style="grid-column:1/-1">
                 <label for="f_notes">Notes</label>
                 <textarea class="textarea" id="f_notes" name="notes" rows="2"></textarea>
@@ -51,7 +54,12 @@ $id = rawurlencode((string) $item['id']);
                     <td class="num"><?= e(rtrim(rtrim((string) $s['quantity_sold'], '0'), '.')) ?> <?= e((string) $s['unit']) ?></td>
                     <td class="num"><?= e(Money::format((float) $s['price_per_unit'])) ?></td>
                     <td class="num"><?= e(Money::format((float) $s['total_amount'])) ?></td>
-                    <td class="muted"><?= e((string) ($s['buyer_name'] ?: '—')) ?></td>
+                    <td class="muted">
+                        <?= e((string) ($s['buyer_name'] ?: '—')) ?>
+                        <?php if (!empty($s['collection_point']) || !empty($s['transport_method'])): ?>
+                            <div class="small"><?= e(trim(((string) ($s['collection_point'] ?? '')) . (!empty($s['transport_method']) ? ' · ' . (string) $s['transport_method'] : ''))) ?></div>
+                        <?php endif; ?>
+                    </td>
                 </tr>
             <?php endforeach; endif; ?>
             </tbody>

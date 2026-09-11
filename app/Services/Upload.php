@@ -12,8 +12,10 @@ use RuntimeException;
  *
  * Controls:
  *   - extension AND declared-MIME AND sniffed-magic-bytes must all agree
- *     with the allowlist (pdf/jpg/png/webp) — a renamed .php is rejected
- *     even if the extension is faked, because finfo inspects real bytes.
+ *     with the allowlist (pdf/jpg/png/webp, plus mp3/m4a/ogg voice notes
+ *     for incident/health-record attachments) — a renamed .php is
+ *     rejected even if the extension is faked, because finfo inspects
+ *     real bytes.
  *   - size cap enforced server-side regardless of client claims.
  *   - stored under a random 32-hex name OUTSIDE the web root
  *     (storage/uploads), so there is no direct URL to guess and nothing
@@ -48,7 +50,7 @@ final class Upload
         $sniffed = (string) $finfo->file($file['tmp_name']);
 
         if (!isset($allowed[$sniffed])) {
-            throw new RuntimeException('That file type isn’t supported. Use PDF, JPG, PNG or WEBP.');
+            throw new RuntimeException('That file type isn’t supported. Use PDF, JPG, PNG, WEBP, MP3, M4A or OGG.');
         }
 
         $ext = strtolower(pathinfo((string) $file['name'], PATHINFO_EXTENSION));
@@ -91,7 +93,7 @@ final class Upload
         // assetId is always our own generated "xx/xxxxxxxx.ext" — validate the
         // shape before touching the filesystem, defence in depth against any
         // future caller that forgets to.
-        if (preg_match('#^[0-9a-f]{2}/[0-9a-f]{32}\.(pdf|jpg|jpeg|png|webp)$#', $assetId) !== 1) {
+        if (preg_match('#^[0-9a-f]{2}/[0-9a-f]{32}\.(pdf|jpg|jpeg|png|webp|mp3|m4a|ogg)$#', $assetId) !== 1) {
             throw new RuntimeException('Invalid asset reference.');
         }
         return $dir . '/' . $assetId;

@@ -79,6 +79,11 @@ return [
             'image/jpeg'      => 'jpg',
             'image/png'       => 'png',
             'image/webp'      => 'webp',
+            // Voice-note formats for incident/health-record attachments (Phase 14).
+            'audio/mpeg'      => 'mp3',
+            'audio/mp4'       => 'm4a',
+            'audio/x-m4a'     => 'm4a',
+            'audio/ogg'       => 'ogg',
         ],
         'path' => null,  // resolved to storage/uploads in bootstrap
     ],

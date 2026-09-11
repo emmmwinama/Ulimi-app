@@ -17,8 +17,10 @@ use App\Controllers\Auth\PasswordResetController;
 use App\Controllers\Auth\RegisterController;
 use App\Controllers\DashboardController;
 use App\Controllers\Farm\ActivitiesController;
+use App\Controllers\Farm\CropIncidentsController;
 use App\Controllers\Farm\CropsController;
 use App\Controllers\Farm\EmployeesController;
+use App\Controllers\Farm\EquipmentController;
 use App\Controllers\Farm\FarmSwitchController;
 use App\Controllers\Farm\FieldsController;
 use App\Controllers\Farm\FinanceController;
@@ -138,6 +140,17 @@ $router->group('/crops', $farm, static function (Router $r): void {
     $r->post('/{id}/restore', [CropsController::class, 'restore'], ['Can:crops.manage']);
 });
 
+/* ------------------------------------------------------------- incidents */
+$router->group('/incidents', $farm, static function (Router $r): void {
+    $r->get('', [CropIncidentsController::class, 'index'], ['Can:crops.view']);
+    $r->get('/create', [CropIncidentsController::class, 'create'], ['Can:crops.manage']);
+    $r->post('', [CropIncidentsController::class, 'store'], ['Can:crops.manage']);
+    $r->get('/{id}', [CropIncidentsController::class, 'show'], ['Can:crops.view']);
+    $r->get('/{id}/edit', [CropIncidentsController::class, 'edit'], ['Can:crops.manage']);
+    $r->put('/{id}', [CropIncidentsController::class, 'update'], ['Can:crops.manage']);
+    $r->post('/{id}/delete', [CropIncidentsController::class, 'destroy'], ['Can:crops.manage']);
+});
+
 /* ------------------------------------------------------------------ team */
 $router->group('/team', $farm, static function (Router $r): void {
     $r->get('', [TeamController::class, 'index'], ['Can:team.view']);
@@ -177,6 +190,8 @@ $router->group('/yields', $farm, static function (Router $r): void {
     $r->get('/{id}/edit', [YieldsController::class, 'edit'], ['Can:yields.manage']);
     $r->put('/{id}', [YieldsController::class, 'update'], ['Can:yields.manage']);
     $r->post('/{id}/delete', [YieldsController::class, 'destroy'], ['Can:yields.manage']);
+    $r->get('/{id}/storage', [YieldsController::class, 'storageForm'], ['Can:yields.manage']);
+    $r->post('/{id}/storage', [YieldsController::class, 'storeStorage'], ['Can:yields.manage']);
 });
 
 /* --------------------------------------------------------------- finance */
@@ -203,6 +218,19 @@ $router->group('/inventory', $farm, static function (Router $r): void {
     $r->post('/{id}/delete', [InventoryController::class, 'destroy'], ['Can:inventory.manage']);
     $r->get('/{id}/sell', [InventoryController::class, 'sellForm'], ['Can:inventory.view']);
     $r->post('/{id}/sell', [InventoryController::class, 'sell'], ['Can:inventory.manage']);
+});
+
+/* ------------------------------------------------------------- equipment */
+$router->group('/equipment', $farm, static function (Router $r): void {
+    $r->get('', [EquipmentController::class, 'index'], ['Can:equipment.view']);
+    $r->get('/create', [EquipmentController::class, 'create'], ['Can:equipment.manage']);
+    $r->post('', [EquipmentController::class, 'store'], ['Can:equipment.manage']);
+    $r->get('/{id}', [EquipmentController::class, 'show'], ['Can:equipment.view']);
+    $r->get('/{id}/edit', [EquipmentController::class, 'edit'], ['Can:equipment.manage']);
+    $r->put('/{id}', [EquipmentController::class, 'update'], ['Can:equipment.manage']);
+    $r->post('/{id}/delete', [EquipmentController::class, 'destroy'], ['Can:equipment.manage']);
+    $r->post('/{id}/logs', [EquipmentController::class, 'addLog'], ['Can:equipment.manage']);
+    $r->post('/{id}/logs/{logId}/delete', [EquipmentController::class, 'deleteLog'], ['Can:equipment.manage']);
 });
 
 /* ------------------------------------------------------------- livestock */

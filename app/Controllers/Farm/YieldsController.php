@@ -14,14 +14,17 @@ use App\Core\Request;
 use App\Core\Response;
 use App\Repositories\CropFieldRepository;
 use App\Repositories\HarvestYieldRepository;
+use App\Repositories\ProduceStorageRepository;
 
 final class YieldsController extends Controller
 {
     private const UNITS = ['kg', 'bags', 'tonnes', 'crates'];
+    private const GRADES = ['A', 'B', 'C', 'reject'];
 
     public function __construct(
         private readonly HarvestYieldRepository $yields = new HarvestYieldRepository(),
         private readonly CropFieldRepository $crops = new CropFieldRepository(),
+        private readonly ProduceStorageRepository $storage = new ProduceStorageRepository(),
     ) {
     }
 
@@ -117,6 +120,7 @@ final class YieldsController extends Controller
             'margin'    => $margin,
             'allCrops'  => $canManage ? $this->crops->forFarm($farmId) : [],
             'units'     => self::UNITS,
+            'storageByHarvest' => $this->storage->forHarvests($farmId, array_map(static fn ($r) => (string) $r['id'], $rows)),
         ]);
     }
 
@@ -199,6 +203,63 @@ final class YieldsController extends Controller
         AuditLog::user('yield.deleted', (string) Auth::id(), ['yield_id' => $id], $ctx->farmId(), $request->ip());
         Flash::success('Yield record deleted.');
         return $this->redirect(url('yields'));
+    }
+
+    /* -------------------------------------------------------------- storage */
+
+    public function storageForm(Request $request): Response
+    {
+        $ctx = FarmContext::current();
+        $yield = $this->yields->find($ctx->farmId(), (string) $request->route('id'));
+        if ($yield === null) {
+            Flash::error('Yield record not found.');
+            return $this->redirect(url('yields'));
+        }
+        return $this->view('yields/storage', [
+            'title'   => 'Storage — ' . (string) $yield['crop_name'],
+            'active'  => 'yields',
+            'y'       => $yield,
+            'storage' => $this->storage->forHarvest($ctx->farmId(), (string) $yield['id']),
+            'grades'  => self::GRADES,
+        ]);
+    }
+
+    public function storeStorage(Request $request): Response
+    {
+        $ctx = FarmContext::current();
+        $id = (string) $request->route('id');
+        $yield = $this->yields->find($ctx->farmId(), $id);
+        if ($yield === null) {
+            Flash::error('Yield record not found.');
+            return $this->redirect(url('yields'));
+        }
+
+        $data = $this->validate($request, [
+            'storage_location'  => ['max:160'],
+            'drying_method'     => ['max:120'],
+            'drying_date'       => ['date'],
+            'quality_grade'     => ['in:' . implode(',', self::GRADES)],
+            'expected_loss_qty' => ['numeric', 'min:0', 'max:100000000'],
+            'loss_reason'       => ['max:255'],
+            'notes'             => ['max:500'],
+        ]);
+        if ($data instanceof Response) {
+            return $data;
+        }
+
+        $this->storage->upsert($ctx->farmId(), $id, [
+            'storage_location'  => isset($data['storage_location']) && $data['storage_location'] !== '' ? trim((string) $data['storage_location']) : null,
+            'drying_method'     => isset($data['drying_method']) && $data['drying_method'] !== '' ? trim((string) $data['drying_method']) : null,
+            'drying_date'       => isset($data['drying_date']) && $data['drying_date'] !== '' ? date('Y-m-d', (int) strtotime((string) $data['drying_date'])) : null,
+            'quality_grade'     => isset($data['quality_grade']) && $data['quality_grade'] !== '' ? (string) $data['quality_grade'] : null,
+            'expected_loss_qty' => isset($data['expected_loss_qty']) && $data['expected_loss_qty'] !== '' ? (float) $data['expected_loss_qty'] : null,
+            'loss_reason'       => isset($data['loss_reason']) && $data['loss_reason'] !== '' ? trim((string) $data['loss_reason']) : null,
+            'notes'             => isset($data['notes']) && $data['notes'] !== '' ? trim((string) $data['notes']) : null,
+        ]);
+
+        AuditLog::user('yield.storage_saved', (string) Auth::id(), ['yield_id' => $id], $ctx->farmId(), $request->ip());
+        Flash::success('Storage details saved.');
+        return $this->redirect(url('yields/' . $id . '/storage'));
     }
 
     /** @return array<string,mixed>|Response */

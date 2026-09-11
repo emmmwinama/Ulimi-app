@@ -21,9 +21,11 @@ $navCommand = [
     ['key' => 'map',        'label' => 'Farm map',   'href' => url('map'),        'icon' => 'map'],
     ['key' => 'crops',      'label' => 'Crops',      'href' => url('crops'),      'icon' => 'sprout'],
     ['key' => 'activities', 'label' => 'Activities', 'href' => url('activities'), 'icon' => 'leaf'],
+    ['key' => 'incidents',  'label' => 'Pest & Disease','href' => url('incidents'), 'icon' => 'alert'],
     ['key' => 'yields',     'label' => 'Yields',     'href' => url('yields'),     'icon' => 'sprout'],
     ['key' => 'finance',    'label' => 'Finance',    'href' => url('finance'),    'icon' => 'wallet'],
     ['key' => 'inventory',  'label' => 'Inventory',  'href' => url('inventory'),  'icon' => 'boxes'],
+    ['key' => 'equipment',  'label' => 'Equipment',  'href' => url('equipment'),  'icon' => 'settings'],
     ['key' => 'livestock',  'label' => 'Livestock',  'href' => url('livestock'),  'icon' => 'cow'],
     ['key' => 'reports',    'label' => 'Reports',    'href' => url('reports'),    'icon' => 'bar-chart'],
 ];

@@ -176,6 +176,12 @@ $fmtKg = static fn (float $n): string => number_format($n) . ' kg';
                                     </div>
                                     <?php if ($canManage): ?>
                                         <div class="row" style="gap:4px">
+                                            <a href="<?= e(url('yields/' . rawurlencode((string) $y['id']) . '/storage')) ?>"
+                                               title="<?= isset($storageByHarvest[$y['id']]) ? 'Storage recorded' : 'Log storage details' ?>"
+                                               class="row" style="gap:4px;height:28px;padding:0 8px;border-radius:9px;font-size:.7rem;font-weight:800;<?= isset($storageByHarvest[$y['id']]) ? 'background:var(--green-050);color:var(--green-text)' : 'background:var(--surface-3);color:var(--text-faint)' ?>">
+                                                <?= $this->partial('partials/icon', ['name' => 'boxes', 'class' => 'ico ico-sm']) ?>
+                                                <?= isset($storageByHarvest[$y['id']]) ? 'Stored' : 'Storage' ?>
+                                            </a>
                                             <a href="#edit-yield-<?= e((string) $y['id']) ?>" title="Edit"
                                                style="width:28px;height:28px;border-radius:9px;display:grid;place-items:center;background:var(--surface-3);color:var(--text-faint)">
                                                 <?= $this->partial('partials/icon', ['name' => 'pencil', 'class' => 'ico ico-sm']) ?>

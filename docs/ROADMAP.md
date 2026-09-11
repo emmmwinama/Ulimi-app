@@ -231,6 +231,191 @@ environment. See `SECURITY-REVIEW.md`'s "Known gaps" section.
 
 ---
 
+## Phase 13 — Reminders & Proactive Alerts  ☑
+
+Closed a real gap between this document and the code: `NotificationGenerator`
+only ever implemented `harvestsDue()` and `noRecentActivity()` — the "low
+inventory, price alert" notifications this file claimed under Phase 8 were
+never built. Extends the existing lazy-notification pattern; the only schema
+change is one nullable column.
+
+- Schema `015_reminders`: `inventory_items.reorder_threshold` (nullable
+  `DECIMAL(14,3)`) — surfaced in the stock item form as "Low-stock alert
+  below", optional
+- `NotificationGenerator` gains four generators, all farm-scoped, all
+  going through the existing `NotificationRepository::upsert()` dedupe:
+  - `lowStock()` — items at or below `reorder_threshold`, type
+    `low_inventory`
+  - `priceAlert()` — sales in the last 14 days priced >15% below the
+    active `market_prices` average for the same item name, type
+    `price_alert`
+  - `livestockDue()` — each active animal's *most recent* `animal_health`
+    row (correlated subquery, so a superseded record can't re-alert)
+    whose `next_due_date` is due/overdue within 7 days, type
+    `livestock_due`
+  - `weatherAlert()` — non-`info`-severity items from `Weather::advice()`,
+    type `weather_alert`
+- `Services\Weather::advice()` (static, pure — no I/O) extracts and
+  extends the farming-advice thresholds that used to live inline in
+  `weather/index.php`: heavy rain, spray conditions, strong wind, high
+  heat, frost, dry-spell/irrigation, and a 2-of-3-day flood warning; each
+  item carries a `severity` (`info`/`caution`/`warning`) so the
+  weather page and the notification generator share one source of truth
+  instead of drifting apart. `Weather::sprayConditionOk()` extracted
+  alongside it for reuse.
+- `run()` now takes the farm row (`FarmContext::current()->farm`) so
+  `weatherAlert()` can call `Weather::forFarm()` without a second lookup —
+  the one call site (`NotificationsController::index()`) updated.
+- Tests: 7 new pure-logic cases for `Weather::advice()` /
+  `sprayConditionOk()` in `tests/run.php` (no DB — matches how the rest of
+  that runner works); the three DB-backed generators follow the same
+  untested-by-`run.php` pattern as the pre-existing `harvestsDue()` /
+  `noRecentActivity()`, exercised manually against a scratch DB instead.
+- Security-review note: one new input surface (`reorder_threshold` on the
+  inventory form) — validated `numeric`/`min:0`/`max` like every other
+  numeric field on that form, same farm-scoped write path. The four new
+  generator queries are read-only and each carries its own `farm_id` /
+  animal→farm join predicate, consistent with the farm-scoping rule
+  applied to every other repository query.
+
+## Phase 14 — Pest & Disease Incident Log & Media Attachments  ☑
+
+- Schema `016_incidents` (numbering picked up where the codebase actually
+  was — 013/014 were already taken by the mobile API and AI-insights
+  phases by the time this landed, ahead of what `ROADMAP.md` had recorded):
+  `crop_incidents` (crop_field_id, type, description, severity, status,
+  reported_date, treatment_notes, referred_to), farm- and
+  crop-field-scoped.
+- Media attaches through the existing `farm_documents.linked_to`/
+  `linked_type` columns — present since Phase 8, never actually set by any
+  caller until now — instead of a parallel photo column. Wired to both
+  `crop_incidents` (`CropIncidentsController`) and, while in the
+  neighbourhood, `animal_health` (`LivestockController`'s health event
+  form gained the same optional attachment, since it was the other
+  half of "pest/disease/animal-health" from the original spec and the
+  plumbing — `DocumentRepository::forLinked()`/`forLinkedMany()` — was
+  already being built). Deleting an incident or a health record cleans up
+  its linked documents and stored files instead of leaving orphans.
+- `Upload` allowlist gains voice-note formats (`mp3`/`m4a`/`ogg`), same
+  extension+MIME+magic-byte agreement check as images/PDF; `Upload::path()`'s
+  asset-id shape validation extended to match.
+- `Controllers\Farm\CropIncidentsController` — full CRUD (`/incidents`),
+  gated on the existing `crops.view`/`crops.manage` permissions rather
+  than a new Authz resource key, since incident reporting is a crop-domain
+  action and every role that can already manage crop plantings is the
+  right set of people to report/manage incidents on them.
+- `NotificationGenerator::outbreakAlert()` — 3+ same-`type` incidents on
+  one farm within 14 days, using the Phase 13 dedupe/upsert pattern
+  (weekly-rotating key so it resurfaces while ongoing). Cross-farm/
+  regional outbreak detection is out of scope until Phase 19's
+  cooperative layer exists.
+- Security-review note: new farm-scoped write surface, same
+  `Validator`/CSRF/farm-scoping treatment as every other controller; the
+  file-upload hardening is inherited unchanged from Phase 8's `Upload`
+  service, just with a wider (still-checked) allowlist.
+
+## Phase 15 — Inventory Hardening  ☑
+
+- Schema `017_inventory2` (`reorder_threshold` had already landed in
+  Phase 13): `inventory_items` gains `batch_number`, `expiry_date`,
+  `supplier_name`, `supplier_contact`; new `equipment` +
+  `equipment_maintenance_logs` tables.
+- Equipment is a genuinely separate lifecycle from stock, not just a
+  form change: no quantity/depletion, no per-unit sale, but it does need
+  a maintenance history that `inventory_items` has no shape for. Existing
+  `inventory_items` rows tagged `category = 'equipment'` are left alone
+  (that category value stays valid for backward compatibility) — the new
+  `Controllers\Farm\EquipmentController` (`/equipment`) is the actively-
+  promoted path going forward, not a data migration of old rows.
+- `EquipmentController` reuses the `equipment.view`/`equipment.manage`
+  Authz resource — already fully defined in `Core\Authz`'s role matrix
+  since Phase 1 (owner/manager manage, agronomist/accountant/field_worker
+  view-only) but never exercised by any feature until now.
+- Inventory list shows a batch-number badge and a colour-coded
+  expiry badge (amber inside 30 days, red once past); the add/edit form
+  gained batch/expiry/supplier fields.
+- `NotificationGenerator::expiringStock()` — in-stock items expiring
+  within 30 days or already past expiry, same dedupe/upsert pattern as
+  the rest of Phase 13.
+- Security-review note: `EquipmentController`/`EquipmentRepository`
+  follow the same farm-scoped CRUD + `Validator`/CSRF pattern as every
+  other controller; `equipment_maintenance_logs.equipment_id` is
+  `ON DELETE CASCADE` so deleting equipment can't orphan its maintenance
+  history.
+
+## Phase 16 — Post-Harvest & Loss Tracking  ☑
+
+- Schema `018_postharvest`: `produce_storage` (storage_location,
+  drying_method/date, quality_grade, expected_loss_qty, loss_reason),
+  one-to-one with `harvest_yields` (`UNIQUE` on `harvest_yield_id`,
+  upserted rather than a full CRUD sub-resource — a harvest either has a
+  storage record or doesn't). `inventory_sales` gains `collection_point`,
+  `transport_method`, `pickup_date`.
+- `ProduceStorageRepository::forHarvests()` bulk-loads storage rows for a
+  whole yields list (avoids N+1 when badging "Stored" vs "Storage" on
+  each harvest row in `yields/index`).
+- `YieldsController::storageForm()`/`storeStorage()` (`/yields/{id}/storage`)
+  — a single upsert form, not create/edit/delete, matching the 1:1 shape.
+- `InventoryController::sell()` / the sell form gained the three
+  collection/transport fields, shown under the buyer on the sale-history
+  table when set.
+- `NotificationGenerator::storageReminder()` — harvests logged in the last
+  14 days with no storage record yet, same dedupe pattern as the rest of
+  Phase 13.
+- Security-review note: same farm-scoped CRUD pattern as every other
+  controller; `produce_storage.harvest_yield_id` is `ON DELETE CASCADE`
+  so deleting a yield record can't orphan its storage row.
+
+## Phase 17 — Market Access Enhancements  ☐
+
+- Schema `016_market2`: `buyers` (farm-scoped contact book), `buyer_offers`
+- `transactions` gains `payment_status` (unpaid/partial/paid)
+- Sales-receipt generation reuses `Services\ReportBuilder`/vendored FPDF
+- `MarketController` grows from read-only price listing into a lightweight
+  buyer/offer management screen — still farm-scoped, no cross-farm
+  marketplace/matching engine
+
+## Phase 18 — Finance & Insurance Readiness  ☐
+
+- **Consent-based sharing:** `report_share_links` (token hashed at rest,
+  same pattern as password/invite tokens) + an unauthenticated-but-token-
+  gated, rate-limited, watermarked, revocable read-only report route
+- **Climate-loss evidence:** `climate_events` (event_type, dates,
+  estimated_loss_amount, affected fields/crops, evidence photo via Phase
+  14's document linking), added as its own `ReportBuilder` section and to
+  the `insurance` pack, which today carries no weather data at all
+- **Formatted P&L:** a totals-by-category/period section in
+  `ReportBuilder`, replacing the raw transaction dump, using `Support\Money`
+- Security-review note: the share-link route is the one new unauthenticated
+  surface in this plan — token entropy, rate limit, and expiry get the same
+  scrutiny as the password-reset flow
+
+## Phase 19 — Cooperative & Group Management (MVP)  ☐
+
+Scoped deliberately: member registry + group inventory/production rollup +
+collective sales + contribution ledger. Shared-equipment booking calendars
+and automated NGO/lender report generation are deferred to a future phase —
+this is the largest, most architecturally novel piece of the whole plan (a
+second tenant concept alongside farms) and an MVP de-risks it.
+
+- Schema `017_cooperative`: `cooperatives`, `cooperative_members`
+  (cooperative_id, farm_id, role: chair/secretary/treasurer/member,
+  mirroring the `farm_members` pattern), `cooperative_contributions`
+  (simple ledger, not a payments processor)
+- `Middleware\CooperativeContext`, modeled directly on `FarmContext` —
+  same re-verify-membership-every-request trust boundary
+- Group inventory/production rollup: read-only aggregate queries over
+  member farms' existing tables, no data duplication
+- `cooperative_sales`: collective sale with per-member quantity splits,
+  same shape as `inventory_sales`
+- `Controllers\Farm\CooperativeController` (create/join/members/
+  contributions/rollup/collective sale) + views
+- Security-review note: second genuinely new authz boundary in the app —
+  needs its own cross-cooperative IDOR sweep before ☑, same rigor as the
+  Phase 12 farm-resource sweep
+
+---
+
 ## Cross-cutting (every phase)
 - `declare(strict_types=1)`, PSR-12 style
 - Repository methods farm-scoped; no id from request body trusted

@@ -82,6 +82,13 @@ $catColor = [
                             <div class="row wrap" style="gap:6px;margin-top:4px">
                                 <span class="badge" style="background:<?= $cc['bg'] ?>;color:<?= $cc['fg'] ?>;font-size:.625rem"><?= e($label((string) $it['category'])) ?></span>
                                 <?php if (!empty($it['season'])): ?><span class="badge" style="background:#F0F9FF;color:#075985;font-size:.625rem"><?= e((string) $it['season']) ?></span><?php endif; ?>
+                                <?php if (!empty($it['batch_number'])): ?><span class="badge" style="background:var(--surface-2);color:var(--text-soft);font-size:.625rem">Batch <?= e((string) $it['batch_number']) ?></span><?php endif; ?>
+                                <?php if (!empty($it['expiry_date'])):
+                                    $daysToExpiry = (int) floor((strtotime((string) $it['expiry_date']) - strtotime('today')) / 86400);
+                                    $expBadge = $daysToExpiry < 0 ? 'red' : ($daysToExpiry <= 30 ? 'amber' : '');
+                                ?>
+                                    <span class="badge <?= $expBadge ?>" style="font-size:.625rem"><?= $daysToExpiry < 0 ? 'Expired' : 'Expires' ?> <?= e(date('j M Y', (int) strtotime((string) $it['expiry_date']))) ?></span>
+                                <?php endif; ?>
                             </div>
                         </div>
                     </div>

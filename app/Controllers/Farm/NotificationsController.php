@@ -25,7 +25,7 @@ final class NotificationsController extends Controller
     {
         $ctx = FarmContext::current();
         $userId = (string) Auth::id();
-        $this->generator->run($userId, $ctx->farmId());
+        $this->generator->run($userId, $ctx->farmId(), $ctx->farm);
 
         return $this->view('notifications/index', [
             'title'  => 'Notifications',

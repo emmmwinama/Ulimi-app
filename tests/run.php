@@ -187,6 +187,61 @@ test('Token: hash is stable and verifies', function (): void {
     assertSame(false, Token::matches('wrong', $t['hash']));
 });
 
+/* ------------------------------------------------------------- Weather */
+
+use App\Services\Weather;
+
+function fakeWeather(array $current, array $daily): array
+{
+    return ['available' => true, 'current' => $current, 'daily' => $daily];
+}
+
+test('Weather: unavailable payload has no advice', function (): void {
+    assertSame([], Weather::advice(['available' => false]));
+});
+
+test('Weather: heavy rain today advises against spraying', function (): void {
+    $w = fakeWeather(['wind' => 5], [['rain_mm' => 10, 'rain_chance' => 90, 'min' => 15]]);
+    $advice = Weather::advice($w);
+    assertTrue(in_array('caution', array_column($advice, 'severity'), true));
+    assertTrue(str_contains($advice[0]['text'], 'avoid spraying'));
+});
+
+test('Weather: low wind + low rain chance is good spray weather', function (): void {
+    $w = fakeWeather(['wind' => 5], [['rain_mm' => 0, 'rain_chance' => 5, 'min' => 15]]);
+    assertTrue(Weather::sprayConditionOk($w));
+    $advice = Weather::advice($w);
+    assertSame('info', $advice[0]['severity']);
+});
+
+test('Weather: strong wind is a warning regardless of rain', function (): void {
+    $w = fakeWeather(['wind' => 30], [['rain_mm' => 0, 'rain_chance' => 5, 'min' => 15]]);
+    assertTrue(Weather::sprayConditionOk($w) === false);
+    $advice = Weather::advice($w);
+    assertTrue(in_array('warning', array_column($advice, 'severity'), true));
+});
+
+test('Weather: near-zero overnight low is a frost warning', function (): void {
+    $w = fakeWeather(['wind' => 5], [['rain_mm' => 0, 'rain_chance' => 5, 'min' => 1]]);
+    $advice = Weather::advice($w);
+    assertTrue(in_array('Frost risk tonight — protect sensitive seedlings', array_column($advice, 'text'), true));
+});
+
+test('Weather: three dry days ahead advises irrigation', function (): void {
+    $dry = ['rain_mm' => 0, 'rain_chance' => 5, 'min' => 15];
+    $w = fakeWeather(['wind' => 5], [$dry, $dry, $dry]);
+    $advice = Weather::advice($w);
+    assertTrue(in_array('Dry spell ahead — consider irrigation in the next 3 days', array_column($advice, 'text'), true));
+});
+
+test('Weather: two+ heavy-rain days ahead is a flood warning', function (): void {
+    $heavy = ['rain_mm' => 25, 'rain_chance' => 90, 'min' => 15];
+    $mild = ['rain_mm' => 0, 'rain_chance' => 5, 'min' => 15];
+    $w = fakeWeather(['wind' => 5], [$mild, $heavy, $heavy]);
+    $advice = Weather::advice($w);
+    assertTrue(in_array('warning', array_column($advice, 'severity'), true));
+});
+
 /* -------------------------------------------------------------- report */
 
 $t = $GLOBALS['__tests'];

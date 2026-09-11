@@ -186,6 +186,8 @@ Security is built into the primitives, not bolted on per feature.
 | Admin blast radius | Separate login route, separate session namespace, separate guard, every action audit-logged | `Middleware\AdminAuth` |
 | Transport | `.htaccess` HTTPS redirect + HSTS; secure cookies | `public/.htaccess`, `Core\Session` |
 | Mobile API (Phase 11) | Stateless JWT (vendored), short access + refresh token, identical farm-scoping, CORS allowlist | `Controllers\Api\*` |
+| Consent-based report sharing (Phase 18) | Unauthenticated route gated by a single-use-scope, hashed-at-rest token (same pattern as password/invite tokens); explicit `expires_at` + `revoked_at`; rate-limited like every other public form; read-only, watermarked with who shared it and when | `report_share_links` table, `Core\RateLimiter` |
+| Cooperative authz (Phase 19) | Second tenant boundary alongside farms: deny-by-default, membership re-verified server-side on every request, same as `FarmContext` — never trusted from a client-supplied cooperative id | `Middleware\CooperativeContext`, `cooperative_members` |
 
 **Honest limitation:** biz.na.ht is shared hosting. Co-tenants, no control
 over the TLS layer, and DB credentials in a file on a shared box mean the
@@ -210,6 +212,20 @@ written so that move is a config change, not a rewrite.
 - **Team invites:** tokenised email invite → accept flow creates the
   `team_members` row and (if new) the `users` row.
 - **Admin users** are a separate table and a separate auth domain entirely.
+- **Cooperatives (Phase 19, planned):** a second, independent tenant
+  boundary above the farm — a `farm` joins a `cooperative` via
+  `cooperative_members` (role: chair/secretary/treasurer/member), mirroring
+  the `farm_members` shape. `Middleware\CooperativeContext` sets the active
+  `cooperative_id` in session and re-verifies membership on every request,
+  the same trust model as `FarmContext` — a cooperative id is never trusted
+  from the request. Cooperative-scoped data (contributions, collective
+  sales) is new storage; the group inventory/production rollup is a
+  read-only aggregate over each member farm's existing tables, not a copy.
+- **Report share links (Phase 18, planned):** the one deliberately
+  unauthenticated read path in the app. A farm owner/manager generates a
+  scoped, expiring, revocable token for one report pack; the link needs no
+  login, but every other write/read in the app still requires session auth
+  — this is additive, not a weakening of the model above.
 
 ## 8. Billing / subscription logic (parity)
 

@@ -163,6 +163,74 @@ final class Weather
         }
     }
 
+    /**
+     * Derives short farming-advice strings from a payload shaped like
+     * forFarm()'s return value. Pure function (no I/O) so both the weather
+     * page and NotificationGenerator can share one set of thresholds instead
+     * of drifting apart — severity marks which items are alert-worthy vs.
+     * purely informational (`sprayConditionOk()` reuses the same source data).
+     *
+     * @param array<string,mixed> $weather
+     * @return list<array{text:string,severity:'info'|'caution'|'warning'}>
+     */
+    public static function advice(array $weather): array
+    {
+        if (empty($weather['available'])) {
+            return [];
+        }
+        $today = ($weather['daily'] ?? [])[0] ?? null;
+        if ($today === null) {
+            return [];
+        }
+        $current = $weather['current'] ?? [];
+        $advice = [];
+
+        $rainToday = (float) ($today['rain_mm'] ?? 0);
+        $chanceToday = (float) ($today['rain_chance'] ?? 0);
+        $wind = (float) ($current['wind'] ?? 0);
+
+        if ($rainToday > 5) {
+            $advice[] = ['text' => 'Heavy rain expected — avoid spraying activities today', 'severity' => 'caution'];
+        } elseif (self::sprayConditionOk($weather)) {
+            $advice[] = ['text' => 'Good conditions for spraying — low wind and no rain forecast', 'severity' => 'info'];
+        }
+        if ($wind >= 25) {
+            $advice[] = ['text' => 'Strong wind today — hold off spraying and secure light structures', 'severity' => 'warning'];
+        }
+        if ((float) ($current['temp'] ?? 0) > 35) {
+            $advice[] = ['text' => 'High heat alert — water crops and protect young plants', 'severity' => 'caution'];
+        }
+        if ((float) ($today['min'] ?? 99) <= 2) {
+            $advice[] = ['text' => 'Frost risk tonight — protect sensitive seedlings', 'severity' => 'warning'];
+        }
+
+        $next3 = array_slice($weather['daily'] ?? [], 0, 3);
+        if ($next3 !== [] && array_filter($next3, static fn ($d): bool => (float) ($d['rain_mm'] ?? 0) >= 1) === []) {
+            $advice[] = ['text' => 'Dry spell ahead — consider irrigation in the next 3 days', 'severity' => 'caution'];
+        }
+        if (array_filter($next3, static fn ($d): bool => (float) ($d['rain_mm'] ?? 0) > 10) !== []) {
+            $advice[] = ['text' => 'Rain expected this week — good time to plant or top-dress', 'severity' => 'info'];
+        }
+        if (count(array_filter($next3, static fn ($d): bool => (float) ($d['rain_mm'] ?? 0) > 20)) >= 2) {
+            $advice[] = ['text' => 'Flood risk — sustained heavy rain forecast this week, check drainage and low-lying fields', 'severity' => 'warning'];
+        }
+
+        return array_slice($advice, 0, 5);
+    }
+
+    /** @param array<string,mixed> $weather */
+    public static function sprayConditionOk(array $weather): bool
+    {
+        $today = ($weather['daily'] ?? [])[0] ?? null;
+        if ($today === null) {
+            return false;
+        }
+        $current = $weather['current'] ?? [];
+        $chanceToday = (float) ($today['rain_chance'] ?? 0);
+        $wind = (float) ($current['wind'] ?? 0);
+        return $chanceToday < 20 && $wind < 15;
+    }
+
     /** Open-Meteo WMO weather code -> short label. */
     public static function codeLabel(?int $code): string
     {

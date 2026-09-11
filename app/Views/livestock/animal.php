@@ -4,6 +4,7 @@
  * @var array<int,array<string,mixed>> $health @var array<int,array<string,mixed>> $production
  * @var array<int,array<string,mixed>> $weights @var array<int,array<string,mixed>> $expenses
  * @var array<int,array<string,mixed>> $sales
+ * @var array<string,list<array<string,mixed>>> $healthMedia keyed by health record id
  * @var bool $canManage
  */
 $this->layout('layouts/app');
@@ -40,7 +41,7 @@ $editable = $canManage && $a['status'] === 'Active';
 
 <?php
 /** Renders one event section: heading, optional add form (as <details>), table. */
-$section = function (string $heading, array $rows, array $cols, ?string $addKind, callable $addFields) use ($id, $editable) {
+$section = function (string $heading, array $rows, array $cols, ?string $addKind, callable $addFields, bool $multipart = false) use ($id, $editable) {
     ?>
     <div class="card mb-16px">
         <div class="card-head">
@@ -49,7 +50,7 @@ $section = function (string $heading, array $rows, array $cols, ?string $addKind
                 <details class="chip-select">
                     <summary>+ Add</summary>
                     <div class="menu" style="min-width:320px;padding:14px">
-                        <form method="post" action="<?= e(url('livestock/animals/' . $id . '/events/' . $addKind)) ?>" class="stack" style="--stack-gap:10px">
+                        <form method="post" action="<?= e(url('livestock/animals/' . $id . '/events/' . $addKind)) ?>" class="stack" style="--stack-gap:10px" <?= $multipart ? 'enctype="multipart/form-data"' : '' ?>>
                             <?= csrf_field() ?>
                             <?php $addFields(); ?>
                             <button class="btn sm" type="submit">Save record</button>
@@ -95,6 +96,17 @@ $mon = static fn (string $k) => static fn ($r) => e(Money::format((float) ($r[$k
     ['label' => 'Vet', 'render' => $txt('veterinarian')],
     ['label' => 'Next due', 'render' => static fn ($r) => $r['next_due_date'] ? e(Dates::forDisplay((string) $r['next_due_date'])) : '—'],
     ['label' => 'Cost', 'num' => true, 'render' => $mon('cost')],
+    ['label' => 'Attachment', 'render' => static function ($r) use ($healthMedia): string {
+        $docs = $healthMedia[(string) $r['id']] ?? [];
+        if ($docs === []) {
+            return '—';
+        }
+        $links = array_map(
+            static fn ($d) => '<a href="' . e(url('documents/' . rawurlencode((string) $d['id']) . '/download')) . '">' . (str_starts_with((string) $d['mime_type'], 'audio/') ? 'Voice note' : 'Photo') . '</a>',
+            $docs,
+        );
+        return implode(', ', $links);
+    }],
 ], 'health', function (): void { ?>
     <div class="field"><label class="small">Type</label><input class="input" name="type" list="hl_types" required><datalist id="hl_types"><option value="Vaccination"><option value="Treatment"><option value="Deworming"><option value="Check-up"></datalist></div>
     <div class="field"><label class="small">Description</label><input class="input" name="description" required></div>
@@ -104,7 +116,8 @@ $mon = static fn (string $k) => static fn ($r) => e(Money::format((float) ($r[$k
         <div class="field flex-1"><label class="small">Next due</label><input class="input" type="date" name="next_due_date"></div>
     </div>
     <div class="field"><label class="small">Cost</label><input class="input" type="number" step="any" name="cost" value="0"></div>
-<?php }); ?>
+    <div class="field"><label class="small">Photo or voice note (optional)</label><input class="input" type="file" name="attachment" accept=".jpg,.jpeg,.png,.webp,.mp3,.m4a,.ogg"></div>
+<?php }, multipart: true); ?>
 
 <?php $section('Production', $production, [
     ['label' => 'Date', 'render' => $dt('date')],

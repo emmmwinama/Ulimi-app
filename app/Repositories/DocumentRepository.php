@@ -45,6 +45,46 @@ final class DocumentRepository
         return (int) $this->db->scalar('SELECT COUNT(*) FROM farm_documents WHERE farm_id = :fid', ['fid' => $farmId]);
     }
 
+    /** Attachments linked to one record (e.g. a crop incident or an animal health entry). @return array<int,array<string,mixed>> */
+    public function forLinked(string $farmId, string $linkedType, string $linkedId): array
+    {
+        return $this->db->select(
+            'SELECT * FROM farm_documents WHERE farm_id = :fid AND linked_type = :ltype AND linked_to = :lid ORDER BY uploaded_at DESC',
+            ['fid' => $farmId, 'ltype' => $linkedType, 'lid' => $linkedId],
+        );
+    }
+
+    /**
+     * Attachments for many linked records at once (e.g. every health record shown on an
+     * animal page), grouped by linked_to id — avoids an N+1 query per row.
+     *
+     * @param list<string> $linkedIds
+     * @return array<string,list<array<string,mixed>>>
+     */
+    public function forLinkedMany(string $farmId, string $linkedType, array $linkedIds): array
+    {
+        $linkedIds = array_values(array_unique(array_filter($linkedIds, static fn ($v) => $v !== null && $v !== '')));
+        if ($linkedIds === []) {
+            return [];
+        }
+        $placeholders = [];
+        $bind = ['fid' => $farmId, 'ltype' => $linkedType];
+        foreach ($linkedIds as $i => $id) {
+            $key = 'id' . $i;
+            $placeholders[] = ':' . $key;
+            $bind[$key] = $id;
+        }
+        $rows = $this->db->select(
+            'SELECT * FROM farm_documents WHERE farm_id = :fid AND linked_type = :ltype AND linked_to IN (' . implode(',', $placeholders) . ') ORDER BY uploaded_at DESC',
+            $bind,
+        );
+        $byLinked = [];
+        foreach ($rows as $r) {
+            $byLinked[(string) $r['linked_to']][] = $r;
+        }
+        return $byLinked;
+    }
+
     /** @param array<string,mixed> $data */
     public function create(string $farmId, string $userId, array $data): string
     {

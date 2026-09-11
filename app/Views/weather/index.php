@@ -9,28 +9,15 @@ use App\Services\Weather;
 $today = ($weather['daily'] ?? [])[0] ?? null;
 $current = $weather['current'] ?? [];
 
-$advice = [];
-if ($today !== null) {
-    $rainToday = (float) ($today['rain_mm'] ?? 0);
-    $chanceToday = (float) ($today['rain_chance'] ?? 0);
-    $wind = (float) ($current['wind'] ?? 0);
-    if ($rainToday > 5) {
-        $advice[] = ['text' => 'Heavy rain expected — avoid spraying activities today', 'bg' => 'var(--blue-050)', 'fg' => '#1E40AF'];
-    } elseif ($chanceToday < 20 && $wind < 15) {
-        $advice[] = ['text' => 'Good conditions for spraying — low wind and no rain forecast', 'bg' => 'var(--green-050)', 'fg' => 'var(--green-text)'];
-    }
-    if ((float) ($current['temp'] ?? 0) > 35) {
-        $advice[] = ['text' => 'High heat alert — water crops and protect young plants', 'bg' => '#F0F9FF', 'fg' => '#075985'];
-    }
-    $next3 = array_slice($weather['daily'] ?? [], 0, 3);
-    if ($next3 !== [] && !array_filter($next3, static fn ($d) => (float) ($d['rain_mm'] ?? 0) >= 1)) {
-        $advice[] = ['text' => 'Dry spell ahead — consider irrigation in the next 3 days', 'bg' => '#F0F9FF', 'fg' => '#0284C7'];
-    }
-    if (array_filter($next3, static fn ($d) => (float) ($d['rain_mm'] ?? 0) > 10) !== []) {
-        $advice[] = ['text' => 'Rain expected this week — good time to plant or top-dress', 'bg' => 'var(--green-050)', 'fg' => 'var(--green-text)'];
-    }
-    $advice = array_slice($advice, 0, 3);
-}
+// Severity -> colour, kept here (view concern) while the thresholds that pick
+// a severity live once in Weather::advice() and are shared with
+// NotificationGenerator's weatherAlert().
+$severityColors = [
+    'info'    => ['bg' => 'var(--green-050)', 'fg' => 'var(--green-text)'],
+    'caution' => ['bg' => 'var(--amber-050)', 'fg' => 'var(--amber)'],
+    'warning' => ['bg' => 'var(--red-050)', 'fg' => 'var(--red-text)'],
+];
+$advice = array_slice(Weather::advice($weather), 0, 3);
 ?>
 <?php $this->start('content'); ?>
 <div class="page-head">
@@ -84,8 +71,8 @@ if ($today !== null) {
     <?php if ($advice !== []): ?>
         <p class="eyebrow mb-12px">Farming advice based on today's forecast</p>
         <div class="stack mb-24px" style="--stack-gap:8px">
-            <?php foreach ($advice as $a): ?>
-                <div style="background:<?= $a['bg'] ?>;color:<?= $a['fg'] ?>;border-radius:12px;padding:12px 16px;font-size:.875rem;font-weight:700"><?= e($a['text']) ?></div>
+            <?php foreach ($advice as $a): $c = $severityColors[$a['severity']] ?? $severityColors['caution']; ?>
+                <div style="background:<?= $c['bg'] ?>;color:<?= $c['fg'] ?>;border-radius:12px;padding:12px 16px;font-size:.875rem;font-weight:700"><?= e($a['text']) ?></div>
             <?php endforeach; ?>
         </div>
     <?php endif; ?>

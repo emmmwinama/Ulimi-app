@@ -12,9 +12,12 @@ use App\Core\FarmContext;
 use App\Core\Flash;
 use App\Core\Request;
 use App\Core\Response;
+use App\Repositories\DocumentRepository;
 use App\Repositories\LivestockRepository;
 use App\Repositories\TransactionRepository;
 use App\Services\LivestockStats;
+use App\Services\Upload;
+use Throwable;
 
 final class LivestockController extends Controller
 {
@@ -32,6 +35,7 @@ final class LivestockController extends Controller
         private readonly LivestockRepository $repo = new LivestockRepository(),
         private readonly TransactionRepository $tx = new TransactionRepository(),
         private readonly LivestockStats $stats = new LivestockStats(),
+        private readonly DocumentRepository $documents = new DocumentRepository(),
     ) {
     }
 
@@ -130,11 +134,13 @@ final class LivestockController extends Controller
             Flash::error('Animal not found.');
             return $this->redirect(url('livestock'));
         }
+        $health = $this->repo->events('animal_health', $ctx->farmId(), (string) $animal['id']);
         return $this->view('livestock/animal', [
             'title'      => trim(((string) ($animal['tag'] ?? '')) . ' ' . ((string) ($animal['name'] ?? ''))) ?: 'Animal',
             'active'     => 'livestock',
             'a'          => $animal,
-            'health'     => $this->repo->events('animal_health', $ctx->farmId(), (string) $animal['id']),
+            'health'     => $health,
+            'healthMedia' => $this->documents->forLinkedMany($ctx->farmId(), 'animal_health', array_map(static fn ($r) => (string) $r['id'], $health)),
             'production' => $this->repo->events('animal_production', $ctx->farmId(), (string) $animal['id']),
             'weights'    => $this->repo->events('animal_weight', $ctx->farmId(), (string) $animal['id']),
             'expenses'   => $this->repo->events('animal_expenses', $ctx->farmId(), (string) $animal['id']),
@@ -206,11 +212,16 @@ final class LivestockController extends Controller
             return $row;
         }
 
-        $this->repo->addEvent(self::EVENT_TABLES[$kind], $ctx->farmId(), $animalId, $row);
+        $eventId = $this->repo->addEvent(self::EVENT_TABLES[$kind], $ctx->farmId(), $animalId, $row);
 
         // A recorded weight also updates the animal's current weight.
         if ($kind === 'weight') {
             $this->repo->updateAnimal($ctx->farmId(), $animalId, ['weight' => $row['weight']]);
+        }
+
+        // Health records can carry an optional photo/voice-note attachment (vet note, wound photo, etc).
+        if ($kind === 'health') {
+            $this->attachHealthMedia($request, $ctx->farmId(), $eventId);
         }
 
         AuditLog::user('livestock.event_added', (string) Auth::id(), ['animal_id' => $animalId, 'kind' => $kind], $ctx->farmId(), $request->ip());
@@ -229,6 +240,12 @@ final class LivestockController extends Controller
         if ($table === null) {
             Flash::error('Unknown record type.');
             return $this->redirect(url('livestock/animals/' . $animalId));
+        }
+        if ($kind === 'health') {
+            foreach ($this->documents->forLinked($ctx->farmId(), 'animal_health', $eventId) as $doc) {
+                Upload::delete((string) $doc['asset_id']);
+                $this->documents->delete($ctx->farmId(), (string) $doc['id']);
+            }
         }
         $this->repo->deleteEvent($table, $ctx->farmId(), $eventId);
         Flash::success('Record removed.');
@@ -467,5 +484,29 @@ final class LivestockController extends Controller
             'date' => date('Y-m-d', (int) strtotime((string) $d['date'])),
             'notes' => ($d['notes'] ?? '') !== '' ? trim((string) $d['notes']) : null,
         ];
+    }
+
+    /** Optional photo/voice-note attachment on a health record — additive, never blocks saving the record itself. */
+    private function attachHealthMedia(Request $request, string $farmId, string $healthId): void
+    {
+        $file = $request->file('attachment');
+        if ($file === null || (int) ($file['error'] ?? UPLOAD_ERR_NO_FILE) === UPLOAD_ERR_NO_FILE) {
+            return;
+        }
+        try {
+            $stored = Upload::store($file);
+        } catch (Throwable $e) {
+            Flash::error('Record saved, but the attachment failed: ' . $e->getMessage());
+            return;
+        }
+        $this->documents->create($farmId, (string) Auth::id(), [
+            'name'        => 'Health record attachment — ' . date('Y-m-d'),
+            'type'        => str_starts_with($stored['mime_type'], 'audio/') ? 'other' : 'photo',
+            'asset_id'    => $stored['asset_id'],
+            'mime_type'   => $stored['mime_type'],
+            'size'        => $stored['size'],
+            'linked_to'   => $healthId,
+            'linked_type' => 'animal_health',
+        ]);
     }
 }
