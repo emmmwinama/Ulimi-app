@@ -124,6 +124,7 @@
     flex: none;
     display: inline-block;
   }
+  svg.ico-sm { width: 14px; height: 14px; }
 }
 
 @layer components {
