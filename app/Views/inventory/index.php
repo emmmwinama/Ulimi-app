@@ -29,7 +29,7 @@ $catColor = [
         <p class="lede"><?= count($items) ?> item<?= count($items) === 1 ? '' : 's' ?> · <?= e(Money::format($totalRevenue)) ?> in sales</p>
     </div>
     <?php if ($canManage): ?>
-        <a class="btn" href="<?= e(url('inventory/create')) ?>">
+        <a class="btn" href="#add-item">
             <?= $this->partial('partials/icon', ['name' => 'plus', 'class' => 'ico']) ?> Add stock item
         </a>
     <?php endif; ?>
@@ -63,7 +63,7 @@ $catColor = [
         </span>
         <div class="h3">No stock recorded</div>
         <p>Track harvested produce and input stock (seed, fertiliser, chemicals). Sales reduce stock and post to Finance automatically.</p>
-        <?php if ($canManage): ?><p class="mt-16px"><a class="btn" href="<?= e(url('inventory/create')) ?>">Add a stock item</a></p><?php endif; ?>
+        <?php if ($canManage): ?><p class="mt-16px"><a class="btn" href="#add-item">Add a stock item</a></p><?php endif; ?>
     </div>
 <?php else: ?>
     <div class="stack" style="--stack-gap:12px">
@@ -90,7 +90,7 @@ $catColor = [
                             <a href="<?= e(url('inventory/' . rawurlencode((string) $it['id']) . '/sell')) ?>" class="row" style="gap:4px;height:32px;padding:0 12px;border-radius:9px;background:var(--teal-pale);color:var(--teal);font-size:.75rem;font-weight:800;border:1px solid #86EFAC">
                                 <?= $this->partial('partials/icon', ['name' => 'wallet', 'class' => 'ico ico-sm']) ?> Sell
                             </a>
-                            <a href="<?= e(url('inventory/' . rawurlencode((string) $it['id']) . '/edit')) ?>" title="Edit"
+                            <a href="#edit-item-<?= e((string) $it['id']) ?>" title="Edit"
                                style="width:32px;height:32px;border-radius:9px;display:grid;place-items:center;background:var(--surface-3);color:var(--text-faint)">
                                 <?= $this->partial('partials/icon', ['name' => 'pencil', 'class' => 'ico ico-sm']) ?>
                             </a>
@@ -127,5 +127,56 @@ $catColor = [
             </div>
         <?php endforeach; ?>
     </div>
+<?php endif; ?>
+
+<?php if ($canManage): ?>
+    <div class="slide-over" id="add-item">
+        <a href="#" class="scrim" aria-label="Close"></a>
+        <div class="panel">
+            <div class="panel-head">
+                <div>
+                    <h2 class="h3">Add stock item</h2>
+                    <p class="small muted mt-8px">Track harvested produce or input stock</p>
+                </div>
+                <a href="#" class="panel-close" aria-label="Close"><?= $this->partial('partials/icon', ['name' => 'x', 'class' => 'ico ico-sm']) ?></a>
+            </div>
+            <form method="post" action="<?= e(url('inventory')) ?>" style="display:contents">
+                <?= csrf_field() ?>
+                <div class="panel-body stack">
+                    <?= $this->partial('partials/inventory/item', ['item' => null, 'categories' => $categories]) ?>
+                </div>
+                <div class="panel-foot">
+                    <a href="#" class="btn ghost block">Cancel</a>
+                    <button type="submit" class="btn block">Add item</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <?php foreach ($items as $it): ?>
+        <div class="slide-over" id="edit-item-<?= e((string) $it['id']) ?>">
+            <a href="#" class="scrim" aria-label="Close"></a>
+            <div class="panel">
+                <div class="panel-head">
+                    <div>
+                        <h2 class="h3">Edit stock item</h2>
+                        <p class="small muted mt-8px"><?= e((string) $it['name']) ?></p>
+                    </div>
+                    <a href="#" class="panel-close" aria-label="Close"><?= $this->partial('partials/icon', ['name' => 'x', 'class' => 'ico ico-sm']) ?></a>
+                </div>
+                <form method="post" action="<?= e(url('inventory/' . rawurlencode((string) $it['id']))) ?>" style="display:contents">
+                    <?= csrf_field() ?>
+                    <?= method_field('PUT') ?>
+                    <div class="panel-body stack">
+                        <?= $this->partial('partials/inventory/item', ['item' => $it, 'categories' => $categories]) ?>
+                    </div>
+                    <div class="panel-foot">
+                        <a href="#" class="btn ghost block">Cancel</a>
+                        <button type="submit" class="btn block">Save</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    <?php endforeach; ?>
 <?php endif; ?>
 <?php $this->stop(); ?>
