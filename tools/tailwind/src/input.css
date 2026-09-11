@@ -334,7 +334,13 @@
     font-size: .6rem; font-weight: 800; display: grid; place-items: center; line-height: 1;
   }
 
-  .content { padding: 26px 24px 56px; max-width: 1320px; margin-inline: auto; }
+  /* width:100% matters here: .content is a flex child of .main (column flex),
+     and a flex item with auto cross-axis margins does NOT stretch to fill the
+     row -- it shrink-to-fits instead, so its width silently tracked each
+     page's own content (a wide table vs. a sparse form) instead of the
+     intended 1320px. Explicit width:100% makes it fill first, then max-width
+     caps it, then the auto margins center the now-uniform box. */
+  .content { width: 100%; padding: 26px 24px 56px; max-width: 1320px; margin-inline: auto; }
   .content-narrow { max-width: 760px; }
 
   /* farm switcher + user menu */
