@@ -32,15 +32,29 @@ use App\Support\Money;
 </form>
 
 <div class="grid cols-4">
-    <div class="stat"><div class="label">Income</div><div class="value" style="font-size:1.15rem;color:var(--teal)"><?= e(Money::compact($totals['income'])) ?></div></div>
-    <div class="stat"><div class="label">Total cost</div><div class="value" style="font-size:1.15rem"><?= e(Money::compact($totals['total_cost'])) ?></div></div>
     <div class="stat">
-        <div class="label">Net margin</div>
-        <div class="value" style="font-size:1.15rem;color:<?= $totals['net'] >= 0 ? 'var(--teal)' : 'var(--red)' ?>"><?= e(Money::compact($totals['net'])) ?></div>
+        <div class="icon-row"><span class="icon-box" style="background:var(--teal-pale)"><?= $this->partial('partials/icon', ['name' => 'trend-up', 'class' => 'ico']) ?></span></div>
+        <div class="value" style="font-size:1.4rem;color:var(--teal)"><?= e(Money::compact($totals['income'])) ?></div>
+        <div class="label">Income</div>
     </div>
     <div class="stat">
+        <div class="icon-row"><span class="icon-box" style="background:var(--red-050);color:var(--red-text)"><?= $this->partial('partials/icon', ['name' => 'trend-down', 'class' => 'ico']) ?></span></div>
+        <div class="value" style="font-size:1.4rem"><?= e(Money::compact($totals['total_cost'])) ?></div>
+        <div class="label">Total cost</div>
+    </div>
+    <div class="stat">
+        <div class="icon-row">
+            <span class="icon-box" style="background:<?= $totals['net'] >= 0 ? 'var(--teal-pale)' : 'var(--red-050)' ?>;color:<?= $totals['net'] >= 0 ? 'var(--teal)' : 'var(--red-text)' ?>">
+                <?= $this->partial('partials/icon', ['name' => $totals['net'] >= 0 ? 'trend-up' : 'trend-down', 'class' => 'ico']) ?>
+            </span>
+        </div>
+        <div class="value" style="font-size:1.4rem;color:<?= $totals['net'] >= 0 ? 'var(--teal)' : 'var(--red)' ?>"><?= e(Money::compact($totals['net'])) ?></div>
+        <div class="label">Net margin</div>
+    </div>
+    <div class="stat">
+        <div class="icon-row"><span class="icon-box" style="background:var(--blue-050);color:var(--blue)"><?= $this->partial('partials/icon', ['name' => 'wheat', 'class' => 'ico']) ?></span></div>
+        <div class="value" style="font-size:1.4rem"><?= e(number_format($yieldKg, 0)) ?> kg</div>
         <div class="label">Yield</div>
-        <div class="value" style="font-size:1.15rem"><?= e(number_format($yieldKg, 0)) ?> kg</div>
     </div>
 </div>
 
