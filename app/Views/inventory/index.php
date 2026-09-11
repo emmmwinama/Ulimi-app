@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /**
  * @var array<int,array<string,mixed>> $items
  * @var list<string> $categories @var string $category
@@ -36,7 +36,7 @@ $catColor = [
 </div>
 
 <?php if ($byCategory !== []): ?>
-    <div class="grid cols-4 mb-16">
+    <div class="grid cols-4 mb-16px">
         <?php foreach (array_slice($byCategory, 0, 4) as $c): ?>
             <div class="stat">
                 <div class="label"><?= e($label($c['category'])) ?></div>
@@ -49,7 +49,7 @@ $catColor = [
     </div>
 <?php endif; ?>
 
-<form method="get" action="<?= e(url('inventory')) ?>" class="row wrap mb-16" style="gap:8px">
+<form method="get" action="<?= e(url('inventory')) ?>" class="row wrap mb-16px" style="gap:8px">
     <a href="<?= e(url('inventory')) ?>" class="btn <?= $category === '' ? '' : 'secondary' ?> sm">All</a>
     <?php foreach ($categories as $c): ?>
         <a href="<?= e(url('inventory?category=' . rawurlencode($c))) ?>" class="btn <?= $category === $c ? '' : 'secondary' ?> sm"><?= e($label($c)) ?></a>
@@ -63,7 +63,7 @@ $catColor = [
         </span>
         <div class="h3">No stock recorded</div>
         <p>Track harvested produce and input stock (seed, fertiliser, chemicals). Sales reduce stock and post to Finance automatically.</p>
-        <?php if ($canManage): ?><p class="mt-16"><a class="btn" href="<?= e(url('inventory/create')) ?>">Add a stock item</a></p><?php endif; ?>
+        <?php if ($canManage): ?><p class="mt-16px"><a class="btn" href="<?= e(url('inventory/create')) ?>">Add a stock item</a></p><?php endif; ?>
     </div>
 <?php else: ?>
     <div class="stack" style="--stack-gap:12px">

@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /**
  * @var array<string,mixed> $crop
  * @var list<array{stage:string,activity_type:string,start:string,end:string,state:string}> $timeline
@@ -42,13 +42,13 @@ $id = rawurlencode((string) $crop['id']);
 </div>
 
 <?php if ((int) $crop['is_archived'] === 1): ?>
-    <div class="alert warning mb-16">
+    <div class="alert warning mb-16px">
         <?= $this->partial('partials/icon', ['name' => 'info', 'class' => 'ico']) ?>
         <div>Archived <?= e(Dates::forDisplay((string) $crop['archived_at'])) ?><?= $crop['archived_reason'] ? ' — ' . e((string) $crop['archived_reason']) : '' ?>.</div>
     </div>
 <?php endif; ?>
 
-<div class="grid cols-4 mb-24">
+<div class="grid cols-4 mb-24px">
     <div class="stat"><div class="label">Planted</div><div class="value" style="font-size:1.05rem"><?= e(Dates::forDisplay((string) $crop['planting_date'])) ?></div></div>
     <div class="stat"><div class="label">Expected harvest</div><div class="value" style="font-size:1.05rem"><?= e(Dates::forDisplay((string) $crop['expected_harvest_date'])) ?></div></div>
     <div class="stat"><div class="label">Status</div><div class="value" style="font-size:1.05rem"><?= e((string) $crop['status']) ?></div></div>

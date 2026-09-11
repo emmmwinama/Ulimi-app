@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /**
  * @var array<string,mixed> $field
  * @var array<string,mixed>|null $boundary
@@ -49,7 +49,7 @@ $config = [
     <a class="btn ghost" href="<?= e(url('fields')) ?>">← Fields</a>
 </div>
 
-<div id="map" class="mb-16"></div>
+<div id="map" class="mb-16px"></div>
 <script type="application/json" id="map-config"><?= json_encode($config, JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP) ?></script>
 
 <?php if ($canManage): ?>
@@ -57,10 +57,10 @@ $config = [
     <div class="card">
         <div class="card-head"><h2 class="h2">Boundary</h2></div>
         <div class="card-body">
-            <p class="small muted mb-8">Draw or redraw the field outline. Area is calculated when you save.</p>
+            <p class="small muted mb-8px">Draw or redraw the field outline. Area is calculated when you save.</p>
             <button type="button" class="btn secondary sm" onclick="window.__agvBeginDraw('bnd_geometry','bnd_area')">Draw boundary</button>
             <span id="bnd_area" class="small muted" style="margin-left:8px"></span>
-            <form method="post" action="<?= e(url('fields/' . $fieldId . '/map/boundary')) ?>" class="mt-16" data-noguard>
+            <form method="post" action="<?= e(url('fields/' . $fieldId . '/map/boundary')) ?>" class="mt-16px" data-noguard>
                 <?= csrf_field() ?>
                 <input type="hidden" name="geometry" id="bnd_geometry">
                 <button type="submit" class="btn sm">Save boundary</button>
@@ -69,7 +69,7 @@ $config = [
                             class="btn sm ghost danger" onclick="return confirm('Remove the boundary and its zones?')">Delete</button>
                 <?php endif; ?>
             </form>
-            <?php if ($er = error_for('boundary')): ?><p class="err mt-8"><?= e($er) ?></p><?php endif; ?>
+            <?php if ($er = error_for('boundary')): ?><p class="err mt-8px"><?= e($er) ?></p><?php endif; ?>
         </div>
     </div>
 
@@ -93,7 +93,7 @@ $config = [
                     </ul>
                 <?php endif; ?>
                 <button type="button" class="btn secondary sm" onclick="window.__agvBeginDraw('zone_geometry')">Draw zone</button>
-                <form method="post" action="<?= e(url('fields/' . $fieldId . '/map/zones')) ?>" class="mt-16 grid cols-2" style="gap:10px" data-noguard>
+                <form method="post" action="<?= e(url('fields/' . $fieldId . '/map/zones')) ?>" class="mt-16px grid cols-2" style="gap:10px" data-noguard>
                     <?= csrf_field() ?>
                     <input type="hidden" name="geometry" id="zone_geometry">
                     <div class="field"><label class="small">Name</label><input class="input" name="name" required></div>

@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /**
  * @var array<string,mixed> $sub
  * @var array<int,array<string,mixed>> $tiers @var array<int,array<string,mixed>> $payments
@@ -17,7 +17,7 @@ $id = rawurlencode((string) $sub['id']);
     </div>
 </div>
 
-<div class="grid cols-2 mb-24">
+<div class="grid cols-2 mb-24px">
     <div class="card">
         <div class="card-head"><h2 class="h2">Status</h2></div>
         <div class="card-body">
@@ -29,7 +29,7 @@ $id = rawurlencode((string) $sub['id']);
                 <button class="btn sm" type="submit">Update</button>
             </form>
 
-            <form method="post" action="<?= e(url('admin/subscriptions/' . $id . '/tier')) ?>" class="row mt-16" style="gap:8px">
+            <form method="post" action="<?= e(url('admin/subscriptions/' . $id . '/tier')) ?>" class="row mt-16px" style="gap:8px">
                 <?= csrf_field() ?>
                 <select class="select" name="tier_id">
                     <?php foreach ($tiers as $t): ?><option value="<?= e((string) $t['id']) ?>" <?= $t['id'] === $sub['tier_id'] ? 'selected' : '' ?>><?= e((string) $t['name']) ?></option><?php endforeach; ?>
@@ -37,7 +37,7 @@ $id = rawurlencode((string) $sub['id']);
                 <button class="btn sm secondary" type="submit">Change plan</button>
             </form>
 
-            <form method="post" action="<?= e(url('admin/subscriptions/' . $id . '/extend')) ?>" class="row mt-16" style="gap:8px">
+            <form method="post" action="<?= e(url('admin/subscriptions/' . $id . '/extend')) ?>" class="row mt-16px" style="gap:8px">
                 <?= csrf_field() ?>
                 <input class="input" type="date" name="end_date" value="<?= e((string) ($sub['end_date'] ?? '')) ?>">
                 <button class="btn sm secondary" type="submit">Set billing end date</button>

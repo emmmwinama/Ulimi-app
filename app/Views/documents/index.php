@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /**
  * @var array<int,array<string,mixed>> $documents
  * @var list<string> $types @var string $type
@@ -29,7 +29,7 @@ $fmtSize = static function (?int $b): string {
 </div>
 
 <?php if ($canManage): ?>
-<div class="card mb-24">
+<div class="card mb-24px">
     <div class="card-head"><h2 class="h2">Upload a document</h2></div>
     <div class="card-body">
         <form method="post" action="<?= e(url('documents')) ?>" enctype="multipart/form-data" class="grid cols-2" style="gap:14px">

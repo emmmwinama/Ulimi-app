@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /**
  * @var array<string,mixed> $user
  * @var array<int,array<string,mixed>> $farms
@@ -21,14 +21,14 @@ $id = rawurlencode((string) $user['id']);
     </form>
 </div>
 
-<div class="grid cols-3 mb-24">
+<div class="grid cols-3 mb-24px">
     <div class="stat"><div class="label">Status</div><div class="value" style="font-size:1.1rem"><span class="badge <?= (int) $user['is_active'] === 1 ? 'green' : 'red' ?>"><?= (int) $user['is_active'] === 1 ? 'Active' : 'Inactive' ?></span></div></div>
     <div class="stat"><div class="label">Plan</div><div class="value" style="font-size:1.1rem"><?= e((string) ($user['tier_name'] ?: '—')) ?></div></div>
     <div class="stat"><div class="label">Joined</div><div class="value" style="font-size:1.1rem"><?= e(Dates::forDisplay((string) $user['created_at'])) ?></div></div>
 </div>
 
 <?php if ($user['subscription_id']): ?>
-    <p class="mb-16"><a class="btn secondary sm" href="<?= e(url('admin/subscriptions/' . rawurlencode((string) $user['subscription_id']))) ?>">View subscription →</a></p>
+    <p class="mb-16px"><a class="btn secondary sm" href="<?= e(url('admin/subscriptions/' . rawurlencode((string) $user['subscription_id']))) ?>">View subscription →</a></p>
 <?php endif; ?>
 
 <div class="card">

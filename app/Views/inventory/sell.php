@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /**
  * @var array<string,mixed> $item
  * @var array<int,array<string,mixed>> $sales
@@ -18,7 +18,7 @@ $id = rawurlencode((string) $item['id']);
 </div>
 
 <div class="content-narrow">
-<div class="card mb-24">
+<div class="card mb-24px">
     <div class="card-head"><h2 class="h2">Record a sale</h2></div>
     <div class="card-body">
         <form method="post" action="<?= e(url('inventory/' . $id . '/sell')) ?>" class="grid cols-2" style="gap:14px">
@@ -33,7 +33,7 @@ $id = rawurlencode((string) $item['id']);
             </div>
             <div style="grid-column:1/-1"><button type="submit" class="btn">Record sale</button></div>
         </form>
-        <p class="hint mt-8">Recording a sale reduces stock and creates a matching income transaction in Finance.</p>
+        <p class="hint mt-8px">Recording a sale reduces stock and creates a matching income transaction in Finance.</p>
     </div>
 </div>
 

@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /**
  * @var array<int,array<string,mixed>> $users
  * @var string $q @var array{total:int,active:int} $counts
@@ -14,7 +14,7 @@ use App\Support\Dates;
     </div>
 </div>
 
-<form method="get" action="<?= e(url('admin/users')) ?>" class="mb-16">
+<form method="get" action="<?= e(url('admin/users')) ?>" class="mb-16px">
     <input class="input" type="search" name="q" value="<?= e($q) ?>" placeholder="Search name or email…" style="max-width:320px">
 </form>
 

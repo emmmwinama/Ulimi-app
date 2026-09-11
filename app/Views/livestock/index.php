@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /**
  * @var array{total_head:int,by_type:list<array{name:string,icon:string,head:int}>,production_value:float,expenses:float,sales:float} $stats
  * @var array<int,array<string,mixed>> $types
@@ -23,7 +23,7 @@ use App\Support\Money;
     <?php endif; ?>
 </div>
 
-<div class="grid cols-4 mb-16">
+<div class="grid cols-4 mb-16px">
     <div class="stat">
         <div class="icon-row"><span class="icon-box" style="background:var(--teal-pale)"><?= $this->partial('partials/icon', ['name' => 'cow', 'class' => 'ico']) ?></span></div>
         <div class="value" style="font-size:1.4rem"><?= e((string) $stats['total_head']) ?></div>
@@ -46,7 +46,7 @@ use App\Support\Money;
     </div>
 </div>
 
-<div class="grid cols-2 mb-24">
+<div class="grid cols-2 mb-24px">
     <div class="card">
         <div class="card-head"><h2 class="h2">Types</h2></div>
         <div class="card-body">

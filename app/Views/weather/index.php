@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /**
  * @var array<string,mixed> $weather
  * @var array<string,mixed> $farm
@@ -47,7 +47,7 @@ if ($today !== null) {
     </div>
 <?php else: ?>
     <?php if (!empty($weather['stale'])): ?>
-        <div class="alert info mb-16">
+        <div class="alert info mb-16px">
             <?= $this->partial('partials/icon', ['name' => 'info', 'class' => 'ico']) ?>
             <div>Showing the last saved forecast — couldn’t refresh from the weather service just now.</div>
         </div>
@@ -82,8 +82,8 @@ if ($today !== null) {
     </div>
 
     <?php if ($advice !== []): ?>
-        <p class="eyebrow mb-12">Farming advice based on today's forecast</p>
-        <div class="stack mb-24" style="--stack-gap:8px">
+        <p class="eyebrow mb-12px">Farming advice based on today's forecast</p>
+        <div class="stack mb-24px" style="--stack-gap:8px">
             <?php foreach ($advice as $a): ?>
                 <div style="background:<?= $a['bg'] ?>;color:<?= $a['fg'] ?>;border-radius:12px;padding:12px 16px;font-size:.875rem;font-weight:700"><?= e($a['text']) ?></div>
             <?php endforeach; ?>
@@ -94,7 +94,7 @@ if ($today !== null) {
         <div class="card-head">
             <div>
                 <h2 class="h2">7-day forecast</h2>
-                <p class="small muted mt-8">Source: Open-Meteo · Updated every 3 hours</p>
+                <p class="small muted mt-8px">Source: Open-Meteo · Updated every 3 hours</p>
             </div>
         </div>
         <div class="card-body" style="padding:0">
@@ -121,6 +121,6 @@ if ($today !== null) {
             <?php endforeach; ?>
         </div>
     </div>
-    <p class="hint mt-16 text-center">Weather data provided by Open-Meteo (open-meteo.com) · last updated <?= e((string) ($weather['cached_at'] ?? '—')) ?> UTC.</p>
+    <p class="hint mt-16px text-center">Weather data provided by Open-Meteo (open-meteo.com) · last updated <?= e((string) ($weather['cached_at'] ?? '—')) ?> UTC.</p>
 <?php endif; ?>
 <?php $this->stop(); ?>

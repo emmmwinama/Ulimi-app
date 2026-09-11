@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /**
  * @var array<int,array<string,mixed>> $rows
  * @var string $status @var list<string> $statuses @var array<string,int> $counts
@@ -10,13 +10,13 @@ use App\Support\Money;
 <?php $this->start('content'); ?>
 <div class="page-head"><div><h1 class="h1">Subscriptions</h1></div></div>
 
-<div class="grid cols-4 mb-16">
+<div class="grid cols-4 mb-16px">
     <?php foreach (['trial', 'active', 'past_due', 'expired'] as $s): ?>
         <div class="stat"><div class="label"><?= e(ucfirst(str_replace('_', ' ', $s))) ?></div><div class="value"><?= e((string) ($counts[$s] ?? 0)) ?></div></div>
     <?php endforeach; ?>
 </div>
 
-<form method="get" action="<?= e(url('admin/subscriptions')) ?>" class="mb-16">
+<form method="get" action="<?= e(url('admin/subscriptions')) ?>" class="mb-16px">
     <select class="select" name="status" onchange="this.form.submit()" style="max-width:200px">
         <option value="">All statuses</option>
         <?php foreach ($statuses as $s): ?><option value="<?= e($s) ?>" <?= $s === $status ? 'selected' : '' ?>><?= e(ucfirst(str_replace('_', ' ', $s))) ?></option><?php endforeach; ?>

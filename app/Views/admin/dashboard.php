@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /**
  * @var array<string,int> $stats
  * @var array<int,array<string,mixed>> $recent
@@ -7,7 +7,7 @@ $this->layout('layouts/admin');
 use App\Support\Dates;
 ?>
 <?php $this->start('content'); ?>
-<h1 class="h1 mb-16">Overview</h1>
+<h1 class="h1 mb-16px">Overview</h1>
 
 <div class="grid cols-3">
     <?php
@@ -27,7 +27,7 @@ use App\Support\Dates;
     <?php endforeach; ?>
 </div>
 
-<div class="card mt-24">
+<div class="card mt-24px">
     <div class="card-head"><h2 class="h2">Recent activity</h2></div>
     <div class="table-wrap" style="border:0">
         <table class="data">

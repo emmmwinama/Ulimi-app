@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /**
  * @var array<int,array<string,mixed>> $rows
  * @var float $totalKg
@@ -27,7 +27,7 @@ $fmtKg = static fn (float $n): string => number_format($n) . ' kg';
     <?php endif; ?>
 </div>
 
-<form method="get" action="<?= e(url('yields')) ?>" class="row wrap mb-16" style="gap:8px">
+<form method="get" action="<?= e(url('yields')) ?>" class="row wrap mb-16px" style="gap:8px">
     <a href="<?= e(url('yields')) ?>" class="btn <?= $season === '' ? '' : 'secondary' ?> sm"><?= 'All' ?></a>
     <?php foreach ($seasons as $s): ?>
         <a href="<?= e(url('yields?season=' . rawurlencode($s))) ?>" class="btn <?= $season === $s ? '' : 'secondary' ?> sm"><?= e($s) ?></a>
@@ -41,8 +41,8 @@ $fmtKg = static fn (float $n): string => number_format($n) . ' kg';
 </form>
 
 <?php if ($byType !== []): ?>
-    <div class="card mb-16"><div class="card-body">
-        <p class="eyebrow mb-16">Yield by crop type</p>
+    <div class="card mb-16px"><div class="card-body">
+        <p class="eyebrow mb-16px">Yield by crop type</p>
         <div class="grid cols-3">
             <?php foreach ($byType as $t):
                 $yieldPerHa = $t['total_area'] > 0 ? $t['total_yield_kg'] / $t['total_area'] : 0;
@@ -84,7 +84,7 @@ $fmtKg = static fn (float $n): string => number_format($n) . ' kg';
         </span>
         <div class="h3">No yield records yet</div>
         <p>Record harvests from the crops page or click below.</p>
-        <?php if ($canManage): ?><p class="mt-16"><a class="btn" href="<?= e(url('yields/create')) ?>">Record a yield</a></p><?php endif; ?>
+        <?php if ($canManage): ?><p class="mt-16px"><a class="btn" href="<?= e(url('yields/create')) ?>">Record a yield</a></p><?php endif; ?>
     </div>
 <?php else: ?>
     <div class="stack" style="--stack-gap:16px">
@@ -105,12 +105,12 @@ $fmtKg = static fn (float $n): string => number_format($n) . ' kg';
                             <span class="small muted"><?= e((string) $g['variety']) ?></span>
                             <span class="badge" style="background:<?= $sc['bg'] ?>;color:<?= $sc['fg'] ?>"><?= e((string) $g['status']) ?></span>
                         </div>
-                        <p class="small muted mt-8"><?= e((string) $g['field_name']) ?> · <?= e((string) $g['season']) ?> · <?= e(number_format($g['area_planted'], 1)) ?> ha</p>
+                        <p class="small muted mt-8px"><?= e((string) $g['field_name']) ?> · <?= e((string) $g['season']) ?> · <?= e(number_format($g['area_planted'], 1)) ?> ha</p>
                     </div>
                 </div>
 
                 <div class="card-body">
-                    <div class="grid cols-4 mb-16" style="gap:10px">
+                    <div class="grid cols-4 mb-16px" style="gap:10px">
                         <div style="background:var(--surface-2);border:1px solid var(--line);border-radius:12px;padding:10px">
                             <p style="font-size:.625rem;font-weight:800;text-transform:uppercase;color:var(--text-faint);margin-bottom:2px">Total cost</p>
                             <p style="font-size:.8rem;font-weight:800;color:var(--red-text)"><?= e(Money::format($g['total_cost'])) ?></p>
@@ -153,7 +153,7 @@ $fmtKg = static fn (float $n): string => number_format($n) . ' kg';
                         </div>
                     <?php endif; ?>
 
-                    <div class="spread mb-12">
+                    <div class="spread mb-12px">
                         <p class="eyebrow">Harvest records</p>
                         <?php if ($canManage): ?>
                             <a href="<?= e(url('yields/create?crop_field_id=' . rawurlencode((string) $g['crop_field_id']))) ?>" class="small" style="font-weight:700;color:var(--teal)">

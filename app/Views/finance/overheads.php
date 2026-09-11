@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /**
  * @var array<int,array<string,mixed>> $rows
  * @var list<string> $categories
@@ -19,7 +19,7 @@ $total = array_sum(array_map(static fn ($r) => (float) $r['amount'], $rows));
 </div>
 
 <?php if ($canManage): ?>
-<div class="card mb-24">
+<div class="card mb-24px">
     <div class="card-head"><h2 class="h2">Add overhead</h2></div>
     <div class="card-body">
         <form method="post" action="<?= e(url('finance/overheads')) ?>" class="grid cols-2" style="gap:14px">

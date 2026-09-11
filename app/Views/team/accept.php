@@ -1,4 +1,4 @@
-<?php $this->layout('layouts/auth'); /** @var array<string,mixed>|null $invite */ ?>
+﻿<?php $this->layout('layouts/auth'); /** @var array<string,mixed>|null $invite */ ?>
 <?php $this->start('content'); ?>
 <?php if ($invite === null): ?>
     <h1 class="h1">Invitation not found</h1>
@@ -19,11 +19,11 @@
             <button type="submit" class="btn block">Accept invitation</button>
         </form>
     <?php else: ?>
-        <div class="alert info mt-8">
+        <div class="alert info mt-8px">
             <?= $this->partial('partials/icon', ['name' => 'info', 'class' => 'ico']) ?>
             <div>Sign in (or create an account) with <strong><?= e((string) $invite['invite_email']) ?></strong> to accept.</div>
         </div>
-        <div class="stack mt-16">
+        <div class="stack mt-16px">
             <a class="btn block" href="<?= e(url('login')) ?>">Sign in</a>
             <a class="btn secondary block" href="<?= e(url('register')) ?>">Create account</a>
         </div>

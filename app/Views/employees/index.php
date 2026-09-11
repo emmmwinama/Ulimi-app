@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /**
  * @var array<int,array<string,mixed>> $employees
  * @var bool $canManage @var bool $payroll
@@ -32,14 +32,14 @@ $roleBadge = [
 </div>
 
 <?php if (!$payroll): ?>
-    <div class="alert info mb-16">
+    <div class="alert info mb-16px">
         <?= $this->partial('partials/icon', ['name' => 'info', 'class' => 'ico']) ?>
         <div>Your plan doesn’t include payroll costing — you can keep the roster, but labour costs aren’t totalled automatically.</div>
     </div>
 <?php endif; ?>
 
 <?php if ($employees !== []): ?>
-    <div class="grid cols-3 mb-16">
+    <div class="grid cols-3 mb-16px">
         <div class="stat"><div class="label">Active staff</div><div class="value" style="font-size:1.4rem;color:var(--teal)"><?= count($active) ?></div></div>
         <div class="stat"><div class="label">Total staff</div><div class="value" style="font-size:1.4rem"><?= count($employees) ?></div></div>
         <div class="stat"><div class="label">Monthly payroll</div><div class="value" style="font-size:1.4rem;color:var(--blue)"><?= $monthlyPayroll > 0 ? e(Money::format($monthlyPayroll)) : '—' ?></div></div>
@@ -53,7 +53,7 @@ $roleBadge = [
         </span>
         <div class="h3">No employees</div>
         <p>Add your workers and their pay rates so activity labour can be costed.</p>
-        <?php if ($canManage): ?><p class="mt-16"><a class="btn" href="<?= e(url('employees/create')) ?>">Add an employee</a></p><?php endif; ?>
+        <?php if ($canManage): ?><p class="mt-16px"><a class="btn" href="<?= e(url('employees/create')) ?>">Add an employee</a></p><?php endif; ?>
     </div>
 <?php else: ?>
     <div class="grid cols-3">

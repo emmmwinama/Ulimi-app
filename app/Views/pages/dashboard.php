@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /**
  * @var App\Core\FarmContext $ctx
  * @var array<string,mixed>|null $subscription
@@ -63,19 +63,19 @@ $roleActions = [
 </div>
 
 <?php if ($ctx->isReadOnly()): ?>
-    <div class="alert warning mb-16">
+    <div class="alert warning mb-16px">
         <?= $this->partial('partials/icon', ['name' => 'alert', 'class' => 'ico']) ?>
         <div><strong>Read-only.</strong> Your subscription has lapsed — records stay visible, editing resumes on renewal.</div>
     </div>
 <?php endif; ?>
 
 <?php if ($onboardingDone < count($onboarding)): ?>
-    <div class="card mb-16" style="background:linear-gradient(135deg,#EFF6FF,#F8FAFC);border-color:#BFDBFE">
+    <div class="card mb-16px" style="background:linear-gradient(135deg,#EFF6FF,#F8FAFC);border-color:#BFDBFE">
         <div class="card-body">
-            <div class="spread mb-12">
+            <div class="spread mb-12px">
                 <div>
                     <div class="h3" style="color:#075985">Getting started</div>
-                    <p class="small mt-8" style="color:#0369A1">Set up the minimum record trail lenders, buyers, and managers expect.</p>
+                    <p class="small mt-8px" style="color:#0369A1">Set up the minimum record trail lenders, buyers, and managers expect.</p>
                 </div>
                 <span class="badge blue"><?= e((string) $onboardingDone) ?>/<?= e((string) count($onboarding)) ?></span>
             </div>
@@ -92,11 +92,11 @@ $roleActions = [
         </div>
     </div>
 <?php elseif (!$hasAnyRecords): ?>
-    <div class="card mb-16" style="background:#EFF6FF;border-color:#BFDBFE">
+    <div class="card mb-16px" style="background:#EFF6FF;border-color:#BFDBFE">
         <div class="card-body spread">
             <div>
                 <div class="h3" style="color:#1E3A8A">This active farm has no records yet</div>
-                <p class="small mt-8" style="color:#1D4ED8">You are viewing <?= e($ctx->farmName()) ?>. If your data is under another farm, use the farm switcher in the sidebar.</p>
+                <p class="small mt-8px" style="color:#1D4ED8">You are viewing <?= e($ctx->farmName()) ?>. If your data is under another farm, use the farm switcher in the sidebar.</p>
             </div>
             <a href="<?= e(url('settings')) ?>" class="btn secondary sm">Check farms</a>
         </div>
@@ -111,7 +111,7 @@ $alerts = array_filter([
 ]);
 ?>
 <?php if ($alerts !== []): ?>
-    <div class="grid cols-3 mb-16">
+    <div class="grid cols-3 mb-16px">
         <?php foreach ($alerts as $alert): ?>
             <div class="row" style="background:#EFF6FF;border:1px solid #BFDBFE;border-radius:16px;padding:12px 14px">
                 <?= $this->partial('partials/icon', ['name' => 'alert', 'class' => 'ico']) ?>
@@ -122,7 +122,7 @@ $alerts = array_filter([
 <?php endif; ?>
 
 <?php if ($ctx->can('crops.manage') && !$ctx->isReadOnly()): ?>
-    <div class="row mb-12" style="justify-content:flex-end">
+    <div class="row mb-12px" style="justify-content:flex-end">
         <a class="btn secondary" href="<?= e(url('fields/create')) ?>">Add field</a>
         <a class="btn" href="<?= e(url('crops/create')) ?>">Add planting</a>
     </div>
@@ -167,7 +167,7 @@ $alerts = array_filter([
     </div>
 </div>
 
-<div class="grid cols-4 mt-12 mb-16">
+<div class="grid cols-4 mt-12px mb-16px">
     <?php
     $secondary = [
         ['label' => 'Income',           'value' => Money::format((float) $stats['income']),              'color' => 'var(--green-text)'],
@@ -184,9 +184,9 @@ $alerts = array_filter([
     <?php endforeach; ?>
 </div>
 
-<div class="grid cols-2 mb-16">
+<div class="grid cols-2 mb-16px">
     <div class="card"><div class="card-body">
-        <div class="spread mb-16">
+        <div class="spread mb-16px">
             <span class="h3">Season profitability</span>
             <?= $this->partial('partials/icon', ['name' => 'bar-chart', 'class' => 'ico']) ?>
         </div>
@@ -215,7 +215,7 @@ $alerts = array_filter([
     </div></div>
 
     <div class="card"><div class="card-body">
-        <div class="spread mb-16">
+        <div class="spread mb-16px">
             <span class="h3">Crop area mix</span>
             <?= $this->partial('partials/icon', ['name' => 'sprout', 'class' => 'ico']) ?>
         </div>
@@ -244,7 +244,7 @@ $alerts = array_filter([
 </div>
 
 <?php if ($roleActions !== []): ?>
-    <div class="grid cols-2 mb-16">
+    <div class="grid cols-2 mb-16px">
         <?php foreach ($roleActions as $a): ?>
             <a href="<?= e($a['href']) ?>" class="row" style="background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:12px 16px">
                 <span style="width:40px;height:40px;border-radius:16px;background:var(--blue-050);color:#1E40AF;display:grid;place-items:center;flex:none">
@@ -261,7 +261,7 @@ $alerts = array_filter([
 
 <div class="grid cols-3">
     <div class="card"><div class="card-body">
-        <div class="spread mb-16">
+        <div class="spread mb-16px">
             <span class="h3">Land utilisation</span>
             <a href="<?= e(url('fields')) ?>" class="small" style="font-weight:700">View</a>
         </div>
@@ -288,7 +288,7 @@ $alerts = array_filter([
     </div></div>
 
     <div class="card"><div class="card-body">
-        <div class="spread mb-16">
+        <div class="spread mb-16px">
             <span class="h3">Crops</span>
             <a href="<?= e(url('crops')) ?>" class="small" style="font-weight:700">View</a>
         </div>
@@ -320,7 +320,7 @@ $alerts = array_filter([
     </div></div>
 
     <div class="card"><div class="card-body">
-        <div class="spread mb-16">
+        <div class="spread mb-16px">
             <span class="h3">Recent activities</span>
             <a href="<?= e(url('activities')) ?>" class="small" style="font-weight:700">View</a>
         </div>
@@ -346,7 +346,7 @@ $alerts = array_filter([
 </div>
 
 <?php if ($upcoming !== []): ?>
-    <div class="card mt-16"><div class="card-head"><h2 class="h2">Harvests due in 30 days</h2></div>
+    <div class="card mt-16px"><div class="card-head"><h2 class="h2">Harvests due in 30 days</h2></div>
         <div class="card-body">
             <ul style="list-style:none;padding:0;margin:0">
                 <?php foreach ($upcoming as $u): ?>

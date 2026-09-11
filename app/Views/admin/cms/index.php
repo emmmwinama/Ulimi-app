@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /**
  * @var string $tab
  * @var array<int,array<string,mixed>> $content @var array<int,array<string,mixed>> $pages
@@ -10,7 +10,7 @@ $tabs = ['content' => 'Settings', 'pages' => 'Pages', 'features' => 'Features', 
 <?php $this->start('content'); ?>
 <div class="page-head"><div><h1 class="h1">Site content</h1></div></div>
 
-<div class="row mb-16" style="gap:8px">
+<div class="row mb-16px" style="gap:8px">
     <?php foreach ($tabs as $key => $label): ?>
         <a class="btn sm <?= $tab === $key ? '' : 'secondary' ?>" href="<?= e(url('admin/cms?tab=' . $key)) ?>"><?= e($label) ?></a>
     <?php endforeach; ?>
@@ -35,7 +35,7 @@ $tabs = ['content' => 'Settings', 'pages' => 'Pages', 'features' => 'Features', 
     </div></div>
 
 <?php elseif ($tab === 'pages'): ?>
-    <div class="card mb-24"><div class="card-head"><h2 class="h2">Add / edit page</h2></div><div class="card-body">
+    <div class="card mb-24px"><div class="card-head"><h2 class="h2">Add / edit page</h2></div><div class="card-body">
         <form method="post" action="<?= e(url('admin/cms/pages')) ?>" class="stack">
             <?= csrf_field() ?>
             <div class="grid cols-2">
@@ -66,7 +66,7 @@ $tabs = ['content' => 'Settings', 'pages' => 'Pages', 'features' => 'Features', 
     </table></div>
 
 <?php elseif ($tab === 'features'): ?>
-    <div class="card mb-24"><div class="card-head"><h2 class="h2">Add feature</h2></div><div class="card-body">
+    <div class="card mb-24px"><div class="card-head"><h2 class="h2">Add feature</h2></div><div class="card-body">
         <form method="post" action="<?= e(url('admin/cms/features')) ?>" class="grid cols-4" style="gap:10px">
             <?= csrf_field() ?>
             <div class="field"><label class="small">Icon</label><input class="input" name="icon" value="leaf"></div>
@@ -98,7 +98,7 @@ $tabs = ['content' => 'Settings', 'pages' => 'Pages', 'features' => 'Features', 
     </table></div>
 
 <?php else: ?>
-    <div class="card mb-24"><div class="card-head"><h2 class="h2">Add testimonial</h2></div><div class="card-body">
+    <div class="card mb-24px"><div class="card-head"><h2 class="h2">Add testimonial</h2></div><div class="card-body">
         <form method="post" action="<?= e(url('admin/cms/testimonials')) ?>" class="stack">
             <?= csrf_field() ?>
             <div class="field"><label class="small">Quote</label><textarea class="textarea" name="quote" rows="2" required></textarea></div>

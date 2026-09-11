@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /**
  * @var array<string,mixed> $a
  * @var array<int,array<string,mixed>> $health @var array<int,array<string,mixed>> $production
@@ -27,7 +27,7 @@ $editable = $canManage && $a['status'] === 'Active';
     </div>
 </div>
 
-<div class="grid cols-4 mb-24">
+<div class="grid cols-4 mb-24px">
     <div class="stat"><div class="label">Current weight</div><div class="value" style="font-size:1.1rem"><?= $a['weight'] !== null ? e(number_format((float) $a['weight'], 1)) . ' kg' : '—' ?></div></div>
     <div class="stat"><div class="label">Age</div><div class="value" style="font-size:1.1rem"><?php
         if ($a['birth_date']) { $days = (int) floor((time() - strtotime((string) $a['birth_date'] . ' UTC')) / 86400); echo e($days > 730 ? round($days / 365, 1) . ' yr' : round($days / 30) . ' mo'); } else { echo '—'; }
@@ -36,13 +36,13 @@ $editable = $canManage && $a['status'] === 'Active';
     <div class="stat"><div class="label">Acquisition cost</div><div class="value" style="font-size:1.1rem"><?= $a['acquisition_cost'] !== null ? e(Money::compact((float) $a['acquisition_cost'])) : '—' ?></div></div>
 </div>
 
-<?php if ($a['notes']): ?><p class="mb-16 muted"><?= nl2br(e((string) $a['notes'])) ?></p><?php endif; ?>
+<?php if ($a['notes']): ?><p class="mb-16px muted"><?= nl2br(e((string) $a['notes'])) ?></p><?php endif; ?>
 
 <?php
 /** Renders one event section: heading, optional add form (as <details>), table. */
 $section = function (string $heading, array $rows, array $cols, ?string $addKind, callable $addFields) use ($id, $editable) {
     ?>
-    <div class="card mb-16">
+    <div class="card mb-16px">
         <div class="card-head">
             <h2 class="h2"><?= e($heading) ?></h2>
             <?php if ($editable && $addKind !== null): ?>
@@ -170,7 +170,7 @@ $mon = static fn (string $k) => static fn ($r) => e(Money::format((float) ($r[$k
             <?= $this->partial('partials/field', ['name' => 'buyer', 'label' => 'Buyer']) ?>
             <div style="grid-column:1/-1"><button class="btn" type="submit">Record sale &amp; mark Sold</button></div>
         </form>
-        <p class="hint mt-8">Creates an income transaction in Finance and sets the animal’s status to Sold.</p>
+        <p class="hint mt-8px">Creates an income transaction in Finance and sets the animal’s status to Sold.</p>
     </div>
 </div>
 <?php endif; ?>

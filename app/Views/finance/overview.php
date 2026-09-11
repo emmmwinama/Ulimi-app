@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /**
  * @var string $season @var list<string> $seasons
  * @var array{income:float,expense_tx:float,activity_cost:float,overhead:float,total_cost:float,net:float,by_category:array<string,float>} $totals
@@ -22,7 +22,7 @@ use App\Support\Money;
     </div>
 </div>
 
-<form method="get" action="<?= e(url('finance')) ?>" class="mb-16">
+<form method="get" action="<?= e(url('finance')) ?>" class="mb-16px">
     <select class="select" name="season" onchange="this.form.submit()" style="max-width:260px">
         <option value="">All seasons</option>
         <?php foreach ($seasons as $s): ?>
@@ -59,20 +59,20 @@ use App\Support\Money;
 </div>
 
 <?php if ($showPerHa): ?>
-<div class="grid cols-2 mt-16">
+<div class="grid cols-2 mt-16px">
     <div class="stat"><div class="label">Cost per hectare</div><div class="value" style="font-size:1.15rem"><?= $costPerHa !== null ? e(Money::format($costPerHa)) : '—' ?></div></div>
     <div class="stat"><div class="label">Cost per kg</div><div class="value" style="font-size:1.15rem"><?= $costPerKg !== null ? e(Money::format($costPerKg)) : '—' ?></div></div>
 </div>
 <?php endif; ?>
 
-<div class="card mt-24">
+<div class="card mt-24px">
     <div class="card-head"><h2 class="h2">Income vs cost</h2></div>
     <div class="card-body">
         <?= $this->partial('partials/barchart', ['series' => $trend]) ?>
     </div>
 </div>
 
-<div class="grid cols-2 mt-24">
+<div class="grid cols-2 mt-24px">
     <div class="card">
         <div class="card-head"><h2 class="h2">Cost breakdown</h2></div>
         <div class="card-body">

@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /**
  * @var list<array{area:string,present:bool,count:int,hint:string}> $checklist
  * @var list<array{crop_field_id:string,lot_id:string,crop:string,field:string,season:string,checks:array<string,bool>,score:int}> $lots
@@ -14,7 +14,7 @@ $present = count(array_filter($checklist, static fn ($c) => $c['present']));
     </div>
 </div>
 
-<div class="card mb-24">
+<div class="card mb-24px">
     <div class="card-head"><h2 class="h2">Evidence coverage</h2></div>
     <div class="card-body">
         <table class="data"><tbody>
@@ -55,7 +55,7 @@ $present = count(array_filter($checklist, static fn ($c) => $c['present']));
                     </tbody>
                 </table>
             </div>
-            <p class="hint mt-8">Score = share of: planting record, field activities, input records, spray/pest record, harvest yield, and a linked sale.</p>
+            <p class="hint mt-8px">Score = share of: planting record, field activities, input records, spray/pest record, harvest yield, and a linked sale.</p>
         <?php endif; ?>
     </div>
 </div>

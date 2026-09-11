@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /**
  * @var array<string,array{label:string,sections:list<string>}> $packs
  * @var bool $canBuild
@@ -13,11 +13,11 @@ $this->layout('layouts/app');
     </div>
 </div>
 
-<div class="grid cols-2 mb-24">
+<div class="grid cols-2 mb-24px">
     <div class="card">
         <div class="card-head"><h2 class="h2">Record packs</h2></div>
         <div class="card-body">
-            <p class="small muted mb-16">Curated, printable evidence for a specific audience. Open one, filter by season, then use your browser’s Print to save as PDF.</p>
+            <p class="small muted mb-16px">Curated, printable evidence for a specific audience. Open one, filter by season, then use your browser’s Print to save as PDF.</p>
             <div class="grid cols-2" style="gap:10px">
                 <?php foreach ($packs as $key => $p): ?>
                     <a href="<?= e(url('reports/pack/' . $key)) ?>" class="row" style="gap:10px;padding:12px 14px;border-radius:16px;background:var(--surface-2);border:1px solid var(--line)">
@@ -50,7 +50,7 @@ $this->layout('layouts/app');
                 </a>
             <?php endforeach; ?>
             <?php if ($canBuild): ?>
-                <a class="btn block mt-8" href="<?= e(url('reports/builder')) ?>">
+                <a class="btn block mt-8px" href="<?= e(url('reports/builder')) ?>">
                     <?= $this->partial('partials/icon', ['name' => 'plus', 'class' => 'ico']) ?> Custom report builder
                 </a>
             <?php else: ?>

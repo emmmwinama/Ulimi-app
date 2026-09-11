@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /**
  * @var array<int,array<string,mixed>> $members
  * @var list<string> $roles
@@ -37,14 +37,14 @@ $roleLabel = static fn (string $r): string => ucwords(str_replace('_', ' ', $r))
 </div>
 
 <?php if (!$teamEnabled): ?>
-    <div class="alert info mb-16">
+    <div class="alert info mb-16px">
         <?= $this->partial('partials/icon', ['name' => 'info', 'class' => 'ico']) ?>
         <div>Team accounts aren’t included in your current plan. You can still see your own membership below.</div>
     </div>
 <?php endif; ?>
 
 <?php if ($canManage && $teamEnabled): ?>
-    <div class="card mb-16">
+    <div class="card mb-16px">
         <div class="card-head"><h2 class="h2">Invite a team member</h2></div>
         <div class="card-body">
             <?php if ($atLimit): ?>
@@ -74,15 +74,15 @@ $roleLabel = static fn (string $r): string => ucwords(str_replace('_', ' ', $r))
                     </div>
                     <button type="submit" class="btn">Send invite</button>
                 </form>
-                <p class="hint mt-8">The invitation link expires in 72 hours and can only be accepted from the address it was sent to.</p>
+                <p class="hint mt-8px">The invitation link expires in 72 hours and can only be accepted from the address it was sent to.</p>
             <?php endif; ?>
         </div>
     </div>
 <?php endif; ?>
 
-<div class="card mb-16">
+<div class="card mb-16px">
     <div class="card-body" style="overflow-x:auto">
-        <p class="eyebrow mb-16">Role permissions overview</p>
+        <p class="eyebrow mb-16px">Role permissions overview</p>
         <table style="width:100%;border-collapse:collapse;font-size:.75rem">
             <thead>
                 <tr style="border-bottom:1px solid var(--line)">

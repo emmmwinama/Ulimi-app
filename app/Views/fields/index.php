@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /**
  * @var array<int,array<string,mixed>> $fields
  * @var bool $canManage
@@ -39,11 +39,11 @@ $mappedCount = count(array_filter($fields, static fn ($f) => !empty($f['boundary
         <div class="h3">No fields yet</div>
         <p>Add your land parcels — area, soil type and location. Crops, activities and maps all hang off fields.</p>
         <?php if ($canManage): ?>
-            <p class="mt-16"><a class="btn" href="<?= e(url('fields/create')) ?>">Add your first field</a></p>
+            <p class="mt-16px"><a class="btn" href="<?= e(url('fields/create')) ?>">Add your first field</a></p>
         <?php endif; ?>
     </div>
 <?php else: ?>
-    <div class="grid cols-3 mb-16">
+    <div class="grid cols-3 mb-16px">
         <div class="stat">
             <div class="label">Total fields</div>
             <div class="value"><?= count($fields) ?></div>

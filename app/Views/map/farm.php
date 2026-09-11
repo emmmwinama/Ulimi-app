@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /**
  * @var array{boundaries:array,zones:array,markers:array,fields:array} $data
  * @var array<string,mixed> $farm
@@ -68,7 +68,7 @@ $fieldColors = ['#16A34A', '#2563EB', '#0284C7', '#9333EA', '#DC2626', '#0891B2'
     </div>
 </div>
 
-<div class="map-shell mb-16">
+<div class="map-shell mb-16px">
     <div id="map"></div>
     <script type="application/json" id="map-config"><?= json_encode($config, JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP) ?></script>
 
@@ -133,7 +133,7 @@ $fieldColors = ['#16A34A', '#2563EB', '#0284C7', '#9333EA', '#DC2626', '#0891B2'
         <div class="card-body">
             <button type="button" class="btn secondary sm" id="pick-location">Pick location on map</button>
             <p class="hint" id="marker-hint" hidden>Click anywhere on the map to set the location.</p>
-            <form method="post" action="<?= e(url('map/markers')) ?>" class="grid cols-2 mt-16" style="gap:10px">
+            <form method="post" action="<?= e(url('map/markers')) ?>" class="grid cols-2 mt-16px" style="gap:10px">
                 <?= csrf_field() ?>
                 <div class="field"><label class="small">Type</label>
                     <select class="select" name="type"><?php foreach ($markerTypes as $t): ?><option value="<?= e($t) ?>"><?= e(ucfirst($t)) ?></option><?php endforeach; ?></select>
@@ -175,7 +175,7 @@ $fieldColors = ['#16A34A', '#2563EB', '#0284C7', '#9333EA', '#DC2626', '#0891B2'
     </div>
 </div>
 
-<p class="hint mt-16">Draw and edit field outlines from each field’s own map page (Fields → a field → Map).</p>
+<p class="hint mt-16px">Draw and edit field outlines from each field’s own map page (Fields → a field → Map).</p>
 <?php $this->stop(); ?>
 
 <?php $this->start('scripts'); ?>

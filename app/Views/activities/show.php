@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /**
  * @var array<string,mixed> $a
  * @var float $labourSum @var float $inputSum @var float $otherSum @var float $grandTotal
@@ -29,11 +29,11 @@ $id = rawurlencode((string) $a['id']);
 </div>
 
 <?php if ($a['responsible_employee_name'] || $a['responsible_person_name']): ?>
-    <p class="muted mb-16">Responsible: <strong><?= e((string) ($a['responsible_employee_name'] ?: $a['responsible_person_name'])) ?></strong></p>
+    <p class="muted mb-16px">Responsible: <strong><?= e((string) ($a['responsible_employee_name'] ?: $a['responsible_person_name'])) ?></strong></p>
 <?php endif; ?>
-<?php if ($a['notes']): ?><p class="mb-16"><?= nl2br(e((string) $a['notes'])) ?></p><?php endif; ?>
+<?php if ($a['notes']): ?><p class="mb-16px"><?= nl2br(e((string) $a['notes'])) ?></p><?php endif; ?>
 
-<div class="grid cols-4 mb-24">
+<div class="grid cols-4 mb-24px">
     <div class="stat"><div class="label">Labour</div><div class="value" style="font-size:1.1rem"><?= e(Money::format($labourSum)) ?></div></div>
     <div class="stat"><div class="label">Inputs</div><div class="value" style="font-size:1.1rem"><?= e(Money::format($inputSum)) ?></div></div>
     <div class="stat"><div class="label">Other</div><div class="value" style="font-size:1.1rem"><?= e(Money::format($otherSum)) ?></div></div>
@@ -41,7 +41,7 @@ $id = rawurlencode((string) $a['id']);
 </div>
 
 <?php if ($a['labour']): ?>
-<div class="card mb-16"><div class="card-head"><h2 class="h2">Labour</h2></div>
+<div class="card mb-16px"><div class="card-head"><h2 class="h2">Labour</h2></div>
     <div class="table-wrap" style="border:0"><table class="data">
         <thead><tr><th>Worker</th><th class="num">Hours</th><th class="num">Days</th><th class="num">Cost</th></tr></thead>
         <tbody>
@@ -59,7 +59,7 @@ $id = rawurlencode((string) $a['id']);
 <?php endif; ?>
 
 <?php if ($a['inputs']): ?>
-<div class="card mb-16"><div class="card-head"><h2 class="h2">Inputs</h2></div>
+<div class="card mb-16px"><div class="card-head"><h2 class="h2">Inputs</h2></div>
     <div class="table-wrap" style="border:0"><table class="data">
         <thead><tr><th>Input</th><th>Category</th><th class="num">Qty</th><th class="num">Unit cost</th><th class="num">Total</th></tr></thead>
         <tbody>

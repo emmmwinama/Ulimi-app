@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /**
  * @var array<string,array{label:string,columns:array<string,string>}> $available
  * @var list<string> $selected @var string $season @var string $from @var string $to
@@ -19,10 +19,10 @@ $qs = static function (array $extra = []) use ($selected, $season, $from, $to) {
     </div>
 </div>
 
-<div class="card mb-24">
+<div class="card mb-24px">
     <div class="card-body">
         <form method="get" action="<?= e(url('reports/builder')) ?>">
-            <div class="grid cols-4 mb-16">
+            <div class="grid cols-4 mb-16px">
                 <?php foreach ($available as $key => $meta): ?>
                     <label class="checkline">
                         <input type="checkbox" name="sections[]" value="<?= e($key) ?>" <?= in_array($key, $selected, true) ? 'checked' : '' ?>>
@@ -41,7 +41,7 @@ $qs = static function (array $extra = []) use ($selected, $season, $from, $to) {
                 <div class="field"><label class="small">From date</label><input class="input" type="date" name="from" value="<?= e($from) ?>"></div>
                 <div class="field"><label class="small">To date</label><input class="input" type="date" name="to" value="<?= e($to) ?>"></div>
             </div>
-            <button type="submit" class="btn mt-16">Build report</button>
+            <button type="submit" class="btn mt-16px">Build report</button>
         </form>
     </div>
 </div>
@@ -49,7 +49,7 @@ $qs = static function (array $extra = []) use ($selected, $season, $from, $to) {
 <?php if ($sections === []): ?>
     <div class="empty"><div class="h3">Choose sections above</div><p>Select one or more record types and build to see a preview here.</p></div>
 <?php else: foreach ($sections as $key => $sec): ?>
-    <div class="card mb-16">
+    <div class="card mb-16px">
         <div class="card-head">
             <h2 class="h2"><?= e($sec['label']) ?> <span class="muted small">(<?= count($sec['rows']) ?>)</span></h2>
             <a class="btn sm secondary" href="<?= e(url('reports/export/' . $key . '?' . $qs())) ?>">Export CSV</a>

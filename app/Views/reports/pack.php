@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /**
  * @var string $packType @var string $packLabel
  * @var array<string,mixed> $farm
@@ -18,7 +18,7 @@ $purpose = $purposes[$packType] ?? '';
 ?>
 <?php $this->start('content'); ?>
 
-<form method="get" action="<?= e(url('reports/pack/' . $packType)) ?>" class="no-print mb-16">
+<form method="get" action="<?= e(url('reports/pack/' . $packType)) ?>" class="no-print mb-16px">
     <select class="select" name="season" onchange="this.form.submit()" style="max-width:260px">
         <option value="">All seasons</option>
         <?php foreach ($seasons as $s): ?>

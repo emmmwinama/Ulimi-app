@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /**
  * @var array<int,array<string,mixed>> $prices
  * @var list<string> $crops @var string $crop
@@ -15,7 +15,7 @@ use App\Support\Money;
     </div>
 </div>
 
-<form method="get" action="<?= e(url('market')) ?>" class="mb-16">
+<form method="get" action="<?= e(url('market')) ?>" class="mb-16px">
     <select class="select" name="crop" onchange="this.form.submit()" style="max-width:220px">
         <option value="">All crops</option>
         <?php foreach ($crops as $c): ?><option value="<?= e($c) ?>" <?= $c === $crop ? 'selected' : '' ?>><?= e($c) ?></option><?php endforeach; ?>
@@ -41,6 +41,6 @@ use App\Support\Money;
         <?php endforeach; ?>
         </tbody>
     </table></div>
-    <p class="hint mt-16">Source: ADMARC / Tobacco Control Commission reference prices, refreshed periodically by AgriVault admins.</p>
+    <p class="hint mt-16px">Source: ADMARC / Tobacco Control Commission reference prices, refreshed periodically by AgriVault admins.</p>
 <?php endif; ?>
 <?php $this->stop(); ?>

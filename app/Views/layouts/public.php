@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /** Public / marketing layout. @var string $title */
 use App\Core\Auth;
 
@@ -36,7 +36,7 @@ $authed = Auth::check();
 <footer class="pub-footer">
     <div class="container spread">
         <span>&copy; <?= e(date('Y')) ?> AgriVault</span>
-        <span class="row gap-16">
+        <span class="row gap-16px">
             <a href="<?= e(url('privacy')) ?>">Privacy</a>
             <a href="<?= e(url('terms')) ?>">Terms</a>
             <a href="<?= e(url('security')) ?>">Security</a>

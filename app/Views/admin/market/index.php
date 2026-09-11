@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /** @var array<int,array<string,mixed>> $rows */
 $this->layout('layouts/admin');
 use App\Support\Dates;
@@ -7,7 +7,7 @@ use App\Support\Money;
 <?php $this->start('content'); ?>
 <div class="page-head"><div><h1 class="h1">Market data</h1></div></div>
 
-<div class="card mb-24">
+<div class="card mb-24px">
     <div class="card-head"><h2 class="h2">Add a price</h2></div>
     <div class="card-body">
         <form method="post" action="<?= e(url('admin/market')) ?>" class="grid cols-4" style="gap:10px">

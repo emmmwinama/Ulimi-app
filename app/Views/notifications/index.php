@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /** @var array<int,array<string,mixed>> $items */
 $this->layout('layouts/app');
 use App\Support\Dates;
@@ -24,7 +24,7 @@ $unread = count(array_filter($items, static fn ($n) => (int) $n['is_read'] === 0
     <div class="stack" style="--stack-gap:0">
         <?php foreach ($items as $n): ?>
             <form method="post" action="<?= e(url('notifications/' . rawurlencode((string) $n['id']) . '/read')) ?>"
-                  class="card mb-8" style="<?= (int) $n['is_read'] === 0 ? 'border-left:3px solid var(--blue)' : 'opacity:.7' ?>">
+                  class="card mb-8px" style="<?= (int) $n['is_read'] === 0 ? 'border-left:3px solid var(--blue)' : 'opacity:.7' ?>">
                 <?= csrf_field() ?>
                 <input type="hidden" name="link" value="<?= e((string) ($n['link'] ?? '')) ?>">
                 <button type="submit" class="card-body" style="width:100%;text-align:left;background:none;border:0;cursor:pointer;display:block">
@@ -32,7 +32,7 @@ $unread = count(array_filter($items, static fn ($n) => (int) $n['is_read'] === 0
                         <strong><?= e((string) $n['title']) ?></strong>
                         <span class="small muted"><?= e(Dates::forDisplay((string) $n['created_at'])) ?></span>
                     </div>
-                    <p class="small muted mt-8" style="margin-bottom:0"><?= e((string) $n['message']) ?></p>
+                    <p class="small muted mt-8px" style="margin-bottom:0"><?= e((string) $n['message']) ?></p>
                 </button>
             </form>
         <?php endforeach; ?>

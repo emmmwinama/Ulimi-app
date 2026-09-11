@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /**
  * @var array<string,mixed> $farm
  * @var bool $isOwner
@@ -36,10 +36,10 @@ $this->layout('layouts/app');
     <div class="card" style="border-color:#FECACA">
         <div class="card-head"><h2 class="h2" style="color:var(--red)">Danger zone</h2></div>
         <div class="card-body">
-            <p class="small muted mb-16">Deleting this farm permanently removes every field, crop, activity, transaction, livestock and document record. This cannot be undone.</p>
+            <p class="small muted mb-16px">Deleting this farm permanently removes every field, crop, activity, transaction, livestock and document record. This cannot be undone.</p>
             <details>
                 <summary class="btn danger sm" style="display:inline-flex;cursor:pointer;list-style:none">Delete this farm</summary>
-                <form method="post" action="<?= e(url('settings/delete')) ?>" class="mt-16 stack" style="max-width:360px" onsubmit="return confirm('This is permanent. Continue?')">
+                <form method="post" action="<?= e(url('settings/delete')) ?>" class="mt-16px stack" style="max-width:360px" onsubmit="return confirm('This is permanent. Continue?')">
                     <?= csrf_field() ?>
                     <div class="field">
                         <label for="f_confirm">Type <strong><?= e((string) $farm['name']) ?></strong> to confirm</label>

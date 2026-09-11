@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /**
  * @var array<int,array<string,mixed>> $rows
  * @var array<int,array<string,mixed>> $fields
@@ -48,7 +48,7 @@ foreach ($rows as $r) {
 </div>
 
 <?php if ($rows !== []): ?>
-<div class="grid cols-4 mb-16">
+<div class="grid cols-4 mb-16px">
     <div class="stat">
         <div class="spread">
             <div>
@@ -87,13 +87,13 @@ foreach ($rows as $r) {
     </div>
 </div>
 
-<details class="mb-16" open>
+<details class="mb-16px" open>
     <summary class="row" style="cursor:pointer;font-weight:800;color:var(--text-soft);list-style:none;font-size:.875rem">
         <?= $this->partial('partials/icon', ['name' => 'trend-up', 'class' => 'ico ico-sm']) ?> Analytics
     </summary>
-    <div class="grid cols-4 mt-12">
+    <div class="grid cols-4 mt-12px">
         <div class="card"><div class="card-body">
-            <p class="eyebrow mb-12">By type</p>
+            <p class="eyebrow mb-12px">By type</p>
             <div class="stack" style="--stack-gap:8px">
                 <?php foreach (array_slice($byType, 0, 5) as $t): ?>
                     <div class="spread">
@@ -113,7 +113,7 @@ foreach ($rows as $r) {
         </div></div>
 
         <div class="card"><div class="card-body">
-            <p class="eyebrow mb-12">By field</p>
+            <p class="eyebrow mb-12px">By field</p>
             <div class="stack" style="--stack-gap:8px">
                 <?php foreach (array_slice($byField, 0, 5) as $f): ?>
                     <div class="spread">
@@ -128,7 +128,7 @@ foreach ($rows as $r) {
         </div></div>
 
         <div class="card"><div class="card-body">
-            <p class="eyebrow mb-12">By season</p>
+            <p class="eyebrow mb-12px">By season</p>
             <div class="stack" style="--stack-gap:8px">
                 <?php if ($bySeason === []): ?><p class="small muted">No seasons recorded.</p><?php endif; ?>
                 <?php foreach (array_slice($bySeason, 0, 5) as $s): ?>
@@ -144,8 +144,8 @@ foreach ($rows as $r) {
         </div></div>
 
         <div class="card"><div class="card-body">
-            <p class="eyebrow mb-12">Cost shape</p>
-            <p class="small mb-12">Top work type: <strong><?= e($topType) ?></strong></p>
+            <p class="eyebrow mb-12px">Cost shape</p>
+            <p class="small mb-12px">Top work type: <strong><?= e($topType) ?></strong></p>
             <div class="stack" style="--stack-gap:8px">
                 <?php foreach (array_slice($byType, 0, 4) as $t):
                     $pct = $total > 0 ? (int) round($t['total_cost'] / $total * 100) : 0;
@@ -165,7 +165,7 @@ foreach ($rows as $r) {
 </details>
 <?php endif; ?>
 
-<form method="get" action="<?= e(url('activities')) ?>" class="row wrap mb-16" style="gap:10px">
+<form method="get" action="<?= e(url('activities')) ?>" class="row wrap mb-16px" style="gap:10px">
     <select class="select" name="field_id" onchange="this.form.submit()" style="max-width:200px">
         <option value="">All fields</option>
         <?php foreach ($fields as $f): ?>
@@ -191,7 +191,7 @@ foreach ($rows as $r) {
         </span>
         <div class="h3">No activities</div>
         <p>Log land prep, planting, spraying, weeding and harvest — with the labour, inputs and other costs behind each.</p>
-        <?php if ($canManage): ?><p class="mt-16"><a class="btn" href="<?= e(url('activities/create')) ?>">Log your first activity</a></p><?php endif; ?>
+        <?php if ($canManage): ?><p class="mt-16px"><a class="btn" href="<?= e(url('activities/create')) ?>">Log your first activity</a></p><?php endif; ?>
     </div>
 <?php else: ?>
     <div class="stack" style="--stack-gap:20px">
@@ -229,7 +229,7 @@ foreach ($rows as $r) {
                                 </span>
                             </summary>
                             <div style="padding:0 20px 16px;border-top:1px solid var(--line)">
-                                <div class="grid cols-3 mt-12" style="gap:8px">
+                                <div class="grid cols-3 mt-12px" style="gap:8px">
                                     <div style="background:var(--surface-2);border:1px solid var(--line);border-radius:12px;padding:10px">
                                         <p style="font-size:.625rem;font-weight:800;text-transform:uppercase;color:var(--text-faint);margin-bottom:2px">Labour cost</p>
                                         <p style="font-size:.8rem;font-weight:800;color:var(--text)"><?= e(Money::format((float) $a['labour_cost'])) ?></p>
@@ -249,7 +249,7 @@ foreach ($rows as $r) {
                                         <span style="font-size:.8rem;font-weight:700;color:var(--text)"><?= e((string) $a['responsible_person_name']) ?></span>
                                     </div>
                                 <?php endif; ?>
-                                <p class="mt-12"><a href="<?= e(url('activities/' . rawurlencode((string) $a['id']))) ?>" class="small" style="font-weight:700">View full breakdown →</a></p>
+                                <p class="mt-12px"><a href="<?= e(url('activities/' . rawurlencode((string) $a['id']))) ?>" class="small" style="font-weight:700">View full breakdown →</a></p>
                             </div>
                         </details>
                     <?php endforeach; ?>

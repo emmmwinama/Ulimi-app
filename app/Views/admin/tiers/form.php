@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /** @var array<string,mixed>|null $tier */
 $this->layout('layouts/admin');
 $editing = $tier !== null;
@@ -30,7 +30,7 @@ $features = ['season_analytics' => 'Season analytics', 'yield_suggestions' => 'Y
             <label class="checkline"><input type="checkbox" name="is_featured" value="1" <?= (int) $val('is_featured', 0) === 1 ? 'checked' : '' ?>> Featured</label>
         </div>
 
-        <div class="h3 mt-16">Limits (leave blank for unlimited)</div>
+        <div class="h3 mt-16px">Limits (leave blank for unlimited)</div>
         <div class="grid cols-4">
             <?php foreach ($limits as $key => $label): ?>
                 <div class="field">
@@ -40,7 +40,7 @@ $features = ['season_analytics' => 'Season analytics', 'yield_suggestions' => 'Y
             <?php endforeach; ?>
         </div>
 
-        <div class="h3 mt-16">Features</div>
+        <div class="h3 mt-16px">Features</div>
         <div class="grid cols-3">
             <?php foreach ($features as $key => $label): ?>
                 <label class="checkline"><input type="checkbox" name="<?= e($key) ?>" value="1" <?= (int) $val($key, 0) === 1 ? 'checked' : '' ?>> <?= e($label) ?></label>

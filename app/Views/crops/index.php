@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /**
  * @var array<int,array<string,mixed>> $crops
  * @var list<string> $seasons
@@ -39,7 +39,7 @@ $statusColors = [
     </div>
 </div>
 
-<form method="get" action="<?= e(url('crops')) ?>" class="row wrap mb-16" style="gap:10px">
+<form method="get" action="<?= e(url('crops')) ?>" class="row wrap mb-16px" style="gap:10px">
     <select class="select" name="season" onchange="this.form.submit()" style="max-width:240px">
         <option value="">All seasons</option>
         <?php foreach ($seasons as $s): ?>
@@ -58,7 +58,7 @@ $statusColors = [
         <div class="h3">Nothing here</div>
         <p><?= $archived ? 'No archived plantings.' : 'Record what’s planted where — crop, variety, season and dates.' ?></p>
         <?php if ($canManage && !$archived): ?>
-            <p class="mt-16"><a class="btn" href="<?= e(url('crops/create')) ?>">Add a planting</a></p>
+            <p class="mt-16px"><a class="btn" href="<?= e(url('crops/create')) ?>">Add a planting</a></p>
         <?php endif; ?>
     </div>
 <?php else: ?>

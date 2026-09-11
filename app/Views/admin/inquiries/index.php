@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /**
  * @var string $tab
  * @var array<int,array<string,mixed>> $contacts @var array<int,array<string,mixed>> $demos
@@ -9,7 +9,7 @@ use App\Support\Dates;
 <?php $this->start('content'); ?>
 <div class="page-head"><div><h1 class="h1">Inquiries</h1></div></div>
 
-<div class="row mb-16" style="gap:8px">
+<div class="row mb-16px" style="gap:8px">
     <a class="btn sm <?= $tab === 'demo' ? 'secondary' : '' ?>" href="<?= e(url('admin/inquiries')) ?>">Contact (<?= count($contacts) ?>)</a>
     <a class="btn sm <?= $tab === 'demo' ? '' : 'secondary' ?>" href="<?= e(url('admin/inquiries?tab=demo')) ?>">Demo requests (<?= count($demos) ?>)</a>
 </div>
