@@ -33,6 +33,13 @@ use App\Controllers\Farm\SettingsController;
 use App\Controllers\Farm\TeamController;
 use App\Controllers\Farm\WeatherController;
 use App\Controllers\Farm\YieldsController;
+use App\Controllers\Api\ApiActivitiesController;
+use App\Controllers\Api\ApiAuthController;
+use App\Controllers\Api\ApiDashboardController;
+use App\Controllers\Api\ApiFarmController;
+use App\Controllers\Api\ApiFieldsController;
+use App\Controllers\Api\ApiFinanceController;
+use App\Controllers\Api\ApiSyncController;
 use App\Controllers\Onboarding\FarmSetupController;
 use App\Controllers\Public\ContactController;
 use App\Controllers\Public\HomeController;
@@ -307,6 +314,29 @@ $router->group('/admin', ['SecurityHeaders', 'VerifyCsrf'], static function (Rou
         $r->get('/inquiries', [AdminInquiriesController::class, 'index']);
         $r->post('/inquiries/contact/{id}/status', [AdminInquiriesController::class, 'updateContactStatus']);
         $r->post('/inquiries/demo/{id}/status', [AdminInquiriesController::class, 'updateDemoStatus']);
+    });
+});
+
+/* ----------------------------------------------------------- mobile API */
+$router->group('/api/mobile', ['CorsMobile'], static function (Router $r): void {
+    $r->post('/login', [ApiAuthController::class, 'login'], ['Throttle:login']);
+    $r->post('/refresh', [ApiAuthController::class, 'refresh'], ['Throttle:form']);
+    $r->post('/logout', [ApiAuthController::class, 'logout']);
+
+    $r->group('', ['AuthenticateApi', 'ResolveFarmContextApi'], static function (Router $r): void {
+        $r->get('/farm-context', [ApiFarmController::class, 'context']);
+        $r->get('/dashboard', [ApiDashboardController::class, 'show']);
+
+        $r->get('/fields', [ApiFieldsController::class, 'index']);
+        $r->post('/fields', [ApiFieldsController::class, 'store'], ['SubscriptionLimit:fields']);
+
+        $r->get('/activities', [ApiActivitiesController::class, 'index']);
+        $r->post('/activities', [ApiActivitiesController::class, 'store'], ['SubscriptionLimit:activities']);
+
+        $r->get('/finance', [ApiFinanceController::class, 'index']);
+        $r->post('/finance', [ApiFinanceController::class, 'store'], ['SubscriptionLimit:finance']);
+
+        $r->post('/sync', [ApiSyncController::class, 'sync']);
     });
 });
 

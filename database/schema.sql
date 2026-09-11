@@ -233,6 +233,24 @@ CREATE TABLE IF NOT EXISTS `animal_weight` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ---------------------------------------------------------------------
+-- api_refresh_tokens
+-- ---------------------------------------------------------------------
+DROP TABLE IF EXISTS `api_refresh_tokens`;
+CREATE TABLE IF NOT EXISTS `api_refresh_tokens` (
+  `id` varchar(40) NOT NULL,
+  `user_id` varchar(40) NOT NULL,
+  `token_hash` char(64) NOT NULL,
+  `device_label` varchar(120) DEFAULT NULL,
+  `expires_at` datetime NOT NULL,
+  `revoked_at` datetime DEFAULT NULL,
+  `created_at` datetime NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx_api_rt_hash` (`token_hash`),
+  KEY `idx_api_rt_user` (`user_id`),
+  CONSTRAINT `fk_api_rt_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ---------------------------------------------------------------------
 -- audit_log
 -- ---------------------------------------------------------------------
 DROP TABLE IF EXISTS `audit_log`;
