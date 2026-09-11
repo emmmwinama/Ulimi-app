@@ -32,9 +32,15 @@ $statusColors = [
             </a>
         <?php endif; ?>
         <?php if ($canManage && !$archived): ?>
-            <a class="btn" href="<?= e(url('crops/create')) ?>">
-                <?= $this->partial('partials/icon', ['name' => 'plus', 'class' => 'ico']) ?> Add planting
-            </a>
+            <?php if ($fields === []): ?>
+                <a class="btn" href="<?= e(url('fields/create')) ?>" title="Add a field first">
+                    <?= $this->partial('partials/icon', ['name' => 'plus', 'class' => 'ico']) ?> Add a field first
+                </a>
+            <?php else: ?>
+                <a class="btn" href="#add-crop">
+                    <?= $this->partial('partials/icon', ['name' => 'plus', 'class' => 'ico']) ?> Add planting
+                </a>
+            <?php endif; ?>
         <?php endif; ?>
     </div>
 </div>
@@ -57,8 +63,10 @@ $statusColors = [
         </span>
         <div class="h3">Nothing here</div>
         <p><?= $archived ? 'No archived plantings.' : 'Record what’s planted where — crop, variety, season and dates.' ?></p>
-        <?php if ($canManage && !$archived): ?>
-            <p class="mt-16px"><a class="btn" href="<?= e(url('crops/create')) ?>">Add a planting</a></p>
+        <?php if ($canManage && !$archived && $fields !== []): ?>
+            <p class="mt-16px"><a class="btn" href="#add-crop">Add a planting</a></p>
+        <?php elseif ($canManage && !$archived): ?>
+            <p class="mt-16px"><a class="btn" href="<?= e(url('fields/create')) ?>">Add a field first</a></p>
         <?php endif; ?>
     </div>
 <?php else: ?>
@@ -151,7 +159,7 @@ $statusColors = [
                                         </form>
                                     </div>
                                 </details>
-                                <a href="<?= e(url('crops/' . rawurlencode((string) $c['id']) . '/edit')) ?>" title="Edit"
+                                <a href="#edit-crop-<?= e((string) $c['id']) ?>" title="Edit"
                                    style="width:28px;height:28px;border-radius:9px;display:grid;place-items:center;background:var(--surface-3);color:var(--text-faint)">
                                     <?= $this->partial('partials/icon', ['name' => 'pencil', 'class' => 'ico ico-sm']) ?>
                                 </a>
@@ -169,5 +177,60 @@ $statusColors = [
             </div>
         <?php endforeach; ?>
     </div>
+<?php endif; ?>
+
+<?php if ($canManage && !$archived && $fields !== []): ?>
+    <div class="slide-over" id="add-crop">
+        <a href="#" class="scrim" aria-label="Close"></a>
+        <div class="panel">
+            <div class="panel-head">
+                <div>
+                    <h2 class="h3">Add crop planting</h2>
+                    <p class="small muted mt-8px">Record what’s planted, where and when</p>
+                </div>
+                <a href="#" class="panel-close" aria-label="Close"><?= $this->partial('partials/icon', ['name' => 'x', 'class' => 'ico ico-sm']) ?></a>
+            </div>
+            <form method="post" action="<?= e(url('crops')) ?>" style="display:contents">
+                <?= csrf_field() ?>
+                <div class="panel-body stack">
+                    <?= $this->partial('partials/crops/crop', [
+                        'crop' => null, 'fields' => $fields, 'cropTypes' => $cropTypes, 'currentSeason' => $currentSeason,
+                    ]) ?>
+                </div>
+                <div class="panel-foot">
+                    <a href="#" class="btn ghost block">Cancel</a>
+                    <button type="submit" class="btn block">Add planting</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <?php foreach ($crops as $c): if ((int) $c['is_archived'] === 1) continue; ?>
+        <div class="slide-over" id="edit-crop-<?= e((string) $c['id']) ?>">
+            <a href="#" class="scrim" aria-label="Close"></a>
+            <div class="panel">
+                <div class="panel-head">
+                    <div>
+                        <h2 class="h3">Edit crop planting</h2>
+                        <p class="small muted mt-8px">Update <?= e((string) $c['crop_name']) ?> on <?= e((string) $c['field_name']) ?></p>
+                    </div>
+                    <a href="#" class="panel-close" aria-label="Close"><?= $this->partial('partials/icon', ['name' => 'x', 'class' => 'ico ico-sm']) ?></a>
+                </div>
+                <form method="post" action="<?= e(url('crops/' . rawurlencode((string) $c['id']))) ?>" style="display:contents">
+                    <?= csrf_field() ?>
+                    <?= method_field('PUT') ?>
+                    <div class="panel-body stack">
+                        <?= $this->partial('partials/crops/crop', [
+                            'crop' => $c, 'fields' => $fields, 'cropTypes' => $cropTypes, 'currentSeason' => $currentSeason,
+                        ]) ?>
+                    </div>
+                    <div class="panel-foot">
+                        <a href="#" class="btn ghost block">Cancel</a>
+                        <button type="submit" class="btn block">Save changes</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    <?php endforeach; ?>
 <?php endif; ?>
 <?php $this->stop(); ?>

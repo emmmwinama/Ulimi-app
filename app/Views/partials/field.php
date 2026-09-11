@@ -12,12 +12,15 @@
  * @var ?string $placeholder
  * @var ?string $inputmode
  * @var ?string $step
+ * @var ?string $idSuffix      disambiguates ids when the same field set is
+ *                             rendered more than once on a page (e.g. an
+ *                             add panel plus one edit panel per list row)
  */
 $type         = $type ?? 'text';
 $required     = $required ?? false;
 $value        = $value ?? old($name);
 $err          = error_for($name);
-$id           = 'f_' . preg_replace('/[^a-z0-9_]/i', '_', $name);
+$id           = 'f_' . preg_replace('/[^a-z0-9_]/i', '_', $name) . (!empty($idSuffix) ? '_' . preg_replace('/[^a-z0-9_]/i', '_', $idSuffix) : '');
 $autocomplete = $autocomplete ?? null;
 $placeholder  = $placeholder ?? null;
 $inputmode    = $inputmode ?? null;

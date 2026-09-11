@@ -31,18 +31,22 @@ final class CropsController extends Controller
         $ctx = FarmContext::current();
         $season = (string) $request->query('season', '');
         $archived = $request->query('view') === 'archived';
+        $canManage = $ctx->can('crops.manage') && !$ctx->isReadOnly();
 
         return $this->view('crops/index', [
-            'title'     => 'Crops',
-            'active'    => 'crops',
-            'crops'     => $this->crops->forFarm($ctx->farmId(), [
+            'title'         => 'Crops',
+            'active'        => 'crops',
+            'crops'         => $this->crops->forFarm($ctx->farmId(), [
                 'season'   => $season,
                 'archived' => $archived,
             ]),
-            'seasons'   => $this->crops->seasons($ctx->farmId()),
-            'season'    => $season,
-            'archived'  => $archived,
-            'canManage' => $ctx->can('crops.manage') && !$ctx->isReadOnly(),
+            'seasons'       => $this->crops->seasons($ctx->farmId()),
+            'season'        => $season,
+            'archived'      => $archived,
+            'canManage'     => $canManage,
+            'fields'        => $canManage && !$archived ? $this->fields->forFarm($ctx->farmId()) : [],
+            'cropTypes'     => $canManage && !$archived ? $this->cropTypes->available($ctx->farmId()) : [],
+            'currentSeason' => Seasons::current(),
         ]);
     }
 
