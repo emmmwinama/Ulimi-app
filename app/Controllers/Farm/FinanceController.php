@@ -67,13 +67,19 @@ final class FinanceController extends Controller
             'type'   => (string) $request->query('type', ''),
             'season' => (string) $request->query('season', ''),
         ];
+        $canManage = $ctx->can('finance.manage') && !$ctx->isReadOnly();
+
         return $this->view('finance/transactions', [
             'title'     => 'Transactions',
             'active'    => 'finance',
             'rows'      => $this->tx->forFarm($ctx->farmId(), $filters),
             'seasons'   => $this->crops->seasons($ctx->farmId()),
             'filters'   => $filters,
-            'canManage' => $ctx->can('finance.manage') && !$ctx->isReadOnly(),
+            'canManage' => $canManage,
+            'txFields'    => $canManage ? $this->fields->forFarm($ctx->farmId()) : [],
+            'txCrops'     => $canManage ? $this->crops->forFarm($ctx->farmId()) : [],
+            'incomeCats'  => self::INCOME_CATEGORIES,
+            'expenseCats' => self::EXPENSE_CATEGORIES,
         ]);
     }
 
