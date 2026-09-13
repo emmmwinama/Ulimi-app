@@ -57,4 +57,25 @@ final class PaymentRepository
     {
         return (float) $this->db->scalar("SELECT COALESCE(SUM(amount),0) FROM payments WHERE status = 'paid'");
     }
+
+    public function totalCollectedThisMonth(): float
+    {
+        return (float) $this->db->scalar(
+            "SELECT COALESCE(SUM(amount),0) FROM payments
+             WHERE status = 'paid' AND paid_at >= DATE_FORMAT(UTC_TIMESTAMP(), '%Y-%m-01')",
+        );
+    }
+
+    /** @return array<int,array<string,mixed>> */
+    public function allWithUser(int $limit = 300): array
+    {
+        return $this->db->select(
+            'SELECT p.*, u.name AS user_name, u.email AS user_email, t.name AS tier_name
+             FROM payments p
+             JOIN subscriptions s ON s.id = p.subscription_id
+             JOIN users u ON u.id = s.user_id
+             JOIN subscription_tiers t ON t.id = s.tier_id
+             ORDER BY p.created_at DESC LIMIT ' . max(1, $limit),
+        );
+    }
 }

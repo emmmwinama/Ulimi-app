@@ -65,10 +65,10 @@
     --radius-sm:   9px;
     --radius-lg:   16px;
     --radius-xl:   16px;
-    --shadow-xs:   0 1px 2px rgba(15, 23, 42, .05);
-    --shadow-sm:   0 1px 3px rgba(15, 23, 42, .06);
-    --shadow-md:   0 2px 6px rgba(15, 23, 42, .06), 0 10px 24px -8px rgba(15, 23, 42, .12);
-    --shadow-lg:   0 12px 32px -8px rgba(15, 23, 42, .22);
+    --shadow-xs:   0 1px 2px rgba(15, 23, 42, .04);
+    --shadow-sm:   0 1px 2px rgba(15, 23, 42, .04), 0 4px 12px -6px rgba(15, 23, 42, .08);
+    --shadow-md:   0 4px 10px rgba(15, 23, 42, .05), 0 16px 32px -12px rgba(15, 23, 42, .14);
+    --shadow-lg:   0 20px 48px -14px rgba(15, 23, 42, .24);
     --ring-focus:  0 0 0 3px rgba(37, 99, 235, .16);
     --ring-danger: 0 0 0 3px rgba(220, 38, 38, .15);
 
@@ -142,9 +142,13 @@
   .skip-link:focus { @apply translate-y-0; }
 
   /* ---------- typography ---------- */
-  .h1 { font-size: 1.625rem; font-weight: 900; letter-spacing: -.04em; color: var(--navy); line-height: 1.2; }
-  .h2 { font-size: 1.25rem; font-weight: 800; color: var(--navy); letter-spacing: normal; }
+  .h1 { font-size: 1.75rem; font-weight: 900; letter-spacing: -.045em; color: var(--navy); line-height: 1.2; }
+  .h2 { font-size: 1.25rem; font-weight: 800; color: var(--navy); letter-spacing: -.01em; }
   .h3 { font-size: .97rem;  font-weight: 800; color: var(--navy); }
+  /* .h4: the "small bold sub-header" every card/list row hand-rolled via an
+     inline font-size (part of the same drift this stylesheet exists to fix)
+     now has a real tier. */
+  .h4 { font-size: .8rem; font-weight: 800; color: var(--navy); }
   .eyebrow { font-size: .72rem; font-weight: 800; letter-spacing: .09em; text-transform: uppercase; color: var(--text-faint); }
   .muted  { color: var(--text-faint); }
   .small  { font-size: .825rem; }
@@ -179,7 +183,9 @@
   .admin-shell.sidebar-collapsed { grid-template-columns: var(--sidebar-w-admin-collapsed) 1fr; }
 
   .sidebar {
-    background: linear-gradient(180deg, #0F172A 0%, #111827 55%, #0B1120 100%);
+    background:
+      radial-gradient(480px 280px at 15% 0%, rgba(14,165,233,.10), transparent 70%),
+      linear-gradient(180deg, #0F172A 0%, #111827 55%, #0B1120 100%);
     display: flex; flex-direction: column;
     position: sticky; top: 0; height: 100vh;
     border-right: 1px solid rgba(255,255,255,.05);
@@ -432,11 +438,45 @@
   .stat .delta.up { color: var(--green-text); font-weight: 700; }
   .stat .delta.down { color: var(--red-text); font-weight: 700; }
 
+  /* icon-box: the colored square icon-avatar pattern used across every list
+     and card view (empty states, card headers, row action buttons) — was
+     hand-typed inline everywhere with drifting sizes (28/32/36/40px) and
+     radii (9/10/12px) for what was meant to be the same three-size
+     component. One definition, three sizes, six tone pairs already in use. */
+  .icon-box {
+    display: grid; place-items: center; flex: none;
+    width: 36px; height: 36px; border-radius: var(--radius);
+  }
+  .icon-box .ico { width: 18px; height: 18px; }
+  .icon-box.sm { width: 28px; height: 28px; border-radius: var(--radius-sm); }
+  .icon-box.sm .ico { width: 14px; height: 14px; }
+  .icon-box.lg { width: 64px; height: 64px; border-radius: var(--radius-lg); }
+  .icon-box.lg .ico { width: 28px; height: 28px; }
+  .icon-box.teal  { background: var(--teal-pale); color: var(--teal); }
+  .icon-box.red   { background: var(--red-050);   color: var(--red-text); }
+  .icon-box.blue  { background: var(--blue-050);  color: #1E40AF; }
+  .icon-box.green { background: var(--green-050); color: var(--green-text); }
+  .icon-box.amber { background: var(--amber-050); color: var(--amber); }
+  .icon-box.muted { background: var(--surface-3); color: var(--text-faint); }
+
+  /* mini-stat: the bordered surface-2 label+value tile used inside cards for
+     a quick two-up fact pair (type/severity, area/cultivatable, ...) —
+     27 byte-for-byte duplicate inline occurrences before this class existed. */
+  .mini-stat {
+    background: var(--surface-2); border: 1px solid var(--line);
+    border-radius: var(--radius); padding: 10px;
+  }
+  .mini-stat .label {
+    font-size: .625rem; font-weight: 800; text-transform: uppercase;
+    letter-spacing: .05em; color: var(--text-faint); margin-bottom: 2px;
+  }
+  .mini-stat .value { font-size: .875rem; font-weight: 900; color: var(--text); }
+
   /* buttons */
   .btn {
-    --btn-bg: linear-gradient(135deg, #0F766E 0%, #2563EB 100%);
+    --btn-bg: linear-gradient(135deg, #0F766E 0%, #1E7A8C 45%, #2563EB 100%);
     --btn-fg: #fff; --btn-bd: transparent;
-    --btn-shadow: 0 2px 8px rgba(37,99,235,.22);
+    --btn-shadow: 0 2px 6px rgba(15,118,110,.16), 0 4px 14px -2px rgba(37,99,235,.22);
     display: inline-flex; align-items: center; justify-content: center; gap: 8px;
     min-height: var(--btn-h); padding: 0 20px;
     border-radius: var(--radius); border: 1px solid var(--btn-bd);
@@ -445,7 +485,7 @@
     box-shadow: var(--btn-shadow);
     transition: filter .12s ease, box-shadow .12s ease, transform .12s ease, background .12s ease;
   }
-  .btn:hover { filter: brightness(1.04); box-shadow: 0 4px 16px rgba(37,99,235,.3); transform: translateY(-1px); text-decoration: none; }
+  .btn:hover { filter: brightness(1.04); box-shadow: 0 3px 10px rgba(15,118,110,.2), 0 8px 20px -4px rgba(37,99,235,.3); transform: translateY(-1px); text-decoration: none; }
   .btn:active { filter: brightness(.96); transform: translateY(0); }
   .btn:focus-visible { box-shadow: var(--btn-shadow), var(--ring-focus); }
   .btn[disabled], .btn.is-loading { opacity: .5; pointer-events: none; transform: none; box-shadow: none; }

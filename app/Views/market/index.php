@@ -15,6 +15,11 @@ use App\Support\Money;
     </div>
 </div>
 
+<div class="row wrap mb-16px" style="gap:8px">
+    <a href="<?= e(url('market')) ?>" class="btn sm">Prices</a>
+    <a href="<?= e(url('market/buyers')) ?>" class="btn sm secondary">Buyers &amp; Offers</a>
+</div>
+
 <form method="get" action="<?= e(url('market')) ?>" class="mb-24px">
     <select class="select" name="crop" onchange="this.form.submit()" style="max-width:220px">
         <option value="">All crops</option>

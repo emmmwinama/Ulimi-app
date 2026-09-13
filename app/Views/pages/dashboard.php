@@ -247,7 +247,7 @@ $alerts = array_filter([
     <div class="grid cols-2 mb-16px">
         <?php foreach ($roleActions as $a): ?>
             <a href="<?= e($a['href']) ?>" class="row" style="background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:12px 16px">
-                <span style="width:40px;height:40px;border-radius:16px;background:var(--blue-050);color:#1E40AF;display:grid;place-items:center;flex:none">
+                <span class="icon-box blue">
                     <?= $this->partial('partials/icon', ['name' => $a['icon'], 'class' => 'ico']) ?>
                 </span>
                 <div>
@@ -301,7 +301,7 @@ $alerts = array_filter([
                 ?>
                     <div class="spread" style="padding:8px 0;border-bottom:1px solid var(--line)">
                         <div class="row" style="gap:8px">
-                            <span style="width:32px;height:32px;border-radius:12px;background:var(--surface-2);color:var(--teal);display:grid;place-items:center;flex:none">
+                            <span class="icon-box teal">
                                 <?= $this->partial('partials/icon', ['name' => 'sprout', 'class' => 'ico']) ?>
                             </span>
                             <div>
@@ -330,7 +330,7 @@ $alerts = array_filter([
             <div class="stack">
                 <?php foreach ($recentActivities as $a): ?>
                     <div class="row" style="gap:10px;padding:8px 0;border-bottom:1px solid var(--line);align-items:flex-start">
-                        <span style="width:30px;height:30px;border-radius:10px;background:var(--surface-2);display:grid;place-items:center;flex:none">
+                        <span class="icon-box sm muted">
                             <?= $this->partial('partials/icon', ['name' => 'leaf', 'class' => 'ico']) ?>
                         </span>
                         <div style="flex:1;min-width:0">

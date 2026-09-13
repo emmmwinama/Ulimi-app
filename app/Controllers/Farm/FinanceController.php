@@ -227,12 +227,13 @@ final class FinanceController extends Controller
     {
         $ctx = FarmContext::current();
         $data = $this->validate($request, [
-            'type'        => ['required', 'in:Income,Expense'],
-            'category'    => ['required', 'max:80'],
-            'amount'      => ['required', 'numeric', 'min:0', 'max:1000000000'],
-            'date'        => ['required', 'date'],
-            'description' => ['required', 'max:255'],
-            'season'      => ['max:60'],
+            'type'           => ['required', 'in:Income,Expense'],
+            'category'       => ['required', 'max:80'],
+            'payment_status' => ['required', 'in:unpaid,partial,paid'],
+            'amount'         => ['required', 'numeric', 'min:0', 'max:1000000000'],
+            'date'           => ['required', 'date'],
+            'description'    => ['required', 'max:255'],
+            'season'         => ['max:60'],
         ]);
         if ($data instanceof Response) {
             return $data;
@@ -250,6 +251,7 @@ final class FinanceController extends Controller
         return [
             'type'         => (string) $data['type'],
             'category'     => trim((string) $data['category']),
+            'payment_status' => (string) $data['payment_status'],
             'amount'       => (float) $data['amount'],
             'date'         => date('Y-m-d', (int) strtotime((string) $data['date'])),
             'description'  => trim((string) $data['description']),

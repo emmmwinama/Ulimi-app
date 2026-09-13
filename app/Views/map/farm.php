@@ -52,6 +52,15 @@ foreach ($fields as $f) {
     }
 }
 $fieldColors = ['#16A34A', '#2563EB', '#0284C7', '#9333EA', '#DC2626', '#0891B2', '#EA580C', '#65A30D'];
+$markerTypeMeta = [
+    'borehole'   => ['code' => 'BH', 'color' => '#0284C7'],
+    'irrigation' => ['code' => 'IR', 'color' => '#0EA5E9'],
+    'shed'       => ['code' => 'SH', 'color' => '#EA580C'],
+    'road'       => ['code' => 'RD', 'color' => '#64748B'],
+    'gate'       => ['code' => 'GT', 'color' => '#9333EA'],
+    'store'      => ['code' => 'ST', 'color' => '#16A34A'],
+    'other'      => ['code' => 'OT', 'color' => '#475569'],
+];
 ?>
 <?php $this->start('head'); ?>
 <link rel="stylesheet" href="<?= e(asset('vendor/leaflet/leaflet.css')) ?>">
@@ -80,7 +89,7 @@ $fieldColors = ['#16A34A', '#2563EB', '#0284C7', '#9333EA', '#DC2626', '#0891B2'
         <div class="grid cols-2" style="gap:10px;padding:14px;border-bottom:1px solid var(--line)">
             <div style="background:var(--teal-pale);border-radius:12px;padding:10px">
                 <p style="font-size:.625rem;font-weight:900;text-transform:uppercase;letter-spacing:.05em;color:var(--teal);margin-bottom:2px">Mapped area</p>
-                <p style="font-size:1.05rem;font-weight:900;color:var(--teal)"><?= e(number_format($totalMappedHa, 2)) ?> ha</p>
+                <p style="font-size:1.05rem;font-weight:900;color:var(--teal)"><?= e(number_format($totalMappedHa, 2)) ?> ha <span style="font-size:.7rem;font-weight:700;opacity:.7">(<?= e(number_format($totalMappedHa * 2.471, 1)) ?> ac)</span></p>
             </div>
             <div style="background:var(--surface-2);border-radius:12px;padding:10px">
                 <p style="font-size:.625rem;font-weight:900;text-transform:uppercase;letter-spacing:.05em;color:var(--text-faint);margin-bottom:2px">Total fields</p>
@@ -158,18 +167,24 @@ $fieldColors = ['#16A34A', '#2563EB', '#0284C7', '#9333EA', '#DC2626', '#0891B2'
             <?php if ($data['markers'] === []): ?>
                 <p class="muted">No markers yet — boreholes, sheds, gates, roads.</p>
             <?php else: ?>
-                <ul style="list-style:none;padding:0;margin:0">
-                    <?php foreach ($data['markers'] as $m): ?>
-                        <li class="spread" style="padding:7px 0;border-bottom:1px solid var(--line)">
-                            <span><strong><?= e((string) $m['label']) ?></strong> <span class="muted small"><?= e((string) $m['type']) ?></span></span>
+                <div class="stack" style="gap:8px">
+                    <?php foreach ($data['markers'] as $m):
+                        $meta = $markerTypeMeta[$m['type']] ?? $markerTypeMeta['other'];
+                    ?>
+                        <div class="spread" style="padding:8px 10px;border:1px solid var(--line);border-radius:12px;background:var(--surface-2)">
+                            <div class="row" style="gap:10px">
+                                <span style="width:24px;height:24px;border-radius:8px;flex:none;display:grid;place-items:center;font-size:.55rem;font-weight:900;color:#fff;background:<?= e($meta['color']) ?>"><?= e($meta['code']) ?></span>
+                                <span><strong><?= e((string) $m['label']) ?></strong> <span class="muted small"><?= e(ucfirst(str_replace('_', ' ', (string) $m['type']))) ?></span></span>
+                            </div>
                             <?php if ($canManage): ?>
                                 <form method="post" action="<?= e(url('map/markers/' . rawurlencode((string) $m['id']) . '/delete')) ?>">
-                                    <?= csrf_field() ?><button class="btn sm ghost danger" type="submit">✕</button>
+                                    <?= csrf_field() ?>
+                                    <button class="btn sm ghost danger" type="submit" aria-label="Remove marker"><?= $this->partial('partials/icon', ['name' => 'trash', 'class' => 'ico ico-sm']) ?></button>
                                 </form>
                             <?php endif; ?>
-                        </li>
+                        </div>
                     <?php endforeach; ?>
-                </ul>
+                </div>
             <?php endif; ?>
         </div>
     </div>

@@ -55,6 +55,16 @@ final class ReportBuilder
             'columns' => ['date' => 'Date', 'type' => 'Type', 'category' => 'Category', 'description' => 'Description', 'amount' => 'Amount'],
             'sql' => "SELECT date, type, category, description, amount FROM transactions WHERE farm_id = :fid {date_t} {season_t} ORDER BY date DESC",
         ],
+        'pnl' => [
+            'label' => 'Income & expense summary',
+            'columns' => ['type' => 'Type', 'category' => 'Category', 'total' => 'Total'],
+            'sql' => "SELECT type, category, SUM(amount) AS total FROM transactions WHERE farm_id = :fid {date_t} {season_t} GROUP BY type, category ORDER BY type ASC, total DESC",
+        ],
+        'climate_events' => [
+            'label' => 'Climate events',
+            'columns' => ['event_type' => 'Type', 'start_date' => 'Start', 'end_date' => 'End', 'description' => 'Description', 'estimated_loss_amount' => 'Est. loss'],
+            'sql' => "SELECT event_type, start_date, end_date, description, estimated_loss_amount FROM climate_events WHERE farm_id = :fid {date_ce} ORDER BY start_date DESC",
+        ],
         'overheads' => [
             'label' => 'Overheads',
             'columns' => ['date' => 'Date', 'description' => 'Description', 'category' => 'Category', 'amount' => 'Amount'],
@@ -116,6 +126,7 @@ final class ReportBuilder
             $sql = str_replace('{date_hy}', $this->dateClause('hy.harvest_date', $from, $to), $sql);
             $sql = str_replace('{date_t}', $this->dateClause('date', $from, $to), $sql);
             $sql = str_replace('{date_o}', $this->dateClause('date', $from, $to), $sql);
+            $sql = str_replace('{date_ce}', $this->dateClause('start_date', $from, $to), $sql);
 
             if ($season !== '' && str_contains($def['sql'], '{season_')) {
                 $bind['season'] = $season;

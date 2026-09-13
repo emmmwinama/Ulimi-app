@@ -37,6 +37,7 @@ final class SecurityHeaders implements Middleware
             || str_starts_with($path, '/admin')
             || str_starts_with($path, '/api')
             || str_starts_with($path, '/account')
+            || str_starts_with($path, '/shared')
         ) {
             $headers['X-Robots-Tag'] = 'noindex, nofollow, noarchive';
             $headers['Cache-Control'] = 'no-store, max-age=0';

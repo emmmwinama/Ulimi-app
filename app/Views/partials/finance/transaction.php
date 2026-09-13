@@ -32,6 +32,15 @@ $uid = $editing ? (string) $row['id'] : 'new';
     </div>
 </div>
 
+<div class="field">
+    <label for="f_payment_status_<?= e($uid) ?>">Payment status</label>
+    <select class="select" id="f_payment_status_<?= e($uid) ?>" name="payment_status">
+        <?php foreach (['paid' => 'Paid', 'partial' => 'Partially paid', 'unpaid' => 'Unpaid'] as $v => $l): ?>
+            <option value="<?= e($v) ?>" <?= (string) ($val('payment_status') ?: 'paid') === $v ? 'selected' : '' ?>><?= e($l) ?></option>
+        <?php endforeach; ?>
+    </select>
+</div>
+
 <div class="grid cols-2">
     <?= $this->partial('partials/field', [
         'name' => 'amount', 'label' => 'Amount (' . e((string) config('app.currency')) . ')', 'type' => 'number',

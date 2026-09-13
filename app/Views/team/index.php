@@ -143,7 +143,7 @@ $roleLabel = static fn (string $r): string => ucwords(str_replace('_', ' ', $r))
                 <form method="post" action="<?= e(url('team/' . rawurlencode((string) $m['id']) . '/remove')) ?>" onsubmit="return confirm('Remove this team member?')">
                     <?= csrf_field() ?>
                     <button type="submit" title="Remove"
-                            style="width:32px;height:32px;border-radius:9px;display:grid;place-items:center;background:var(--red-050);color:var(--red-text);border:0;cursor:pointer">
+                            class="icon-box sm red" style="border:0;cursor:pointer">
                         <?= $this->partial('partials/icon', ['name' => 'trash', 'class' => 'ico ico-sm']) ?>
                     </button>
                 </form>

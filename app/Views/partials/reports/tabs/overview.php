@@ -117,7 +117,7 @@ $netProfit = $s['total_revenue'] - $s['total_expenses'];
             <div class="grid cols-2" style="gap:10px">
                 <?php foreach ($packs as $key => $p): ?>
                     <a href="<?= e(url('reports/pack/' . $key)) ?>" class="row" style="gap:10px;padding:12px 14px;border-radius:16px;background:var(--surface-2);border:1px solid var(--line)">
-                        <span style="width:32px;height:32px;border-radius:10px;background:var(--teal-pale);color:var(--teal);display:grid;place-items:center;flex:none">
+                        <span class="icon-box teal">
                             <?= $this->partial('partials/icon', ['name' => 'file-text', 'class' => 'ico ico-sm']) ?>
                         </span>
                         <span class="small" style="font-weight:800;color:var(--text)"><?= e($p['label']) ?></span>
@@ -139,7 +139,7 @@ $netProfit = $s['total_revenue'] - $s['total_expenses'];
             foreach ($links as $a):
             ?>
                 <a href="<?= e($a['href']) ?>" class="row" style="gap:10px;padding:12px 14px;border-radius:16px;background:var(--surface-2);border:1px solid var(--line)">
-                    <span style="width:32px;height:32px;border-radius:10px;background:var(--blue-050);color:#1E40AF;display:grid;place-items:center;flex:none">
+                    <span class="icon-box blue">
                         <?= $this->partial('partials/icon', ['name' => $a['icon'], 'class' => 'ico ico-sm']) ?>
                     </span>
                     <span class="small" style="font-weight:800;color:var(--text)"><?= e($a['label']) ?></span>

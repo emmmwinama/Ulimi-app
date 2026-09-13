@@ -79,7 +79,7 @@ $fmtKg = static fn (float $n): string => number_format($n) . ' kg';
 
 <?php if ($groups === []): ?>
     <div class="empty">
-        <span class="icon-box" style="width:64px;height:64px;border-radius:16px;background:var(--surface-2);color:var(--text-faint);display:grid;place-items:center;margin:0 auto 16px">
+        <span class="icon-box lg muted" style="margin:0 auto 16px">
             <?= $this->partial('partials/icon', ['name' => 'wheat', 'class' => 'ico']) ?>
         </span>
         <div class="h3">No yield records yet</div>
@@ -111,20 +111,20 @@ $fmtKg = static fn (float $n): string => number_format($n) . ' kg';
 
                 <div class="card-body">
                     <div class="grid cols-4 mb-16px" style="gap:10px">
-                        <div style="background:var(--surface-2);border:1px solid var(--line);border-radius:12px;padding:10px">
-                            <p style="font-size:.625rem;font-weight:800;text-transform:uppercase;color:var(--text-faint);margin-bottom:2px">Total cost</p>
+                        <div class="mini-stat">
+                            <p class="label">Total cost</p>
                             <p style="font-size:.8rem;font-weight:800;color:var(--red-text)"><?= e(Money::format($g['total_cost'])) ?></p>
                         </div>
-                        <div style="background:var(--surface-2);border:1px solid var(--line);border-radius:12px;padding:10px">
-                            <p style="font-size:.625rem;font-weight:800;text-transform:uppercase;color:var(--text-faint);margin-bottom:2px">Cost / ha</p>
+                        <div class="mini-stat">
+                            <p class="label">Cost / ha</p>
                             <p style="font-size:.8rem;font-weight:800;color:var(--text)"><?= $g['cost_per_ha'] !== null ? e(Money::format($g['cost_per_ha'])) : '—' ?></p>
                         </div>
-                        <div style="background:var(--surface-2);border:1px solid var(--line);border-radius:12px;padding:10px">
-                            <p style="font-size:.625rem;font-weight:800;text-transform:uppercase;color:var(--text-faint);margin-bottom:2px">Total yield</p>
+                        <div class="mini-stat">
+                            <p class="label">Total yield</p>
                             <p style="font-size:.8rem;font-weight:800;color:var(--teal)"><?= $g['total_yield_kg'] > 0 ? $fmtKg($g['total_yield_kg']) : 'Not recorded' ?></p>
                         </div>
-                        <div style="background:var(--surface-2);border:1px solid var(--line);border-radius:12px;padding:10px">
-                            <p style="font-size:.625rem;font-weight:800;text-transform:uppercase;color:var(--text-faint);margin-bottom:2px">Yield / ha</p>
+                        <div class="mini-stat">
+                            <p class="label">Yield / ha</p>
                             <p style="font-size:.8rem;font-weight:800;color:var(--teal)"><?= $g['yield_per_ha'] !== null ? $fmtKg($g['yield_per_ha']) : '—' ?></p>
                         </div>
                     </div>
@@ -183,13 +183,13 @@ $fmtKg = static fn (float $n): string => number_format($n) . ' kg';
                                                 <?= isset($storageByHarvest[$y['id']]) ? 'Stored' : 'Storage' ?>
                                             </a>
                                             <a href="#edit-yield-<?= e((string) $y['id']) ?>" title="Edit"
-                                               style="width:28px;height:28px;border-radius:9px;display:grid;place-items:center;background:var(--surface-3);color:var(--text-faint)">
+                                               class="icon-box sm muted">
                                                 <?= $this->partial('partials/icon', ['name' => 'pencil', 'class' => 'ico ico-sm']) ?>
                                             </a>
                                             <form method="post" action="<?= e(url('yields/' . rawurlencode((string) $y['id']) . '/delete')) ?>" onsubmit="return confirm('Delete this yield record?')">
                                                 <?= csrf_field() ?>
                                                 <button type="submit" title="Delete"
-                                                        style="width:28px;height:28px;border-radius:9px;display:grid;place-items:center;background:var(--red-050);color:var(--red-text);border:0;cursor:pointer">
+                                                        class="icon-box sm red" style="border:0;cursor:pointer">
                                                     <?= $this->partial('partials/icon', ['name' => 'trash', 'class' => 'ico ico-sm']) ?>
                                                 </button>
                                             </form>

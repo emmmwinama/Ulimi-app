@@ -18,7 +18,7 @@ final class CropFieldRepository
     }
 
     /**
-     * @param array{season?:string,field_id?:string,archived?:bool} $filters
+     * @param array{season?:string,field_id?:string,status?:string,archived?:bool} $filters
      * @return array<int,array<string,mixed>>
      */
     public function forFarm(string $farmId, array $filters = []): array
@@ -33,6 +33,10 @@ final class CropFieldRepository
         if (!empty($filters['field_id'])) {
             $where[] = 'cf.field_id = :field_id';
             $bind['field_id'] = $filters['field_id'];
+        }
+        if (!empty($filters['status'])) {
+            $where[] = 'cf.status = :status';
+            $bind['status'] = $filters['status'];
         }
         $where[] = ($filters['archived'] ?? false) ? 'cf.is_archived = 1' : 'cf.is_archived = 0';
 
@@ -66,6 +70,26 @@ final class CropFieldRepository
         return (int) $this->db->scalar(
             'SELECT COUNT(*) FROM crop_fields WHERE farm_id = :fid AND is_archived = 0',
             ['fid' => $farmId],
+        );
+    }
+
+    /**
+     * Total area currently claimed by this field's other active plantings —
+     * harvested/failed/terminated or archived plantings have freed their
+     * land back up, so they don't count. Pass the planting's own id when
+     * editing it so it doesn't count against itself.
+     */
+    public function activeAllocatedArea(string $farmId, string $fieldId, ?string $excludeId = null): float
+    {
+        $where = ['farm_id = :fid', 'field_id = :field_id', "status = 'Active'", 'is_archived = 0'];
+        $bind = ['fid' => $farmId, 'field_id' => $fieldId];
+        if ($excludeId !== null) {
+            $where[] = 'id != :exclude_id';
+            $bind['exclude_id'] = $excludeId;
+        }
+        return (float) $this->db->scalar(
+            'SELECT COALESCE(SUM(area_planted), 0) FROM crop_fields WHERE ' . implode(' AND ', $where),
+            $bind,
         );
     }
 

@@ -123,6 +123,7 @@ final class InventoryRepository
             'price_per_unit'    => $data['price_per_unit'],
             'total_amount'      => $data['total_amount'],
             'buyer_name'        => $data['buyer_name'],
+            'buyer_id'          => $data['buyer_id'] ?? null,
             'collection_point'  => $data['collection_point'] ?? null,
             'transport_method'  => $data['transport_method'] ?? null,
             'pickup_date'       => $data['pickup_date'] ?? null,
@@ -131,5 +132,16 @@ final class InventoryRepository
             'created_at'        => Dates::nowUtc(),
         ]);
         return $id;
+    }
+
+    /** @return array<string,mixed>|null */
+    public function findSale(string $farmId, string $saleId): ?array
+    {
+        return $this->db->selectOne(
+            'SELECT s.*, i.name AS item_name, i.category AS item_category
+             FROM inventory_sales s JOIN inventory_items i ON i.id = s.inventory_item_id
+             WHERE s.id = :id AND s.farm_id = :fid LIMIT 1',
+            ['id' => $saleId, 'fid' => $farmId],
+        );
     }
 }

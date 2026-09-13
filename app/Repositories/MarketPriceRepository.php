@@ -53,6 +53,15 @@ final class MarketPriceRepository
         return $this->db->selectOne('SELECT * FROM market_prices WHERE id = :id LIMIT 1', ['id' => $id]);
     }
 
+    /** Finds a previous auto-import for this crop/region so a re-fetch updates it in place. */
+    public function findBySourceCropRegion(string $source, string $cropName, string $region): ?array
+    {
+        return $this->db->selectOne(
+            'SELECT * FROM market_prices WHERE source = :source AND crop_name = :crop AND region = :region LIMIT 1',
+            ['source' => $source, 'crop' => $cropName, 'region' => $region],
+        );
+    }
+
     /** @param array<string,mixed> $data */
     public function create(array $data): string
     {

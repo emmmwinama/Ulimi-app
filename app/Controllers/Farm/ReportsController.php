@@ -14,6 +14,7 @@ use App\Core\Request;
 use App\Core\Response;
 use App\Repositories\CropFieldRepository;
 use App\Repositories\FieldRepository;
+use App\Repositories\ReportShareLinkRepository;
 use App\Services\Ai;
 use App\Services\CreditScore;
 use App\Services\FinanceSummary;
@@ -25,11 +26,14 @@ final class ReportsController extends Controller
 {
     /** Curated section sets for each record-pack type, in display order. */
     private const PACKS = [
-        'loan'      => ['label' => 'Loan-readiness pack', 'sections' => ['fields', 'crops', 'activities', 'yields', 'finance', 'overheads', 'employees']],
-        'buyer'     => ['label' => 'Buyer evidence pack', 'sections' => ['crops', 'activities', 'yields']],
-        'audit'     => ['label' => 'Audit file', 'sections' => ['fields', 'crops', 'activities', 'finance', 'overheads', 'inventory', 'employees']],
-        'insurance' => ['label' => 'Insurance file', 'sections' => ['fields', 'crops', 'activities', 'livestock']],
+        'loan'      => ['label' => 'Loan-readiness pack', 'purpose' => 'Loan / credit application supporting evidence', 'sections' => ['fields', 'crops', 'activities', 'yields', 'pnl', 'overheads', 'employees']],
+        'buyer'     => ['label' => 'Buyer evidence pack', 'purpose' => 'Buyer traceability and production evidence', 'sections' => ['crops', 'activities', 'yields']],
+        'audit'     => ['label' => 'Audit file', 'purpose' => 'Internal or third-party audit file', 'sections' => ['fields', 'crops', 'activities', 'finance', 'overheads', 'inventory', 'employees']],
+        'insurance' => ['label' => 'Insurance file', 'purpose' => 'Insurance claim or underwriting evidence', 'sections' => ['fields', 'crops', 'activities', 'livestock', 'climate_events']],
     ];
+
+    /** How long a generated share link stays valid before it needs regenerating. */
+    private const SHARE_LINK_TTL_DAYS = 14;
 
     private const DASHBOARD_TABS = [
         'overview', 'crops', 'finance', 'analytics', 'yields',
@@ -45,6 +49,7 @@ final class ReportsController extends Controller
         private readonly FinanceSummary $finance = new FinanceSummary(),
         private readonly ReportsAnalytics $analytics = new ReportsAnalytics(),
         private readonly Ai $ai = new Ai(),
+        private readonly ReportShareLinkRepository $shareLinks = new ReportShareLinkRepository(),
     ) {
     }
 
@@ -125,12 +130,49 @@ final class ReportsController extends Controller
             ['fid' => $farmId],
         );
 
+        // Crop stage (planted vs. harvested) so the AI can tell "still growing,
+        // costs but no revenue yet" apart from a genuinely under-performing
+        // season — a raw income-vs-cost total can't make that distinction.
+        $today = new \DateTimeImmutable('today');
+        $cropStages = [];
+        foreach ($db->select(
+            "SELECT ct.name, cf.status, cf.planting_date, cf.expected_harvest_date,
+                    COALESCE(SUM(hy.quantity_kg), 0) AS harvested_kg
+             FROM crop_fields cf
+             JOIN crop_types ct ON ct.id = cf.crop_type_id
+             LEFT JOIN harvest_yields hy ON hy.crop_field_id = cf.id
+             WHERE cf.farm_id = :fid AND cf.is_archived = 0
+             GROUP BY cf.id, ct.name, cf.status, cf.planting_date, cf.expected_harvest_date
+             ORDER BY cf.planting_date DESC LIMIT 10",
+            ['fid' => $farmId],
+        ) as $row) {
+            $planted = new \DateTimeImmutable((string) $row['planting_date']);
+            $expectedHarvest = new \DateTimeImmutable((string) $row['expected_harvest_date']);
+            $cropStages[] = [
+                'crop' => $row['name'],
+                'status' => $row['status'],
+                'days_since_planting' => $today->diff($planted)->days * ($today >= $planted ? 1 : -1),
+                'days_until_expected_harvest' => $today->diff($expectedHarvest)->days * ($expectedHarvest >= $today ? 1 : -1),
+                'harvested_kg_so_far' => (float) $row['harvested_kg'],
+            ];
+        }
+
         $insight = $this->ai->insight(
             $farmId,
             'reports_overview',
             'Summarise this farm\'s overall financial and production performance for its owner: '
                 . 'highlight whether it is profitable, the biggest cost driver, and one concrete '
-                . 'suggestion grounded in the numbers given.',
+                . 'suggestion grounded in the numbers given. Check crop_stage first before calling '
+                . 'anything a "loss": (1) if days_until_expected_harvest is positive and '
+                . 'harvested_kg_so_far is 0, the crop is still growing — costs with no revenue yet is '
+                . 'normal pre-harvest cash flow, so frame the number as spend-to-date against an '
+                . 'expected future harvest, and do not use the words "loss" or "loss-making" anywhere '
+                . 'in the summary. (2) if harvested_kg_so_far is greater than 0 but income is still 0 '
+                . 'or low, the crop has been harvested but not yet sold — this is unsold stock, not a '
+                . 'loss: say the revenue is still pending the sale, and do not use the words "loss" or '
+                . '"loss-making" anywhere in the summary; suggest selling it. (3) only call it '
+                . 'a loss if the crop is well past its expected harvest date, has been sold, and income '
+                . 'still falls short of costs.',
             [
                 'income' => $totals['income'],
                 'total_cost' => $totals['total_cost'],
@@ -144,6 +186,7 @@ final class ReportsController extends Controller
                 'total_yield_kg' => $yieldKg,
                 'season_net_revenue' => $seasons,
                 'crop_area_mix_ha' => $cropRows,
+                'crop_stage' => $cropStages,
                 'currency' => 'MWK',
             ],
         );
@@ -206,11 +249,55 @@ final class ReportsController extends Controller
             'packType' => $type,
             'packLabel'=> self::PACKS[$type]['label'],
             'farm'     => $ctx->farm,
+            'farmName' => $ctx->farmName(),
+            'purpose'  => self::PACKS[$type]['purpose'],
             'sections' => $sections,
             'season'   => $season,
+            'dateRange'=> $season !== '' ? $season : 'All seasons',
             'seasons'  => $this->crops->seasons($ctx->farmId()),
             'generatedAt' => gmdate('Y-m-d H:i'),
+            'shareLinks'  => array_values(array_filter(
+                $this->shareLinks->forFarm($ctx->farmId()),
+                static fn (array $l): bool => $l['pack_type'] === $type,
+            )),
+            'canShare' => $ctx->can('reports.manage') && !$ctx->isReadOnly(),
         ]);
+    }
+
+    /* -------------------------------------------------------- share links */
+
+    public function createShareLink(Request $request): Response
+    {
+        $ctx = FarmContext::current();
+        $type = (string) $request->route('type');
+        if (!isset(self::PACKS[$type])) {
+            return $this->view('errors/404', [], 404);
+        }
+
+        $plainToken = $this->shareLinks->create($ctx->farmId(), (string) Auth::id(), $type, self::SHARE_LINK_TTL_DAYS);
+        $url = url('shared/reports/' . $plainToken);
+
+        AuditLog::user('report.share_link_created', (string) Auth::id(), ['pack_type' => $type], $ctx->farmId(), $request->ip());
+        Flash::success(
+            'Share link created — copy it now, it won\'t be shown again: ' . $url
+            . ' (valid ' . self::SHARE_LINK_TTL_DAYS . ' days, revoke it any time below).'
+        );
+        return $this->redirect(url('reports/pack/' . $type));
+    }
+
+    public function revokeShareLink(Request $request): Response
+    {
+        $ctx = FarmContext::current();
+        $id = (string) $request->route('id');
+        $link = $this->shareLinks->find($ctx->farmId(), $id);
+        if ($link === null) {
+            Flash::error('Share link not found.');
+            return $this->redirect(url('reports'));
+        }
+        $this->shareLinks->revoke($ctx->farmId(), $id);
+        AuditLog::user('report.share_link_revoked', (string) Auth::id(), ['link_id' => $id], $ctx->farmId(), $request->ip());
+        Flash::success('Share link revoked — it no longer works.');
+        return $this->redirect(url('reports/pack/' . (string) $link['pack_type']));
     }
 
     /* ---------------------------------------------------------------- builder */

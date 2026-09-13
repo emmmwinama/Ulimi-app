@@ -81,12 +81,18 @@
     var target = null;              // which hidden input to write to
     var areaOut = null;
 
-    window.__agvBeginDraw = function (inputId, areaId) {
+    function beginDraw(inputId, areaId) {
       target = document.getElementById(inputId);
       areaOut = areaId ? document.getElementById(areaId) : null;
       drawn.clearLayers();
       new L.Draw.Polygon(map, drawControl.options.draw.polygon).enable();
-    };
+    }
+
+    Array.prototype.forEach.call(document.querySelectorAll("[data-begin-draw]"), function (btn) {
+      btn.addEventListener("click", function () {
+        beginDraw(btn.getAttribute("data-target"), btn.getAttribute("data-area"));
+      });
+    });
 
     map.on(L.Draw.Event.CREATED, function (e) {
       drawn.clearLayers();

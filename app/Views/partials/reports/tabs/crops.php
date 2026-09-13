@@ -5,7 +5,7 @@ $crops = $dashboard['crops'];
 ?>
 <?php if ($crops === []): ?>
     <div class="empty">
-        <span class="icon-box" style="width:64px;height:64px;border-radius:16px;background:var(--surface-2);color:var(--text-faint);display:grid;place-items:center;margin:0 auto 16px">
+        <span class="icon-box lg muted" style="margin:0 auto 16px">
             <?= $this->partial('partials/icon', ['name' => 'sprout', 'class' => 'ico']) ?>
         </span>
         <div class="h3">No crops match the current filters</div>

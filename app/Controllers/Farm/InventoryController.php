@@ -12,6 +12,7 @@ use App\Core\FarmContext;
 use App\Core\Flash;
 use App\Core\Request;
 use App\Core\Response;
+use App\Repositories\BuyerRepository;
 use App\Repositories\InventoryRepository;
 use App\Repositories\TransactionRepository;
 
@@ -22,6 +23,7 @@ final class InventoryController extends Controller
     public function __construct(
         private readonly InventoryRepository $inventory = new InventoryRepository(),
         private readonly TransactionRepository $tx = new TransactionRepository(),
+        private readonly BuyerRepository $buyers = new BuyerRepository(),
     ) {
     }
 
@@ -140,6 +142,7 @@ final class InventoryController extends Controller
             'active' => 'inventory',
             'item'   => $item,
             'sales'  => $this->inventory->salesForItem($ctx->farmId(), (string) $item['id']),
+            'buyers' => $this->buyers->forFarm($ctx->farmId()),
         ]);
     }
 
@@ -156,6 +159,7 @@ final class InventoryController extends Controller
             'quantity_sold'     => ['required', 'numeric', 'min:0.001', 'max:100000000'],
             'price_per_unit'    => ['required', 'numeric', 'min:0', 'max:100000000'],
             'sale_date'         => ['required', 'date'],
+            'buyer_id'          => [],
             'buyer_name'        => ['max:160'],
             'collection_point'  => ['max:160'],
             'transport_method'  => ['max:80'],
@@ -165,6 +169,10 @@ final class InventoryController extends Controller
         if ($data instanceof Response) {
             return $data;
         }
+
+        $buyerId = (string) ($data['buyer_id'] ?? '');
+        $buyer = $buyerId !== '' ? $this->buyers->find($ctx->farmId(), $buyerId) : null;
+        $buyerName = ($data['buyer_name'] ?? '') !== '' ? trim((string) $data['buyer_name']) : ($buyer['name'] ?? null);
 
         $qty = (float) $data['quantity_sold'];
         if ($qty > (float) $item['quantity'] + 1e-9) {
@@ -176,7 +184,7 @@ final class InventoryController extends Controller
         $saleDate = date('Y-m-d', (int) strtotime((string) $data['sale_date']));
 
         try {
-            Database::instance()->transaction(function () use ($ctx, $item, $qty, $price, $total, $saleDate, $data): void {
+            Database::instance()->transaction(function () use ($ctx, $item, $qty, $price, $total, $saleDate, $data, $buyer, $buyerName): void {
                 if (!$this->inventory->decrement($ctx->farmId(), (string) $item['id'], $qty)) {
                     throw new \RuntimeException('insufficient stock');
                 }
@@ -187,7 +195,7 @@ final class InventoryController extends Controller
                     'amount'            => $total,
                     'date'              => $saleDate,
                     'description'       => 'Sale: ' . $item['name'] . ' — ' . rtrim(rtrim((string) $qty, '0'), '.') . ' ' . $item['unit']
-                                           . (($data['buyer_name'] ?? '') !== '' ? ' to ' . trim((string) $data['buyer_name']) : ''),
+                                           . ($buyerName !== null ? ' to ' . $buyerName : ''),
                     'season'            => $item['season'],
                     'crop_field_id'     => $item['crop_field_id'],
                     'harvest_yield_id'  => $item['harvest_yield_id'],
@@ -202,7 +210,8 @@ final class InventoryController extends Controller
                     'unit'              => (string) $item['unit'],
                     'price_per_unit'    => $price,
                     'total_amount'      => $total,
-                    'buyer_name'        => ($data['buyer_name'] ?? '') !== '' ? trim((string) $data['buyer_name']) : null,
+                    'buyer_name'        => $buyerName,
+                    'buyer_id'          => $buyer['id'] ?? null,
                     'collection_point'  => ($data['collection_point'] ?? '') !== '' ? trim((string) $data['collection_point']) : null,
                     'transport_method'  => ($data['transport_method'] ?? '') !== '' ? trim((string) $data['transport_method']) : null,
                     'pickup_date'       => ($data['pickup_date'] ?? '') !== '' ? date('Y-m-d', (int) strtotime((string) $data['pickup_date'])) : null,
@@ -217,6 +226,26 @@ final class InventoryController extends Controller
         AuditLog::user('inventory.sold', (string) Auth::id(), ['item_id' => $item['id'], 'qty' => $qty, 'total' => $total], $ctx->farmId(), $request->ip());
         Flash::success('Sale recorded — stock reduced and an income transaction was created.');
         return $this->redirect(url('inventory/' . rawurlencode((string) $item['id']) . '/sell'));
+    }
+
+    public function receipt(Request $request): Response
+    {
+        $ctx = FarmContext::current();
+        $sale = $this->inventory->findSale($ctx->farmId(), (string) $request->route('saleId'));
+        if ($sale === null || (string) $sale['inventory_item_id'] !== (string) $request->route('id')) {
+            Flash::error('Sale not found.');
+            return $this->redirect(url('inventory'));
+        }
+        return $this->view('inventory/receipt', [
+            'title'       => 'Sales receipt',
+            'sale'        => $sale,
+            'farmName'    => $ctx->farmName(),
+            'dateRange'   => (string) $sale['sale_date'],
+            'purpose'     => 'Sales receipt',
+            'generatedAt' => gmdate('Y-m-d H:i'),
+            'backUrl'     => 'inventory/' . rawurlencode((string) $sale['inventory_item_id']) . '/sell',
+            'backLabel'   => 'Back to item',
+        ]);
     }
 
     /** @return array<string,mixed>|Response */

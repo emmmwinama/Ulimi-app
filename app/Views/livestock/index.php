@@ -9,6 +9,7 @@
 $this->layout('layouts/app');
 use App\Support\Dates;
 use App\Support\Money;
+$statusBadge = ['Active' => 'green', 'Sold' => 'blue'];
 ?>
 <?php $this->start('content'); ?>
 <div class="page-head">
@@ -121,22 +122,53 @@ use App\Support\Money;
 <?php if ($animals === []): ?>
     <div class="empty"><div class="h3">No animals</div><p>Register animals with tags, breed, sex and acquisition details.</p></div>
 <?php else: ?>
-    <div class="table-wrap"><table class="data">
-        <thead><tr><th>Tag / name</th><th>Type</th><th>Sex</th><th>Breed</th><th class="num">Weight</th><th>Status</th><th>Acquired</th></tr></thead>
-        <tbody>
-        <?php foreach ($animals as $a): ?>
-            <tr>
-                <td><a href="<?= e(url('livestock/animals/' . rawurlencode((string) $a['id']))) ?>"><strong><?= e(trim(((string) ($a['tag'] ?? '')) . ' ' . ((string) ($a['name'] ?? '')))) ?: '(untagged)' ?></strong></a></td>
-                <td><?= e((string) $a['type_name']) ?></td>
-                <td class="small"><?= e((string) $a['sex']) ?></td>
-                <td class="muted small"><?= e((string) ($a['breed'] ?: '—')) ?></td>
-                <td class="num"><?= $a['weight'] !== null ? e(number_format((float) $a['weight'], 1)) . ' kg' : '—' ?></td>
-                <td><span class="badge <?= $a['status'] === 'Active' ? 'green' : ($a['status'] === 'Sold' ? 'blue' : 'red') ?>"><?= e((string) $a['status']) ?></span></td>
-                <td class="small muted"><?= e(Dates::forDisplay((string) $a['acquisition_date'])) ?></td>
-            </tr>
+    <div class="grid cols-3">
+        <?php foreach ($animals as $a):
+            $animalName = trim(((string) ($a['tag'] ?? '')) . ' ' . ((string) ($a['name'] ?? ''))) ?: '(untagged)';
+        ?>
+            <div class="card" style="display:flex;flex-direction:column">
+                <div class="card-body" style="flex:1">
+                    <div class="spread" style="align-items:flex-start;margin-bottom:12px">
+                        <div class="row" style="gap:10px">
+                            <span class="icon-box teal">
+                                <?= $this->partial('partials/icon', ['name' => 'cow', 'class' => 'ico']) ?>
+                            </span>
+                            <div>
+                                <h3 class="h3"><?= e($animalName) ?></h3>
+                                <p style="font-size:.75rem;color:var(--text-faint)"><?= e((string) $a['type_name']) ?> · <?= e((string) $a['sex']) ?></p>
+                            </div>
+                        </div>
+                        <span class="badge <?= $statusBadge[$a['status']] ?? 'red' ?>"><?= e((string) $a['status']) ?></span>
+                    </div>
+
+                    <div class="grid cols-2" style="gap:8px">
+                        <div class="mini-stat">
+                            <p class="label">Weight</p>
+                            <p class="value"><?= $a['weight'] !== null ? e(number_format((float) $a['weight'], 1)) . ' kg' : '—' ?></p>
+                        </div>
+                        <div class="mini-stat">
+                            <p class="label">Breed</p>
+                            <p class="value"><?= e((string) ($a['breed'] ?: '—')) ?></p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="spread card-foot">
+                    <p style="font-size:.75rem;color:var(--text-faint)">Acquired <?= e(Dates::forDisplay((string) $a['acquisition_date'])) ?></p>
+                    <div class="row" style="gap:4px">
+                        <a href="<?= e(url('livestock/animals/' . rawurlencode((string) $a['id']))) ?>" title="View" class="icon-box sm teal">
+                            <?= $this->partial('partials/icon', ['name' => 'arrow-right', 'class' => 'ico']) ?>
+                        </a>
+                        <?php if ($canManage): ?>
+                            <a href="#edit-animal-<?= e((string) $a['id']) ?>" title="Edit" class="icon-box sm muted">
+                                <?= $this->partial('partials/icon', ['name' => 'pencil', 'class' => 'ico']) ?>
+                            </a>
+                        <?php endif; ?>
+                    </div>
+                </div>
+            </div>
         <?php endforeach; ?>
-        </tbody>
-    </table></div>
+    </div>
 <?php endif; ?>
 
 <?php if ($canManage && $types !== []): ?>
@@ -164,5 +196,33 @@ use App\Support\Money;
             </form>
         </div>
     </div>
+
+    <?php foreach ($animals as $a): ?>
+        <div class="slide-over" id="edit-animal-<?= e((string) $a['id']) ?>">
+            <a href="#" class="scrim" aria-label="Close"></a>
+            <div class="panel">
+                <div class="panel-head">
+                    <div>
+                        <h2 class="h3">Edit animal</h2>
+                        <p class="small muted mt-8px"><?= e(trim(((string) ($a['tag'] ?? '')) . ' ' . ((string) ($a['name'] ?? '')))) ?: '(untagged)' ?></p>
+                    </div>
+                    <a href="#" class="panel-close" aria-label="Close"><?= $this->partial('partials/icon', ['name' => 'x', 'class' => 'ico ico-sm']) ?></a>
+                </div>
+                <form method="post" action="<?= e(url('livestock/animals/' . rawurlencode((string) $a['id']))) ?>" style="display:contents">
+                    <?= csrf_field() ?>
+                    <?= method_field('PUT') ?>
+                    <div class="panel-body stack">
+                        <?= $this->partial('partials/livestock/animal', [
+                            'a' => $a, 'types' => $types, 'parents' => $parents, 'sexes' => $sexes, 'statuses' => $statuses, 'acqTypes' => $acqTypes,
+                        ]) ?>
+                    </div>
+                    <div class="panel-foot">
+                        <a href="#" class="btn ghost block">Cancel</a>
+                        <button type="submit" class="btn block">Save changes</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    <?php endforeach; ?>
 <?php endif; ?>
 <?php $this->stop(); ?>

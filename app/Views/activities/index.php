@@ -98,7 +98,7 @@ foreach ($rows as $r) {
                 <?php foreach (array_slice($byType, 0, 5) as $t): ?>
                     <div class="spread">
                         <div class="row" style="gap:8px">
-                            <span style="width:28px;height:28px;border-radius:9px;background:var(--surface-2);color:var(--text-soft);display:grid;place-items:center;flex:none">
+                            <span class="icon-box sm muted">
                                 <?= $this->partial('partials/icon', ['name' => $typeIcons[$t['type']] ?? 'gauge', 'class' => 'ico ico-sm']) ?>
                             </span>
                             <span class="small" style="font-weight:700"><?= e($t['type']) ?></span>
@@ -186,7 +186,7 @@ foreach ($rows as $r) {
 
 <?php if ($rows === []): ?>
     <div class="empty">
-        <span class="icon-box" style="width:64px;height:64px;border-radius:16px;background:var(--surface-2);color:var(--text-faint);display:grid;place-items:center;margin:0 auto 16px">
+        <span class="icon-box lg muted" style="margin:0 auto 16px">
             <?= $this->partial('partials/icon', ['name' => 'file-text', 'class' => 'ico']) ?>
         </span>
         <div class="h3">No activities</div>
@@ -230,16 +230,16 @@ foreach ($rows as $r) {
                             </summary>
                             <div style="padding:0 20px 16px;border-top:1px solid var(--line)">
                                 <div class="grid cols-3 mt-12px" style="gap:8px">
-                                    <div style="background:var(--surface-2);border:1px solid var(--line);border-radius:12px;padding:10px">
-                                        <p style="font-size:.625rem;font-weight:800;text-transform:uppercase;color:var(--text-faint);margin-bottom:2px">Labour cost</p>
+                                    <div class="mini-stat">
+                                        <p class="label">Labour cost</p>
                                         <p style="font-size:.8rem;font-weight:800;color:var(--text)"><?= e(Money::format((float) $a['labour_cost'])) ?></p>
                                     </div>
-                                    <div style="background:var(--surface-2);border:1px solid var(--line);border-radius:12px;padding:10px">
-                                        <p style="font-size:.625rem;font-weight:800;text-transform:uppercase;color:var(--text-faint);margin-bottom:2px">Input cost</p>
+                                    <div class="mini-stat">
+                                        <p class="label">Input cost</p>
                                         <p style="font-size:.8rem;font-weight:800;color:var(--text)"><?= e(Money::format((float) $a['input_cost'])) ?></p>
                                     </div>
-                                    <div style="background:var(--surface-2);border:1px solid var(--line);border-radius:12px;padding:10px">
-                                        <p style="font-size:.625rem;font-weight:800;text-transform:uppercase;color:var(--text-faint);margin-bottom:2px">Other costs</p>
+                                    <div class="mini-stat">
+                                        <p class="label">Other costs</p>
                                         <p style="font-size:.8rem;font-weight:800;color:var(--text)"><?= e(Money::format((float) $a['other_cost'])) ?></p>
                                     </div>
                                 </div>

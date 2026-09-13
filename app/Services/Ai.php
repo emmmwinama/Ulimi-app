@@ -48,7 +48,7 @@ final class Ai
             'SELECT * FROM ai_insights_cache WHERE farm_id = :fid AND kind = :kind',
             ['fid' => $farmId, 'kind' => $kind],
         );
-        $factsJson = json_encode($facts, JSON_UNESCAPED_SLASHES | JSON_PARTIAL_ON_ERROR);
+        $factsJson = json_encode($facts, JSON_UNESCAPED_SLASHES | JSON_PARTIAL_OUTPUT_ON_ERROR);
         $factsHash = md5((string) $factsJson);
 
         if ($cached !== null) {
@@ -105,13 +105,20 @@ final class Ai
             'model' => $model,
             'temperature' => 0.4,
             'max_tokens' => 400,
+            // gpt-oss models spend part of the budget on hidden reasoning before
+            // the visible answer; without capping that, it can eat the whole
+            // token budget and leave the reply truncated mid-sentence.
+            'reasoning_effort' => 'low',
             'messages' => [
                 [
                     'role' => 'system',
                     'content' => 'You are a farm records analyst writing a short, plain-language summary for a '
                         . 'Malawian smallholder farm owner. Use MWK for money. Be concrete and specific to the '
-                        . 'numbers given — never invent figures that are not in the data. Write 3-5 short '
-                        . 'sentences or bullet points, no headings, no markdown.',
+                        . 'numbers given — never invent figures that are not in the data. Where the data supports '
+                        . 'it, compute and cite a derived figure (a ratio, a percent of total, a per-hectare or '
+                        . 'per-kg cost) rather than just repeating the raw numbers — that is what makes the '
+                        . 'analysis useful instead of generic. Write 3-5 short sentences or bullet points, no '
+                        . 'headings, no markdown.',
                 ],
                 ['role' => 'system', 'content' => $instruction],
                 ['role' => 'user', 'content' => $userContent],

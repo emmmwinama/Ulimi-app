@@ -42,15 +42,20 @@ $expense = array_sum(array_map(static fn ($r) => $r['type'] === 'Expense' ? (flo
     <div class="empty"><div class="h3">No transactions</div><p>Record income and expenses; sales made from Inventory appear here automatically.</p></div>
 <?php else: ?>
     <div class="table-wrap"><table class="data">
-        <thead><tr><th>Date</th><th>Type</th><th>Category</th><th>Description</th><th>Crop</th><th class="num">Amount</th><?php if ($canManage): ?><th class="num">Actions</th><?php endif; ?></tr></thead>
+        <thead><tr><th>Date</th><th>Type</th><th>Category</th><th>Description</th><th>Crop</th><th>Payment</th><th class="num">Amount</th><?php if ($canManage): ?><th class="num">Actions</th><?php endif; ?></tr></thead>
         <tbody>
-        <?php foreach ($rows as $r): ?>
+        <?php
+        $payBadge = ['paid' => 'green', 'partial' => 'amber', 'unpaid' => 'red'];
+        $payLabel = ['paid' => 'Paid', 'partial' => 'Partial', 'unpaid' => 'Unpaid'];
+        ?>
+        <?php foreach ($rows as $r): $ps = (string) ($r['payment_status'] ?? 'paid'); ?>
             <tr>
                 <td class="small nowrap"><?= e(Dates::forDisplay((string) $r['date'])) ?></td>
                 <td><span class="badge <?= $r['type'] === 'Income' ? 'green' : 'amber' ?>"><?= e((string) $r['type']) ?></span></td>
                 <td class="small"><?= e((string) $r['category']) ?></td>
                 <td><?= e((string) $r['description']) ?><?php if (($r['source'] ?? '') === 'inventory_sale'): ?> <span class="badge">auto</span><?php endif; ?></td>
                 <td class="muted small"><?= e((string) ($r['crop_name'] ?? '—')) ?></td>
+                <td><span class="badge <?= $payBadge[$ps] ?? '' ?>"><?= e($payLabel[$ps] ?? ucfirst($ps)) ?></span></td>
                 <td class="num"><?= e(Money::format((float) $r['amount'])) ?></td>
                 <?php if ($canManage): ?>
                     <td class="num nowrap">

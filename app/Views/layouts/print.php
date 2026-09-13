@@ -9,8 +9,12 @@
  * @var string $purpose      one-line description of what this document is for
  * @var string $dateRange    e.g. "All seasons" or "2025/26 Rain Season"
  * @var string $generatedAt
+ * @var ?string $backUrl     route path for the "back" link (default: reports)
+ * @var ?string $backLabel   label for the "back" link (default: Reports)
+ * @var bool $public         true for the token-gated public share view — hides the back link (there is nothing authenticated to go back to) and shows a consent note instead
  */
 $title = $title ?? 'Report';
+$public = $public ?? false;
 ?><!doctype html>
 <html lang="en">
 <head>
@@ -43,7 +47,11 @@ $title = $title ?? 'Report';
 </head>
 <body>
 <div class="print-toolbar no-print">
-    <a class="btn ghost sm" href="<?= e(url('reports')) ?>">← Reports</a>
+    <?php if ($public): ?>
+        <span class="small muted">Shared by consent of the farm owner</span>
+    <?php else: ?>
+        <a class="btn ghost sm" href="<?= e(url($backUrl ?? 'reports')) ?>">← <?= e($backLabel ?? 'Reports') ?></a>
+    <?php endif; ?>
     <button type="button" class="btn sm" onclick="window.print()">Print / Save as PDF</button>
 </div>
 
@@ -58,6 +66,7 @@ $title = $title ?? 'Report';
             <span>Farm: <?= e($farmName ?? '') ?></span>
             <span>Period: <?= e($dateRange ?? 'All seasons') ?></span>
             <?php if (!empty($purpose)): ?><span>Purpose: <?= e($purpose) ?></span><?php endif; ?>
+            <?php if ($public): ?><span>Shared on: <?= e($generatedAt ?? '') ?> UTC</span><?php endif; ?>
         </div>
     </div>
 

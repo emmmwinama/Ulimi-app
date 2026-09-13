@@ -75,9 +75,29 @@ final class MapController extends Controller
             return $this->fieldError($request, 'boundary', 'Draw a valid area on the map first.');
         }
 
-        $this->gis->saveBoundary($ctx->farmId(), $fieldId, $geometry);
+        $mappedAreaHa = $this->gis->saveBoundary($ctx->farmId(), $fieldId, $geometry);
         AuditLog::user('gis.boundary_saved', (string) Auth::id(), ['field_id' => $fieldId], $ctx->farmId(), $request->ip());
-        Flash::success('Field boundary saved.');
+
+        // A drawn boundary is a more accurate measurement than whatever the
+        // farmer typed in by hand when the field was first created — sync it
+        // onto the field's own total_area. cultivatable_area can never exceed
+        // total_area (enforced on manual edits too), so if the mapped area
+        // comes in smaller than the current cultivatable figure, bring that
+        // down to match rather than leaving an inconsistent state.
+        if ($mappedAreaHa !== null && $mappedAreaHa > 0) {
+            $field = $this->fields->find($ctx->farmId(), $fieldId);
+            if ($field !== null) {
+                $update = ['total_area' => $mappedAreaHa];
+                if ((float) $field['cultivatable_area'] > $mappedAreaHa) {
+                    $update['cultivatable_area'] = $mappedAreaHa;
+                }
+                $this->fields->update($ctx->farmId(), $fieldId, $update);
+            }
+            Flash::success(sprintf('Field boundary saved — total area updated to %.3f ha from the map.', $mappedAreaHa));
+        } else {
+            Flash::success('Field boundary saved.');
+        }
+
         return $this->redirect(url('fields/' . rawurlencode($fieldId) . '/map'));
     }
 

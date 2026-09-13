@@ -2,6 +2,8 @@
 /**
  * @var array<string,mixed> $i
  * @var array<int,array<string,mixed>> $media
+ * @var array<int,array<string,mixed>> $plantings
+ * @var list<string> $types @var list<string> $severities @var list<string> $statuses
  * @var bool $canManage
  */
 $this->layout('layouts/app');
@@ -18,7 +20,7 @@ $statusBadge = ['open' => 'red', 'treated' => 'amber', 'resolved' => 'green'];
     </div>
     <?php if ($canManage): ?>
         <div class="row" style="gap:8px">
-            <a class="btn ghost" href="<?= e(url('incidents/' . rawurlencode((string) $i['id']) . '/edit')) ?>">Edit</a>
+            <a class="btn ghost" href="#edit-incident">Edit</a>
             <form method="post" action="<?= e(url('incidents/' . rawurlencode((string) $i['id']) . '/delete')) ?>" onsubmit="return confirm('Delete this incident?')">
                 <?= csrf_field() ?>
                 <button class="btn ghost danger" type="submit">Delete</button>
@@ -66,4 +68,32 @@ $statusBadge = ['open' => 'red', 'treated' => 'amber', 'resolved' => 'green'];
         <?php endif; ?>
     </div>
 </div>
+
+<?php if ($canManage): ?>
+    <div class="slide-over" id="edit-incident">
+        <a href="#" class="scrim" aria-label="Close"></a>
+        <div class="panel">
+            <div class="panel-head">
+                <div>
+                    <h2 class="h3">Edit incident</h2>
+                    <p class="small muted mt-8px"><?= e((string) $i['crop_name']) ?></p>
+                </div>
+                <a href="#" class="panel-close" aria-label="Close"><?= $this->partial('partials/icon', ['name' => 'x', 'class' => 'ico ico-sm']) ?></a>
+            </div>
+            <form method="post" action="<?= e(url('incidents/' . rawurlencode((string) $i['id']))) ?>" enctype="multipart/form-data" style="display:contents">
+                <?= csrf_field() ?>
+                <?= method_field('PUT') ?>
+                <div class="panel-body stack">
+                    <?= $this->partial('partials/incidents/incident', [
+                        'i' => $i, 'plantings' => $plantings, 'types' => $types, 'severities' => $severities, 'statuses' => $statuses, 'media' => $media,
+                    ]) ?>
+                </div>
+                <div class="panel-foot">
+                    <a href="#" class="btn ghost block">Cancel</a>
+                    <button type="submit" class="btn block">Save changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+<?php endif; ?>
 <?php $this->stop(); ?>

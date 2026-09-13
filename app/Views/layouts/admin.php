@@ -21,6 +21,7 @@ $navGroups = [
             ['key' => 'dashboard',     'label' => 'Overview',      'href' => url('admin'),               'icon' => 'gauge'],
             ['key' => 'users',         'label' => 'Users',         'href' => url('admin/users'),         'icon' => 'users'],
             ['key' => 'subscriptions', 'label' => 'Subscriptions', 'href' => url('admin/subscriptions'), 'icon' => 'wallet'],
+            ['key' => 'payments',      'label' => 'Payments',      'href' => url('admin/payments'),      'icon' => 'receipt'],
         ],
     ],
     [

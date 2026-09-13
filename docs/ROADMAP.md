@@ -93,8 +93,11 @@ runtime is available in the build environment. ID columns are `VARCHAR(40)`
 - Import maps boundaries / zones / markers (GeoJSON preserved)
 
 ## Phase 7 — Reporting, Compliance & Credit  ☑
-- `Services\ReportBuilder` — sections/columns/filters → CSV + hand-built PDF
-  (vendored FPDF), brand-compliant cover + footers
+- `Services\ReportBuilder` — sections/columns/filters → CSV, plus an HTML
+  record-pack view (`layouts/print`) with a brand-compliant cover + footer
+  that the browser turns into a PDF via "Print → Save as PDF" — no
+  server-side PDF library. _(Corrected in Phase 17: this entry previously
+  said "vendored FPDF"; no such vendoring exists or ever did.)_
 - Canned reports: cashflow, crop/field profitability, cost per ha/kg, trends
 - Record packs (loan / buyer / audit / insurance) with section filters
 - `Services\Traceability` — lot IDs, buyer-ready checklist scoring
@@ -366,53 +369,144 @@ change is one nullable column.
   controller; `produce_storage.harvest_yield_id` is `ON DELETE CASCADE`
   so deleting a yield record can't orphan its storage row.
 
-## Phase 17 — Market Access Enhancements  ☐
+## Phase 17 — Market Access Enhancements  ☑
 
-- Schema `016_market2`: `buyers` (farm-scoped contact book), `buyer_offers`
-- `transactions` gains `payment_status` (unpaid/partial/paid)
-- Sales-receipt generation reuses `Services\ReportBuilder`/vendored FPDF
-- `MarketController` grows from read-only price listing into a lightweight
-  buyer/offer management screen — still farm-scoped, no cross-farm
-  marketplace/matching engine
+**Correction to this document's own Phase 7 entry, found while implementing
+this phase:** there is no vendored FPDF and no server-side PDF generation
+anywhere in the codebase — record packs (`reports/pack.php`) and now the new
+sales receipt both use the existing `layouts/print` pattern instead: a
+plain, brand-consistent HTML document the browser turns into a PDF via
+`window.print()` → "Save as PDF". No PDF library, vendored or otherwise,
+was ever added. Treat this as the accurate description; the Phase 7 text
+is stale and out of scope to fix retroactively here.
 
-## Phase 18 — Finance & Insurance Readiness  ☐
+- Schema `019_market2`: `buyers` (farm-scoped contact book), `buyer_offers`
+  (optionally linked to a buyer); `transactions` gains `payment_status`
+  (unpaid/partial/paid, default `paid` for backward compatibility with
+  existing rows); `inventory_sales` gains an optional `buyer_id` FK
+  alongside the existing free-text `buyer_name` (kept as a fallback for
+  one-off buyers not worth saving).
+- `MarketController` grows from a read-only price page into `/market` +
+  `/market/buyers` (tabbed): buyer contact book, offer tracking
+  (open/accepted/declined/expired) with a per-buyer or ad-hoc offer, all
+  gated on the existing `crops.view`/`crops.manage` permissions — same
+  reuse-over-new-resource choice as Phase 14's incidents, and consistent
+  with the pre-existing `/market` route already doing this.
+- Inventory's sell form can attribute a sale to a saved buyer (auto-fills
+  the name) or a one-off free-text name; the sale-history table links to
+  a `/inventory/{id}/sell/{saleId}/receipt` print-ready receipt.
+- Finance transactions gained the `payment_status` field (form + a
+  paid/partial/unpaid badge column on the transactions list).
+- Security-review note: same farm-scoped CRUD pattern throughout;
+  `buyer_offers.buyer_id` and `inventory_sales.buyer_id` are
+  `ON DELETE SET NULL` so removing a buyer can't cascade-delete sales or
+  offer history, only detach the link.
 
-- **Consent-based sharing:** `report_share_links` (token hashed at rest,
-  same pattern as password/invite tokens) + an unauthenticated-but-token-
-  gated, rate-limited, watermarked, revocable read-only report route
-- **Climate-loss evidence:** `climate_events` (event_type, dates,
-  estimated_loss_amount, affected fields/crops, evidence photo via Phase
-  14's document linking), added as its own `ReportBuilder` section and to
-  the `insurance` pack, which today carries no weather data at all
-- **Formatted P&L:** a totals-by-category/period section in
-  `ReportBuilder`, replacing the raw transaction dump, using `Support\Money`
-- Security-review note: the share-link route is the one new unauthenticated
-  surface in this plan — token entropy, rate limit, and expiry get the same
-  scrutiny as the password-reset flow
+## Phase 18 — Finance & Insurance Readiness  ☑
 
-## Phase 19 — Cooperative & Group Management (MVP)  ☐
+- Schema `020_finance2`: `report_share_links` (token hashed at rest via
+  `Support\Token`, same primitive as password/invite tokens but
+  repeatable-use rather than single-use), `climate_events` (event_type,
+  date range, description, estimated_loss_amount, optional
+  `affected_crop_field_id`).
+- **Consent-based sharing:** `Controllers\Public\SharedReportController`
+  (`/shared/reports/{token}`) — the one deliberately unauthenticated read
+  path in the app. `ReportsController::createShareLink()`/
+  `revokeShareLink()` manage links from the pack page itself, gated on
+  `reports.manage` (owner-only by the existing role matrix — deliberately
+  the narrowest gate in the app, since this hands data outside the farm).
+  A manual per-IP rate limit on *failed* token lookups guards against
+  guessing (the generic `Throttle` middleware exempts GETs, so it doesn't
+  fit this route); `SecurityHeaders` extended to `noindex`/`no-store` the
+  `/shared` prefix so a token URL can't leak via caching or indexing.
+  `layouts/print` gained a `public` mode (hides the authenticated "back"
+  link, shows a consent notice instead) shared by both the pack view and
+  Phase 17's sales receipt.
+- **Climate-loss evidence:** `climate_events` + evidence photos via Phase
+  14's `farm_documents` linking pattern (`linked_type = 'climate_event'`);
+  its own `ReportBuilder` section, added to the `insurance` pack, which
+  previously carried no weather/climate data at all. New
+  `Controllers\Farm\ClimateEventsController` (`/climate-events`), gated
+  on `finance.manage`/`.view`.
+- **Formatted P&L:** a `pnl` `ReportBuilder` section (totals grouped by
+  type/category via SQL `GROUP BY`, not a PHP aggregation pass) replaces
+  the raw `finance` transaction dump in the `loan` pack specifically; the
+  raw list stays available in `audit` and the custom report builder,
+  where a line-by-line view is more useful.
+- **Found and fixed while wiring this up:** `reports/pack.php` computed
+  `$farmName`/`$dateRange`/`$purpose` as local variables that never
+  actually reached `layouts/print.php` — the view engine's `render()`
+  evaluates the layout with the *original* controller-supplied data, not
+  a child template's local scope. Every existing record pack has been
+  silently showing a blank "Farm:" line since Phase 7. Fixed by having
+  both `ReportsController::pack()` and the new `SharedReportController`
+  pass these directly; `pack.php` no longer recomputes them.
+- **This document's own Phase 7 entry was also wrong:** it claimed a
+  "vendored FPDF" that never existed — record packs and the Phase 17
+  receipt both already used the browser-print `layouts/print` approach.
+  Corrected in place.
+- Security-review note: the share-link route is the one new
+  unauthenticated surface in this codebase — token entropy (256 bits,
+  HMAC'd at rest, constant-time compare via `Support\Token`), expiry,
+  revocation, and the manual failed-lookup rate limit all get the same
+  scrutiny as the password-reset flow. `ClimateEventsController` and the
+  share-link management actions follow the standard farm-scoped
+  `Validator`/CSRF pattern.
+
+## Phase 19 — Cooperative & Group Management (MVP)  ☑
 
 Scoped deliberately: member registry + group inventory/production rollup +
 collective sales + contribution ledger. Shared-equipment booking calendars
 and automated NGO/lender report generation are deferred to a future phase —
-this is the largest, most architecturally novel piece of the whole plan (a
-second tenant concept alongside farms) and an MVP de-risks it.
+this was the largest, most architecturally novel piece of the whole plan
+(a second tenant concept alongside farms) and the MVP scoping de-risked it.
 
-- Schema `017_cooperative`: `cooperatives`, `cooperative_members`
+- Schema `021_cooperative` (numbering picked up where the codebase
+  actually was, same reason as Phases 14/18's numbering notes):
+  `cooperatives` (with a short `join_code`, unique), `cooperative_members`
   (cooperative_id, farm_id, role: chair/secretary/treasurer/member,
-  mirroring the `farm_members` pattern), `cooperative_contributions`
-  (simple ledger, not a payments processor)
-- `Middleware\CooperativeContext`, modeled directly on `FarmContext` —
-  same re-verify-membership-every-request trust boundary
-- Group inventory/production rollup: read-only aggregate queries over
-  member farms' existing tables, no data duplication
-- `cooperative_sales`: collective sale with per-member quantity splits,
-  same shape as `inventory_sales`
-- `Controllers\Farm\CooperativeController` (create/join/members/
-  contributions/rollup/collective sale) + views
-- Security-review note: second genuinely new authz boundary in the app —
-  needs its own cross-cooperative IDOR sweep before ☑, same rigor as the
-  Phase 12 farm-resource sweep
+  mirroring the `farm_members` shape), `cooperative_contributions`
+  (a simple ledger, not a payments processor), `cooperative_sales` +
+  `cooperative_sale_splits` (per-member quantity/amount on one collective
+  sale).
+- `Core\CooperativeContext` + `Middleware\ResolveCooperativeContext`,
+  modeled directly on `FarmContext`/`ResolveFarmContext` — same
+  re-verify-membership-every-request trust boundary, cooperative id taken
+  from the route and checked against `cooperative_members` on every
+  request, never trusted from a session or request body. Deliberately
+  *not* session-based like the farm switcher: a farm can belong to several
+  cooperatives at once, so which one is "active" is just whichever URL
+  you're on, not a mode you switch into.
+- Joining is a shared `join_code` (8 hex chars, regenerated on collision)
+  entered by any farm — no async approval step. Simplest thing that lets
+  a real group actually form; an invite/approval flow is a reasonable
+  follow-up if this needs tightening later.
+- `Services\CooperativeStats` — read-only inventory/production rollups
+  over member farms' *existing* tables (`inventory_items`,
+  `harvest_yields`), scoped to the exact member-farm-id list resolved
+  server-side; no data duplication, no new storage for this part.
+- `Controllers\Farm\CooperativeController` (`/cooperatives`,
+  `/cooperatives/{id}`): create/join, member list + removal, contribution
+  ledger, collective sale entry with per-member splits, rollup dashboard.
+  Chair/secretary/treasurer-only actions are checked in-controller (flash
+  + redirect) rather than via middleware, matching the existing pattern
+  in `TeamController` for friendlier UX than a generic 403.
+- Security-review note (the cross-cooperative IDOR sweep this phase
+  called for): `ResolveCooperativeContext` blocks any farm that isn't a
+  member from reaching `show`/`removeMember`/`addContribution`/`addSale`
+  for a guessed/copied cooperative id (404, enumeration-safe, same
+  treatment as every other farm-scoped resource). `removeMember`'s
+  farm-id route param is scoped by `cooperative_id` in the same DELETE,
+  so a foreign id is a harmless no-op rather than a cross-tenant write.
+  `addContribution`/`addSale`'s split rows explicitly re-verify each
+  `farm_id` against `cooperative_members` before writing, rejecting any
+  farm not actually in the cooperative.
+
+---
+
+**All seven planned gap-closing phases (13–19) are now done.** The
+feature-spec gap analysis from the original planning pass is fully
+implemented; see `docs/guides/` for the farmer-facing side of each one.
 
 ---
 

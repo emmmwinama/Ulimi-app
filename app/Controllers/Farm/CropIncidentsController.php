@@ -41,14 +41,16 @@ final class CropIncidentsController extends Controller
         $rows = $this->incidents->forFarm($ctx->farmId(), $filters);
 
         return $this->view('incidents/index', [
-            'title'      => 'Pest & Disease Log',
-            'active'     => 'incidents',
-            'rows'       => $rows,
-            'types'      => self::TYPES,
-            'severities' => self::SEVERITIES,
-            'statuses'   => self::STATUSES,
-            'filters'    => $filters,
-            'canManage'  => $ctx->can('crops.manage') && !$ctx->isReadOnly(),
+            'title'       => 'Pest & Disease Log',
+            'active'      => 'incidents',
+            'rows'        => $rows,
+            'plantings'   => $this->crops->forFarm($ctx->farmId()),
+            'types'       => self::TYPES,
+            'severities'  => self::SEVERITIES,
+            'statuses'    => self::STATUSES,
+            'filters'     => $filters,
+            'mediaByRow'  => $this->documents->forLinkedMany($ctx->farmId(), self::LINKED_TYPE, array_map(static fn ($r) => (string) $r['id'], $rows)),
+            'canManage'   => $ctx->can('crops.manage') && !$ctx->isReadOnly(),
         ]);
     }
 
@@ -88,11 +90,15 @@ final class CropIncidentsController extends Controller
             return $this->redirect(url('incidents'));
         }
         return $this->view('incidents/show', [
-            'title'     => ucfirst((string) $incident['type']) . ' — ' . (string) $incident['crop_name'],
-            'active'    => 'incidents',
-            'i'         => $incident,
-            'media'     => $this->documents->forLinked($ctx->farmId(), self::LINKED_TYPE, (string) $incident['id']),
-            'canManage' => $ctx->can('crops.manage') && !$ctx->isReadOnly(),
+            'title'      => ucfirst((string) $incident['type']) . ' — ' . (string) $incident['crop_name'],
+            'active'     => 'incidents',
+            'i'          => $incident,
+            'media'      => $this->documents->forLinked($ctx->farmId(), self::LINKED_TYPE, (string) $incident['id']),
+            'plantings'  => $this->crops->forFarm($ctx->farmId()),
+            'types'      => self::TYPES,
+            'severities' => self::SEVERITIES,
+            'statuses'   => self::STATUSES,
+            'canManage'  => $ctx->can('crops.manage') && !$ctx->isReadOnly(),
         ]);
     }
 

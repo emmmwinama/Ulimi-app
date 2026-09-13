@@ -45,8 +45,11 @@ final class GisRepository
      * are computed server-side (never trusted from the client).
      *
      * @param array<mixed> $geometry
+     * @return ?float the computed area in hectares, so the caller can sync it
+     *   onto the field's own total_area — a drawn boundary is more accurate
+     *   than the number a farmer typed in by hand at field-creation time.
      */
-    public function saveBoundary(string $farmId, string $fieldId, array $geometry): void
+    public function saveBoundary(string $farmId, string $fieldId, array $geometry): ?float
     {
         $areaHa = Geo::areaHa($geometry);
         $centroid = Geo::centroid($geometry);
@@ -62,7 +65,7 @@ final class GisRepository
                 'centroid_lng' => $centroid[1] ?? null,
                 'updated_at'   => $now,
             ], ['id' => $existing['id'], 'farm_id' => $farmId]);
-            return;
+            return $areaHa;
         }
 
         $this->db->insert('field_boundaries', [
@@ -76,6 +79,7 @@ final class GisRepository
             'created_at'   => $now,
             'updated_at'   => $now,
         ]);
+        return $areaHa;
     }
 
     public function deleteBoundary(string $farmId, string $fieldId): int

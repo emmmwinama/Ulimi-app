@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /**
  * @var string $tab
  * @var array<int,array<string,mixed>> $content @var array<int,array<string,mixed>> $pages
@@ -6,9 +6,15 @@
  */
 $this->layout('layouts/admin');
 $tabs = ['content' => 'Settings', 'pages' => 'Pages', 'features' => 'Features', 'testimonials' => 'Testimonials'];
+$addLabel = ['pages' => 'Add page', 'features' => 'Add feature', 'testimonials' => 'Add testimonial'];
 ?>
 <?php $this->start('content'); ?>
-<div class="page-head"><div><h1 class="h1">Site content</h1></div></div>
+<div class="page-head">
+    <div><h1 class="h1">Site content</h1></div>
+    <?php if (isset($addLabel[$tab])): ?>
+        <a class="btn" href="#add-<?= e($tab) ?>"><?= $this->partial('partials/icon', ['name' => 'plus', 'class' => 'ico ico-sm']) ?> <?= e($addLabel[$tab]) ?></a>
+    <?php endif; ?>
+</div>
 
 <div class="row mb-16px" style="gap:8px">
     <?php foreach ($tabs as $key => $label): ?>
@@ -35,18 +41,6 @@ $tabs = ['content' => 'Settings', 'pages' => 'Pages', 'features' => 'Features', 
     </div></div>
 
 <?php elseif ($tab === 'pages'): ?>
-    <div class="card mb-24px"><div class="card-head"><h2 class="h2">Add / edit page</h2></div><div class="card-body">
-        <form method="post" action="<?= e(url('admin/cms/pages')) ?>" class="stack">
-            <?= csrf_field() ?>
-            <div class="grid cols-2">
-                <div class="field"><label class="small">Slug</label><input class="input" name="slug" required pattern="[a-z0-9-]+" placeholder="about"></div>
-                <div class="field"><label class="small">Title</label><input class="input" name="title" required></div>
-            </div>
-            <div class="field"><label class="small">Content (HTML)</label><textarea class="textarea" name="content" rows="6" required></textarea></div>
-            <label class="checkline"><input type="checkbox" name="is_public" value="1" checked> Public</label>
-            <div><button class="btn" type="submit">Save page</button></div>
-        </form>
-    </div></div>
     <div class="table-wrap"><table class="data">
         <thead><tr><th>Slug</th><th>Title</th><th>Public</th><th class="num">Actions</th></tr></thead>
         <tbody>
@@ -65,18 +59,32 @@ $tabs = ['content' => 'Settings', 'pages' => 'Pages', 'features' => 'Features', 
         </tbody>
     </table></div>
 
+    <div class="slide-over" id="add-pages">
+        <a href="#" class="scrim" aria-label="Close"></a>
+        <div class="panel">
+            <div class="panel-head">
+                <div><h2 class="h3">Add page</h2><p class="small muted mt-8px">Create a static content page</p></div>
+                <a href="#" class="panel-close" aria-label="Close"><?= $this->partial('partials/icon', ['name' => 'x', 'class' => 'ico ico-sm']) ?></a>
+            </div>
+            <form method="post" action="<?= e(url('admin/cms/pages')) ?>" style="display:contents">
+                <?= csrf_field() ?>
+                <div class="panel-body stack">
+                    <div class="grid cols-2">
+                        <div class="field"><label class="small">Slug</label><input class="input" name="slug" required pattern="[a-z0-9-]+" placeholder="about"></div>
+                        <div class="field"><label class="small">Title</label><input class="input" name="title" required></div>
+                    </div>
+                    <div class="field"><label class="small">Content (HTML)</label><textarea class="textarea" name="content" rows="8" required></textarea></div>
+                    <label class="checkline"><input type="checkbox" name="is_public" value="1" checked> Public</label>
+                </div>
+                <div class="panel-foot">
+                    <a href="#" class="btn ghost block">Cancel</a>
+                    <button type="submit" class="btn block">Save page</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
 <?php elseif ($tab === 'features'): ?>
-    <div class="card mb-24px"><div class="card-head"><h2 class="h2">Add feature</h2></div><div class="card-body">
-        <form method="post" action="<?= e(url('admin/cms/features')) ?>" class="grid cols-4" style="gap:10px">
-            <?= csrf_field() ?>
-            <div class="field"><label class="small">Icon</label><input class="input" name="icon" value="leaf"></div>
-            <div class="field"><label class="small">Title</label><input class="input" name="title" required></div>
-            <div class="field" style="grid-column:span 2"><label class="small">Description</label><input class="input" name="description" required></div>
-            <div class="field"><label class="small">Sort order</label><input class="input" type="number" name="sort_order" value="0"></div>
-            <label class="checkline" style="align-self:end"><input type="checkbox" name="is_active" value="1" checked> Active</label>
-            <div style="grid-column:1/-1"><button class="btn sm" type="submit">Add feature</button></div>
-        </form>
-    </div></div>
     <div class="table-wrap"><table class="data">
         <thead><tr><th>Icon</th><th>Title</th><th>Description</th><th class="num">Order</th><th>Active</th><th class="num">Actions</th></tr></thead>
         <tbody>
@@ -97,19 +105,31 @@ $tabs = ['content' => 'Settings', 'pages' => 'Pages', 'features' => 'Features', 
         </tbody>
     </table></div>
 
-<?php else: ?>
-    <div class="card mb-24px"><div class="card-head"><h2 class="h2">Add testimonial</h2></div><div class="card-body">
-        <form method="post" action="<?= e(url('admin/cms/testimonials')) ?>" class="stack">
-            <?= csrf_field() ?>
-            <div class="field"><label class="small">Quote</label><textarea class="textarea" name="quote" rows="2" required></textarea></div>
-            <div class="grid cols-3">
-                <div class="field"><label class="small">Name</label><input class="input" name="name" required></div>
-                <div class="field"><label class="small">Role</label><input class="input" name="role"></div>
-                <div class="field"><label class="small">Initials</label><input class="input" name="initials" maxlength="4"></div>
+    <div class="slide-over" id="add-features">
+        <a href="#" class="scrim" aria-label="Close"></a>
+        <div class="panel">
+            <div class="panel-head">
+                <div><h2 class="h3">Add feature</h2><p class="small muted mt-8px">Add a landing-page feature highlight</p></div>
+                <a href="#" class="panel-close" aria-label="Close"><?= $this->partial('partials/icon', ['name' => 'x', 'class' => 'ico ico-sm']) ?></a>
             </div>
-            <div><button class="btn sm" type="submit">Add testimonial</button></div>
-        </form>
-    </div></div>
+            <form method="post" action="<?= e(url('admin/cms/features')) ?>" style="display:contents">
+                <?= csrf_field() ?>
+                <div class="panel-body stack">
+                    <div class="field"><label class="small">Icon</label><input class="input" name="icon" value="leaf"></div>
+                    <div class="field"><label class="small">Title</label><input class="input" name="title" required></div>
+                    <div class="field"><label class="small">Description</label><input class="input" name="description" required></div>
+                    <div class="field"><label class="small">Sort order</label><input class="input" type="number" name="sort_order" value="0"></div>
+                    <label class="checkline"><input type="checkbox" name="is_active" value="1" checked> Active</label>
+                </div>
+                <div class="panel-foot">
+                    <a href="#" class="btn ghost block">Cancel</a>
+                    <button type="submit" class="btn block">Add feature</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+<?php else: ?>
     <div class="table-wrap"><table class="data">
         <thead><tr><th>Quote</th><th>Name</th><th>Role</th><th>Active</th><th class="num">Actions</th></tr></thead>
         <tbody>
@@ -128,5 +148,28 @@ $tabs = ['content' => 'Settings', 'pages' => 'Pages', 'features' => 'Features', 
         <?php endforeach; ?>
         </tbody>
     </table></div>
+
+    <div class="slide-over" id="add-testimonials">
+        <a href="#" class="scrim" aria-label="Close"></a>
+        <div class="panel">
+            <div class="panel-head">
+                <div><h2 class="h3">Add testimonial</h2><p class="small muted mt-8px">Add a customer quote</p></div>
+                <a href="#" class="panel-close" aria-label="Close"><?= $this->partial('partials/icon', ['name' => 'x', 'class' => 'ico ico-sm']) ?></a>
+            </div>
+            <form method="post" action="<?= e(url('admin/cms/testimonials')) ?>" style="display:contents">
+                <?= csrf_field() ?>
+                <div class="panel-body stack">
+                    <div class="field"><label class="small">Quote</label><textarea class="textarea" name="quote" rows="3" required></textarea></div>
+                    <div class="field"><label class="small">Name</label><input class="input" name="name" required></div>
+                    <div class="field"><label class="small">Role</label><input class="input" name="role"></div>
+                    <div class="field"><label class="small">Initials</label><input class="input" name="initials" maxlength="4"></div>
+                </div>
+                <div class="panel-foot">
+                    <a href="#" class="btn ghost block">Cancel</a>
+                    <button type="submit" class="btn block">Add testimonial</button>
+                </div>
+            </form>
+        </div>
+    </div>
 <?php endif; ?>
 <?php $this->stop(); ?>

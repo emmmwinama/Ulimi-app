@@ -100,7 +100,7 @@ ulimi-app/
     phpmailer/                # pinned, hand-vendored
   tools/tailwind/             # input.css, tailwind.config.js, package.json
   tests/
-  docs/  ARCHITECTURE.md  ROADMAP.md  DEPLOY.md
+  docs/  ARCHITECTURE.md  ROADMAP.md  DEPLOY.md  MOBILE-API.md
   .htaccess                   # root fallback hardening (if DocumentRoot fixed)
   .gitignore
 ```
@@ -186,8 +186,8 @@ Security is built into the primitives, not bolted on per feature.
 | Admin blast radius | Separate login route, separate session namespace, separate guard, every action audit-logged | `Middleware\AdminAuth` |
 | Transport | `.htaccess` HTTPS redirect + HSTS; secure cookies | `public/.htaccess`, `Core\Session` |
 | Mobile API (Phase 11) | Stateless JWT (vendored), short access + refresh token, identical farm-scoping, CORS allowlist | `Controllers\Api\*` |
-| Consent-based report sharing (Phase 18) | Unauthenticated route gated by a single-use-scope, hashed-at-rest token (same pattern as password/invite tokens); explicit `expires_at` + `revoked_at`; rate-limited like every other public form; read-only, watermarked with who shared it and when | `report_share_links` table, `Core\RateLimiter` |
-| Cooperative authz (Phase 19) | Second tenant boundary alongside farms: deny-by-default, membership re-verified server-side on every request, same as `FarmContext` — never trusted from a client-supplied cooperative id | `Middleware\CooperativeContext`, `cooperative_members` |
+| Consent-based report sharing (Phase 18) | Unauthenticated route gated by a repeatable-use, hashed-at-rest token (`Support\Token`, same hashing as password/invite tokens); explicit `expires_at` + `revoked_at`; a manual per-IP rate limit on failed lookups only (the generic `Throttle` middleware exempts GETs, which doesn't fit a GET-only route); read-only, `noindex`/`no-store`, watermarked with who shared it and when | `report_share_links` table, `Controllers\Public\SharedReportController`, `Core\RateLimiter` |
+| Cooperative authz (Phase 19) | Second tenant boundary alongside farms: deny-by-default (404 on a non-member's guessed/copied cooperative id), membership re-verified server-side on every request from the route, never a session or request-body value; manage-only actions (remove member, record contribution/sale) re-checked in-controller against the caller's role | `Middleware\ResolveCooperativeContext`, `Core\CooperativeContext`, `cooperative_members` |
 
 **Honest limitation:** biz.na.ht is shared hosting. Co-tenants, no control
 over the TLS layer, and DB credentials in a file on a shared box mean the
@@ -212,20 +212,41 @@ written so that move is a config change, not a rewrite.
 - **Team invites:** tokenised email invite → accept flow creates the
   `team_members` row and (if new) the `users` row.
 - **Admin users** are a separate table and a separate auth domain entirely.
-- **Cooperatives (Phase 19, planned):** a second, independent tenant
-  boundary above the farm — a `farm` joins a `cooperative` via
-  `cooperative_members` (role: chair/secretary/treasurer/member), mirroring
-  the `farm_members` shape. `Middleware\CooperativeContext` sets the active
-  `cooperative_id` in session and re-verifies membership on every request,
-  the same trust model as `FarmContext` — a cooperative id is never trusted
-  from the request. Cooperative-scoped data (contributions, collective
-  sales) is new storage; the group inventory/production rollup is a
-  read-only aggregate over each member farm's existing tables, not a copy.
-- **Report share links (Phase 18, planned):** the one deliberately
-  unauthenticated read path in the app. A farm owner/manager generates a
-  scoped, expiring, revocable token for one report pack; the link needs no
-  login, but every other write/read in the app still requires session auth
-  — this is additive, not a weakening of the model above.
+- **Cooperatives (Phase 19):** a second, independent tenant boundary above
+  the farm — a `farm` joins a `cooperative` via `cooperative_members`
+  (role: chair/secretary/treasurer/member), mirroring the `farm_members`
+  shape. Unlike the farm switcher, which holds a session-based "active
+  farm" a user must switch into, the active cooperative is
+  resolved per-request straight from the URL (`/cooperatives/{id}/…`) by
+  `Middleware\ResolveCooperativeContext`, re-verifying membership against
+  `cooperative_members` every time — a cooperative id is never trusted
+  from a session or the request body, same trust model as `FarmContext`.
+  A farm can belong to several cooperatives at once, so there is no
+  single "active" one to hold in session the way there is for farms.
+  Cooperative-scoped data (contributions, collective sales + per-member
+  splits) is new storage; the group inventory/production rollup
+  (`Services\CooperativeStats`) is a read-only aggregate over each member
+  farm's existing tables, not a copy. Joining is by a shared `join_code`,
+  no approval step — the simplest thing that lets a real group form.
+- **Report share links (Phase 18):** the one deliberately unauthenticated
+  read path in the app (`Controllers\Public\SharedReportController`,
+  `/shared/reports/{token}`). Gated on `reports.manage` — which, per the
+  role matrix above, only `owner` actually holds; `manager` gets every
+  other resource's `.manage` but not `reports`, a deliberate restriction
+  given this is the one action that hands farm data to someone outside
+  the farm. The token (`Support\Token`, 256 bits) is repeatable-use, not
+  single-use like activation/reset tokens — a lender may reopen the same
+  link several times before it expires (14 days) or the farmer revokes it.
+  The viewer's identity is never checked; trust comes entirely from
+  possessing the token, exactly like sharing any other secret link. Every
+  other write/read in the app still requires session auth — this is
+  additive, not a weakening of the model above.
+
+- **Mobile API:** the same `Authz`/`FarmContext` model, but resolved per-request from
+  a JWT (`Middleware\AuthenticateApi`) and an `X-Farm-Id` header
+  (`Middleware\ResolveFarmContextApi`) instead of a session — no server-side session
+  exists for API clients. Full endpoint reference, auth flow, and the offline
+  sync-batch contract: [MOBILE-API.md](MOBILE-API.md).
 
 ## 8. Billing / subscription logic (parity)
 

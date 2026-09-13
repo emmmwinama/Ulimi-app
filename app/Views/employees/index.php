@@ -48,7 +48,7 @@ $roleBadge = [
 
 <?php if ($employees === []): ?>
     <div class="empty">
-        <span class="icon-box" style="width:64px;height:64px;border-radius:16px;background:var(--surface-2);color:var(--text-faint);display:grid;place-items:center;margin:0 auto 16px">
+        <span class="icon-box lg muted" style="margin:0 auto 16px">
             <?= $this->partial('partials/icon', ['name' => 'users', 'class' => 'ico']) ?>
         </span>
         <div class="h3">No employees</div>
@@ -75,21 +75,21 @@ $roleBadge = [
                     <?php if ($canManage): ?>
                         <div class="row" style="gap:4px">
                             <a href="#edit-employee-<?= e((string) $e['id']) ?>" title="Edit"
-                               style="width:28px;height:28px;border-radius:9px;display:grid;place-items:center;background:var(--surface-3);color:var(--text-faint)">
+                               class="icon-box sm muted">
                                 <?= $this->partial('partials/icon', ['name' => 'pencil', 'class' => 'ico ico-sm']) ?>
                             </a>
                             <form method="post" action="<?= e(url('employees/' . rawurlencode((string) $e['id']) . '/delete')) ?>" onsubmit="return confirm('Remove this employee?')">
                                 <?= csrf_field() ?>
                                 <button type="submit" title="Remove"
-                                        style="width:28px;height:28px;border-radius:9px;display:grid;place-items:center;background:var(--red-050);color:var(--red-text);border:0;cursor:pointer">
+                                        class="icon-box sm red" style="border:0;cursor:pointer">
                                     <?= $this->partial('partials/icon', ['name' => 'trash', 'class' => 'ico ico-sm']) ?>
                                 </button>
                             </form>
                         </div>
                     <?php endif; ?>
                 </div>
-                <div style="background:var(--surface-2);border:1px solid var(--line);border-radius:12px;padding:10px;margin-bottom:10px">
-                    <p style="font-size:.625rem;font-weight:800;text-transform:uppercase;color:var(--text-faint);margin-bottom:2px">Pay rate</p>
+                <div class="mini-stat" style="margin-bottom:10px">
+                    <p class="label">Pay rate</p>
                     <p style="font-size:.8rem;font-weight:800;color:var(--text)"><?= e(Money::format((float) $e['pay_rate'])) ?> <span class="small muted">/ <?= e((string) $e['pay_rate_unit']) ?></span></p>
                 </div>
                 <div class="spread">

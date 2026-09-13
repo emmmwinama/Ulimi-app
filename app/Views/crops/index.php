@@ -1,7 +1,11 @@
 ﻿<?php
 /**
  * @var array<int,array<string,mixed>> $crops
+ * @var array{total_area:float,active:int,due_soon:int} $stats
  * @var list<string> $seasons
+ * @var array<int,array<string,mixed>> $allFields
+ * @var list<string> $statuses
+ * @var array{season:string,field_id:string,status:string} $filters
  * @var string $season
  * @var bool $archived
  * @var bool $canManage
@@ -45,20 +49,56 @@ $statusColors = [
     </div>
 </div>
 
+<?php if ($crops !== [] || $filters['season'] !== '' || $filters['field_id'] !== '' || $filters['status'] !== ''): ?>
+    <div class="grid cols-4 mb-16px">
+        <div class="stat">
+            <div class="label">Plantings</div>
+            <div class="value"><?= count($crops) ?></div>
+        </div>
+        <div class="stat">
+            <div class="label">Area planted</div>
+            <div class="value" style="color:var(--blue)"><?= e(number_format($stats['total_area'], 2)) ?> ha</div>
+        </div>
+        <div class="stat">
+            <div class="label">Active</div>
+            <div class="value" style="color:var(--green-text)"><?= $stats['active'] ?></div>
+        </div>
+        <div class="stat">
+            <div class="label">Due for harvest</div>
+            <div class="value" style="color:<?= $stats['due_soon'] > 0 ? 'var(--red-text)' : 'var(--text)' ?>"><?= $stats['due_soon'] ?></div>
+        </div>
+    </div>
+<?php endif; ?>
+
 <form method="get" action="<?= e(url('crops')) ?>" class="row wrap mb-24px" style="gap:10px">
-    <select class="select" name="season" onchange="this.form.submit()" style="max-width:240px">
+    <select class="select" name="season" onchange="this.form.submit()" style="max-width:220px">
         <option value="">All seasons</option>
         <?php foreach ($seasons as $s): ?>
             <option value="<?= e($s) ?>" <?= $s === $season ? 'selected' : '' ?>><?= e($s) ?></option>
         <?php endforeach; ?>
     </select>
+    <select class="select" name="field_id" onchange="this.form.submit()" style="max-width:220px">
+        <option value="">All fields</option>
+        <?php foreach ($allFields as $f): ?>
+            <option value="<?= e((string) $f['id']) ?>" <?= $filters['field_id'] === (string) $f['id'] ? 'selected' : '' ?>><?= e((string) $f['name']) ?></option>
+        <?php endforeach; ?>
+    </select>
+    <select class="select" name="status" onchange="this.form.submit()" style="max-width:180px">
+        <option value="">All statuses</option>
+        <?php foreach ($statuses as $s): ?>
+            <option value="<?= e($s) ?>" <?= $filters['status'] === $s ? 'selected' : '' ?>><?= e($s) ?></option>
+        <?php endforeach; ?>
+    </select>
     <?php if ($archived): ?><input type="hidden" name="view" value="archived"><?php endif; ?>
+    <?php if ($filters['season'] !== '' || $filters['field_id'] !== '' || $filters['status'] !== ''): ?>
+        <a class="btn ghost sm" href="<?= e(url('crops') . ($archived ? '?view=archived' : '')) ?>">Clear</a>
+    <?php endif; ?>
     <noscript><button class="btn sm" type="submit">Filter</button></noscript>
 </form>
 
 <?php if ($crops === []): ?>
     <div class="empty">
-        <span class="icon-box" style="width:64px;height:64px;border-radius:16px;background:var(--surface-2);color:var(--teal);display:grid;place-items:center;margin:0 auto 16px">
+        <span class="icon-box lg teal" style="margin:0 auto 16px">
             <?= $this->partial('partials/icon', ['name' => 'sprout', 'class' => 'ico']) ?>
         </span>
         <div class="h3">Nothing here</div>
@@ -100,7 +140,7 @@ $statusColors = [
                 <div class="card-body" style="flex:1">
                     <div class="spread" style="align-items:flex-start;margin-bottom:12px">
                         <div class="row" style="gap:10px">
-                            <span style="width:36px;height:36px;border-radius:12px;background:var(--teal-pale);color:var(--teal);display:grid;place-items:center;flex:none">
+                            <span class="icon-box teal">
                                 <?= $this->partial('partials/icon', ['name' => 'sprout', 'class' => 'ico']) ?>
                             </span>
                             <div>
@@ -113,8 +153,8 @@ $statusColors = [
 
                     <div class="grid cols-2" style="gap:8px;margin-bottom:12px">
                         <?php foreach ($details as $d): ?>
-                            <div style="background:var(--surface-2);border:1px solid var(--line);border-radius:12px;padding:10px">
-                                <p style="font-size:.625rem;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:var(--text-faint);margin-bottom:2px"><?= e($d['label']) ?></p>
+                            <div class="mini-stat">
+                                <p class="label"><?= e($d['label']) ?></p>
                                 <p style="font-size:.75rem;font-weight:800;color:var(--text)" class="nowrap"><?= e($d['value']) ?></p>
                             </div>
                         <?php endforeach; ?>
@@ -143,7 +183,7 @@ $statusColors = [
                 </div>
 
                 <?php if ($canManage): ?>
-                    <div class="spread" style="padding:12px 20px;border-top:1px solid var(--line);background:var(--surface-2);border-radius:0 0 var(--radius-lg) var(--radius-lg)">
+                    <div class="spread card-foot">
                         <p style="font-size:.75rem;color:var(--text-faint)"><?= e(Dates::forDisplay((string) $c['planting_date'])) ?></p>
                         <div class="row" style="gap:4px">
                             <?php if (!$isArchived): ?>
@@ -160,7 +200,7 @@ $statusColors = [
                                     </div>
                                 </details>
                                 <a href="#edit-crop-<?= e((string) $c['id']) ?>" title="Edit"
-                                   style="width:28px;height:28px;border-radius:9px;display:grid;place-items:center;background:var(--surface-3);color:var(--text-faint)">
+                                   class="icon-box sm muted">
                                     <?= $this->partial('partials/icon', ['name' => 'pencil', 'class' => 'ico ico-sm']) ?>
                                 </a>
                             <?php else: ?>

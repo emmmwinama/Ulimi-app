@@ -33,7 +33,7 @@ $mappedCount = count(array_filter($fields, static fn ($f) => !empty($f['boundary
 
 <?php if ($fields === []): ?>
     <div class="empty">
-        <span class="icon-box" style="width:64px;height:64px;border-radius:16px;background:var(--surface-2);color:var(--teal);display:grid;place-items:center;margin:0 auto 16px">
+        <span class="icon-box lg teal" style="margin:0 auto 16px">
             <?= $this->partial('partials/icon', ['name' => 'map', 'class' => 'ico']) ?>
         </span>
         <div class="h3">No fields yet</div>
@@ -67,7 +67,7 @@ $mappedCount = count(array_filter($fields, static fn ($f) => !empty($f['boundary
                 <div class="card-body" style="flex:1">
                     <div class="spread" style="align-items:flex-start;margin-bottom:12px">
                         <div class="row" style="gap:10px">
-                            <span style="width:36px;height:36px;border-radius:12px;background:var(--teal-pale);color:var(--teal);display:grid;place-items:center;flex:none">
+                            <span class="icon-box teal">
                                 <?= $this->partial('partials/icon', ['name' => 'leaf', 'class' => 'ico']) ?>
                             </span>
                             <div>
@@ -79,13 +79,13 @@ $mappedCount = count(array_filter($fields, static fn ($f) => !empty($f['boundary
                     </div>
 
                     <div class="grid cols-2" style="gap:8px;margin-bottom:12px">
-                        <div style="background:var(--surface-2);border:1px solid var(--line);border-radius:12px;padding:10px">
-                            <p style="font-size:.625rem;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:var(--text-faint);margin-bottom:2px">Total area</p>
-                            <p style="font-size:.875rem;font-weight:900;color:var(--teal)"><?= e(number_format((float) $f['total_area'], 2)) ?> ha</p>
+                        <div class="mini-stat">
+                            <p class="label">Total area</p>
+                            <p class="value" style="color:var(--teal)"><?= e(number_format((float) $f['total_area'], 2)) ?> ha</p>
                         </div>
-                        <div style="background:var(--surface-2);border:1px solid var(--line);border-radius:12px;padding:10px">
-                            <p style="font-size:.625rem;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:var(--text-faint);margin-bottom:2px">Cultivatable</p>
-                            <p style="font-size:.875rem;font-weight:900;color:var(--text)"><?= e(number_format((float) $f['cultivatable_area'], 2)) ?> ha</p>
+                        <div class="mini-stat">
+                            <p class="label">Cultivatable</p>
+                            <p class="value"><?= e(number_format((float) $f['cultivatable_area'], 2)) ?> ha</p>
                         </div>
                     </div>
 
@@ -105,23 +105,23 @@ $mappedCount = count(array_filter($fields, static fn ($f) => !empty($f['boundary
                     <?php endif; ?>
                 </div>
 
-                <div class="spread" style="padding:12px 20px;border-top:1px solid var(--line);background:var(--surface-2);border-radius:0 0 var(--radius-lg) var(--radius-lg)">
+                <div class="spread card-foot">
                     <p style="font-size:.75rem;color:var(--text-faint)">Added <?= e(Dates::forDisplay((string) $f['created_at'])) ?></p>
                     <div class="row" style="gap:4px">
                         <a href="<?= e(url('fields/' . rawurlencode((string) $f['id']) . '/map')) ?>" title="<?= $mapped ? 'Map' : 'Draw' ?>"
-                           style="width:28px;height:28px;border-radius:9px;display:grid;place-items:center;background:var(--teal-pale);color:var(--teal)">
+                           class="icon-box sm teal">
                             <?= $this->partial('partials/icon', ['name' => 'map', 'class' => 'ico ico-sm']) ?>
                         </a>
                         <?php if ($canManage): ?>
                             <a href="#edit-field-<?= e((string) $f['id']) ?>" title="Edit"
-                               style="width:28px;height:28px;border-radius:9px;display:grid;place-items:center;background:var(--surface-3);color:var(--text-faint)">
+                               class="icon-box sm muted">
                                 <?= $this->partial('partials/icon', ['name' => 'pencil', 'class' => 'ico ico-sm']) ?>
                             </a>
                             <form method="post" action="<?= e(url('fields/' . rawurlencode((string) $f['id']) . '/delete')) ?>"
                                   style="display:inline" onsubmit="return confirm('Delete this field?')">
                                 <?= csrf_field() ?>
                                 <button type="submit" title="Delete"
-                                        style="width:28px;height:28px;border-radius:9px;display:grid;place-items:center;background:var(--red-050);color:var(--red-text);border:0;cursor:pointer">
+                                        class="icon-box sm red" style="border:0;cursor:pointer">
                                     <?= $this->partial('partials/icon', ['name' => 'trash', 'class' => 'ico ico-sm']) ?>
                                 </button>
                             </form>

@@ -8,6 +8,7 @@ use App\Controllers\Admin\AdminCmsController;
 use App\Controllers\Admin\AdminDashboardController;
 use App\Controllers\Admin\AdminInquiriesController;
 use App\Controllers\Admin\AdminMarketController;
+use App\Controllers\Admin\AdminPaymentsController;
 use App\Controllers\Admin\AdminSubscriptionsController;
 use App\Controllers\Admin\AdminTiersController;
 use App\Controllers\Admin\AdminUsersController;
@@ -17,6 +18,9 @@ use App\Controllers\Auth\PasswordResetController;
 use App\Controllers\Auth\RegisterController;
 use App\Controllers\DashboardController;
 use App\Controllers\Farm\ActivitiesController;
+use App\Controllers\Farm\CalendarController;
+use App\Controllers\Farm\ClimateEventsController;
+use App\Controllers\Farm\CooperativeController;
 use App\Controllers\Farm\CropIncidentsController;
 use App\Controllers\Farm\CropsController;
 use App\Controllers\Farm\EmployeesController;
@@ -31,20 +35,35 @@ use App\Controllers\Farm\MapController;
 use App\Controllers\Farm\MarketController;
 use App\Controllers\Farm\NotificationsController;
 use App\Controllers\Farm\ReportsController;
+use App\Controllers\Farm\SeasonalTemplatesController;
 use App\Controllers\Farm\SettingsController;
 use App\Controllers\Farm\TeamController;
 use App\Controllers\Farm\WeatherController;
 use App\Controllers\Farm\YieldsController;
 use App\Controllers\Api\ApiActivitiesController;
 use App\Controllers\Api\ApiAuthController;
+use App\Controllers\Api\ApiClimateEventsController;
+use App\Controllers\Api\ApiCooperativeController;
+use App\Controllers\Api\ApiCropIncidentsController;
+use App\Controllers\Api\ApiCropsController;
 use App\Controllers\Api\ApiDashboardController;
+use App\Controllers\Api\ApiDocumentsController;
+use App\Controllers\Api\ApiEmployeesController;
+use App\Controllers\Api\ApiEquipmentController;
 use App\Controllers\Api\ApiFarmController;
 use App\Controllers\Api\ApiFieldsController;
 use App\Controllers\Api\ApiFinanceController;
+use App\Controllers\Api\ApiInventoryController;
+use App\Controllers\Api\ApiLivestockController;
+use App\Controllers\Api\ApiMarketController;
+use App\Controllers\Api\ApiNotificationsController;
 use App\Controllers\Api\ApiSyncController;
+use App\Controllers\Api\ApiTeamController;
+use App\Controllers\Api\ApiYieldsController;
 use App\Controllers\Onboarding\FarmSetupController;
 use App\Controllers\Public\ContactController;
 use App\Controllers\Public\HomeController;
+use App\Controllers\Public\SharedReportController;
 use App\Controllers\Public\PageController;
 use App\Controllers\SystemController;
 use App\Core\Router;
@@ -70,6 +89,7 @@ $router->get('/health', [SystemController::class, 'health'], ['SecurityHeaders']
 $router->get('/', [HomeController::class, 'index'], $web);
 $router->post('/contact', [ContactController::class, 'submitContact'], [...$web, 'Throttle:form']);
 $router->post('/demo', [ContactController::class, 'submitDemo'], [...$web, 'Throttle:form']);
+$router->get('/shared/reports/{token}', [SharedReportController::class, 'show'], $web);
 
 /* ------------------------------------------------------------------ auth */
 $router->group('', $guest, static function (Router $r): void {
@@ -138,6 +158,17 @@ $router->group('/crops', $farm, static function (Router $r): void {
     $r->put('/{id}', [CropsController::class, 'update'], ['Can:crops.manage']);
     $r->post('/{id}/archive', [CropsController::class, 'archive'], ['Can:crops.manage']);
     $r->post('/{id}/restore', [CropsController::class, 'restore'], ['Can:crops.manage']);
+});
+
+/* -------------------------------------------------------------- calendar */
+$router->group('/calendar', $farm, static function (Router $r): void {
+    $r->get('', [CalendarController::class, 'index'], ['Can:crops.view']);
+});
+
+/* ------------------------------------------------------------- templates */
+$router->group('/templates', $farm, static function (Router $r): void {
+    $r->get('', [SeasonalTemplatesController::class, 'index']);
+    $r->get('/{id}', [SeasonalTemplatesController::class, 'show']);
 });
 
 /* ------------------------------------------------------------- incidents */
@@ -218,6 +249,7 @@ $router->group('/inventory', $farm, static function (Router $r): void {
     $r->post('/{id}/delete', [InventoryController::class, 'destroy'], ['Can:inventory.manage']);
     $r->get('/{id}/sell', [InventoryController::class, 'sellForm'], ['Can:inventory.view']);
     $r->post('/{id}/sell', [InventoryController::class, 'sell'], ['Can:inventory.manage']);
+    $r->get('/{id}/sell/{saleId}/receipt', [InventoryController::class, 'receipt'], ['Can:inventory.view']);
 });
 
 /* ------------------------------------------------------------- equipment */
@@ -251,6 +283,29 @@ $router->group('/livestock', $farm, static function (Router $r): void {
     $r->post('/animals/{id}/events/{kind}/{eventId}/delete', [LivestockController::class, 'deleteEvent'], ['Can:livestock.manage']);
 });
 
+/* -------------------------------------------------------- climate events */
+$router->group('/climate-events', $farm, static function (Router $r): void {
+    $r->get('', [ClimateEventsController::class, 'index'], ['Can:finance.view']);
+    $r->get('/create', [ClimateEventsController::class, 'create'], ['Can:finance.manage']);
+    $r->post('', [ClimateEventsController::class, 'store'], ['Can:finance.manage']);
+    $r->get('/{id}/edit', [ClimateEventsController::class, 'edit'], ['Can:finance.manage']);
+    $r->put('/{id}', [ClimateEventsController::class, 'update'], ['Can:finance.manage']);
+    $r->post('/{id}/delete', [ClimateEventsController::class, 'destroy'], ['Can:finance.manage']);
+});
+
+/* ------------------------------------------------------------ cooperative */
+$router->group('/cooperatives', $farm, static function (Router $r): void {
+    $r->get('', [CooperativeController::class, 'index']);
+    $r->post('', [CooperativeController::class, 'store']);
+    $r->post('/join', [CooperativeController::class, 'join']);
+});
+$router->group('/cooperatives/{id}', [...$farm, 'ResolveCooperativeContext'], static function (Router $r): void {
+    $r->get('', [CooperativeController::class, 'show']);
+    $r->post('/members/{farmId}/remove', [CooperativeController::class, 'removeMember']);
+    $r->post('/contributions', [CooperativeController::class, 'addContribution']);
+    $r->post('/sales', [CooperativeController::class, 'addSale']);
+});
+
 /* --------------------------------------------------------------- reports */
 $router->group('/reports', $farm, static function (Router $r): void {
     $r->get('', [ReportsController::class, 'index'], ['Can:reports.view']);
@@ -261,6 +316,8 @@ $router->group('/reports', $farm, static function (Router $r): void {
     $r->get('/builder', [ReportsController::class, 'builder'], ['Can:reports.view']);
     $r->get('/export/{section}', [ReportsController::class, 'exportCsv'], ['Can:reports.view']);
     $r->get('/pack/{type}', [ReportsController::class, 'pack'], ['Can:reports.view']);
+    $r->post('/pack/{type}/share', [ReportsController::class, 'createShareLink'], ['Can:reports.manage']);
+    $r->post('/share-links/{id}/revoke', [ReportsController::class, 'revokeShareLink'], ['Can:reports.manage']);
 });
 
 /* ------------------------------------------------------------- documents */
@@ -276,6 +333,16 @@ $router->get('/weather', [WeatherController::class, 'show'], [...$farm, 'Can:fie
 
 /* ---------------------------------------------------------------- market */
 $router->get('/market', [MarketController::class, 'index'], [...$farm, 'Can:crops.view']);
+$router->group('/market/buyers', $farm, static function (Router $r): void {
+    $r->get('', [MarketController::class, 'buyers'], ['Can:crops.view']);
+    $r->post('', [MarketController::class, 'storeBuyer'], ['Can:crops.manage']);
+    $r->post('/{id}/delete', [MarketController::class, 'destroyBuyer'], ['Can:crops.manage']);
+});
+$router->group('/market/offers', $farm, static function (Router $r): void {
+    $r->post('', [MarketController::class, 'storeOffer'], ['Can:crops.manage']);
+    $r->post('/{id}/status', [MarketController::class, 'updateOfferStatus'], ['Can:crops.manage']);
+    $r->post('/{id}/delete', [MarketController::class, 'destroyOffer'], ['Can:crops.manage']);
+});
 
 /* --------------------------------------------------------- notifications */
 $router->group('/notifications', $farm, static function (Router $r): void {
@@ -318,6 +385,9 @@ $router->group('/admin', ['SecurityHeaders', 'VerifyCsrf'], static function (Rou
         $r->post('/subscriptions/{id}/extend', [AdminSubscriptionsController::class, 'extend']);
         $r->post('/subscriptions/{id}/payments', [AdminSubscriptionsController::class, 'recordPayment']);
 
+        $r->get('/payments', [AdminPaymentsController::class, 'index']);
+        $r->post('/payments', [AdminPaymentsController::class, 'store']);
+
         $r->get('/tiers', [AdminTiersController::class, 'index']);
         $r->get('/tiers/create', [AdminTiersController::class, 'create']);
         $r->post('/tiers', [AdminTiersController::class, 'store']);
@@ -329,6 +399,9 @@ $router->group('/admin', ['SecurityHeaders', 'VerifyCsrf'], static function (Rou
         $r->post('/market', [AdminMarketController::class, 'store']);
         $r->put('/market/{id}', [AdminMarketController::class, 'update']);
         $r->post('/market/{id}/delete', [AdminMarketController::class, 'destroy']);
+        $r->post('/market/check-now', [AdminMarketController::class, 'checkNow']);
+        $r->post('/market/updates/{id}/approve', [AdminMarketController::class, 'approveUpdate']);
+        $r->post('/market/updates/{id}/reject', [AdminMarketController::class, 'rejectUpdate']);
 
         $r->get('/cms', [AdminCmsController::class, 'index']);
         $r->post('/cms/content/{key}', [AdminCmsController::class, 'updateContent']);
@@ -357,14 +430,132 @@ $router->group('/api/mobile', ['CorsMobile'], static function (Router $r): void 
 
         $r->get('/fields', [ApiFieldsController::class, 'index']);
         $r->post('/fields', [ApiFieldsController::class, 'store'], ['SubscriptionLimit:fields']);
+        $r->put('/fields/{id}', [ApiFieldsController::class, 'update']);
+        $r->post('/fields/{id}/delete', [ApiFieldsController::class, 'destroy']);
 
         $r->get('/activities', [ApiActivitiesController::class, 'index']);
         $r->post('/activities', [ApiActivitiesController::class, 'store'], ['SubscriptionLimit:activities']);
+        $r->put('/activities/{id}', [ApiActivitiesController::class, 'update']);
+        $r->post('/activities/{id}/delete', [ApiActivitiesController::class, 'destroy']);
 
         $r->get('/finance', [ApiFinanceController::class, 'index']);
         $r->post('/finance', [ApiFinanceController::class, 'store'], ['SubscriptionLimit:finance']);
+        $r->put('/finance/{id}', [ApiFinanceController::class, 'update']);
+        $r->post('/finance/{id}/delete', [ApiFinanceController::class, 'destroy']);
 
         $r->post('/sync', [ApiSyncController::class, 'sync']);
+
+        /* ------------------------------------------------------- crops */
+        $r->get('/crops', [ApiCropsController::class, 'index']);
+        $r->get('/crops/{id}', [ApiCropsController::class, 'show']);
+        $r->post('/crops', [ApiCropsController::class, 'store'], ['SubscriptionLimit:crops']);
+        $r->put('/crops/{id}', [ApiCropsController::class, 'update']);
+        $r->post('/crops/{id}/archive', [ApiCropsController::class, 'archive']);
+        $r->post('/crops/{id}/restore', [ApiCropsController::class, 'restore']);
+
+        /* --------------------------------------------------- incidents */
+        $r->get('/incidents', [ApiCropIncidentsController::class, 'index']);
+        $r->get('/incidents/{id}', [ApiCropIncidentsController::class, 'show']);
+        $r->post('/incidents', [ApiCropIncidentsController::class, 'store']);
+        $r->put('/incidents/{id}', [ApiCropIncidentsController::class, 'update']);
+        $r->post('/incidents/{id}/delete', [ApiCropIncidentsController::class, 'destroy']);
+
+        /* --------------------------------------------------- livestock */
+        $r->get('/livestock/types', [ApiLivestockController::class, 'types']);
+        $r->post('/livestock/types', [ApiLivestockController::class, 'storeType']);
+        $r->post('/livestock/types/{id}/delete', [ApiLivestockController::class, 'destroyType']);
+        $r->get('/livestock/animals', [ApiLivestockController::class, 'animals']);
+        $r->get('/livestock/animals/{id}', [ApiLivestockController::class, 'showAnimal']);
+        $r->post('/livestock/animals', [ApiLivestockController::class, 'storeAnimal']);
+        $r->put('/livestock/animals/{id}', [ApiLivestockController::class, 'updateAnimal']);
+        $r->post('/livestock/animals/{id}/delete', [ApiLivestockController::class, 'destroyAnimal']);
+        $r->get('/livestock/animals/{id}/events/{kind}', [ApiLivestockController::class, 'events']);
+        $r->post('/livestock/animals/{id}/events/{kind}', [ApiLivestockController::class, 'addEvent']);
+        $r->post('/livestock/animals/{id}/events/{kind}/{eventId}/delete', [ApiLivestockController::class, 'deleteEvent']);
+        $r->post('/livestock/animals/{id}/sell', [ApiLivestockController::class, 'sellAnimal']);
+
+        /* --------------------------------------------------- inventory */
+        $r->get('/inventory', [ApiInventoryController::class, 'index']);
+        $r->get('/inventory/{id}', [ApiInventoryController::class, 'show']);
+        $r->post('/inventory', [ApiInventoryController::class, 'store']);
+        $r->put('/inventory/{id}', [ApiInventoryController::class, 'update']);
+        $r->post('/inventory/{id}/delete', [ApiInventoryController::class, 'destroy']);
+        $r->post('/inventory/{id}/sell', [ApiInventoryController::class, 'sell']);
+
+        /* --------------------------------------------------- equipment */
+        $r->get('/equipment', [ApiEquipmentController::class, 'index']);
+        $r->get('/equipment/{id}', [ApiEquipmentController::class, 'show']);
+        $r->post('/equipment', [ApiEquipmentController::class, 'store']);
+        $r->put('/equipment/{id}', [ApiEquipmentController::class, 'update']);
+        $r->post('/equipment/{id}/delete', [ApiEquipmentController::class, 'destroy']);
+        $r->get('/equipment/{id}/logs', [ApiEquipmentController::class, 'logs']);
+        $r->post('/equipment/{id}/logs', [ApiEquipmentController::class, 'addLog']);
+        $r->post('/equipment/{id}/logs/{logId}/delete', [ApiEquipmentController::class, 'deleteLog']);
+
+        /* ------------------------------------------------------ yields */
+        $r->get('/yields', [ApiYieldsController::class, 'index']);
+        $r->get('/yields/{id}', [ApiYieldsController::class, 'show']);
+        $r->post('/yields', [ApiYieldsController::class, 'store']);
+        $r->put('/yields/{id}', [ApiYieldsController::class, 'update']);
+        $r->post('/yields/{id}/delete', [ApiYieldsController::class, 'destroy']);
+        $r->get('/yields/{id}/storage', [ApiYieldsController::class, 'storage']);
+        $r->post('/yields/{id}/storage', [ApiYieldsController::class, 'storeStorage']);
+
+        /* --------------------------------------------------- documents */
+        $r->get('/documents', [ApiDocumentsController::class, 'index']);
+        $r->post('/documents', [ApiDocumentsController::class, 'store']);
+        $r->get('/documents/{id}/download', [ApiDocumentsController::class, 'download']);
+        $r->post('/documents/{id}/delete', [ApiDocumentsController::class, 'destroy']);
+
+        /* --------------------------------------------------- employees */
+        $r->get('/employees', [ApiEmployeesController::class, 'index']);
+        $r->get('/employees/{id}', [ApiEmployeesController::class, 'show']);
+        $r->post('/employees', [ApiEmployeesController::class, 'store'], ['SubscriptionLimit:employees']);
+        $r->put('/employees/{id}', [ApiEmployeesController::class, 'update']);
+        $r->post('/employees/{id}/delete', [ApiEmployeesController::class, 'destroy']);
+
+        /* -------------------------------------------------------- team */
+        $r->get('/team', [ApiTeamController::class, 'index']);
+        // Team-size limit is enforced inside ApiTeamController::invite itself,
+        // same as the web route — see the comment on the web /team group.
+        $r->post('/team/invite', [ApiTeamController::class, 'invite']);
+        $r->post('/team/{memberId}/role', [ApiTeamController::class, 'updateRole']);
+        $r->post('/team/{memberId}/remove', [ApiTeamController::class, 'remove']);
+
+        /* -------------------------------------------------- climate events */
+        $r->get('/climate-events', [ApiClimateEventsController::class, 'index']);
+        $r->get('/climate-events/{id}', [ApiClimateEventsController::class, 'show']);
+        $r->post('/climate-events', [ApiClimateEventsController::class, 'store']);
+        $r->put('/climate-events/{id}', [ApiClimateEventsController::class, 'update']);
+        $r->post('/climate-events/{id}/delete', [ApiClimateEventsController::class, 'destroy']);
+
+        /* ----------------------------------------------------- market */
+        $r->get('/market/prices', [ApiMarketController::class, 'prices']);
+        $r->get('/market/buyers', [ApiMarketController::class, 'buyers']);
+        $r->post('/market/buyers', [ApiMarketController::class, 'storeBuyer']);
+        $r->post('/market/buyers/{id}/delete', [ApiMarketController::class, 'destroyBuyer']);
+        $r->get('/market/offers', [ApiMarketController::class, 'offers']);
+        $r->post('/market/offers', [ApiMarketController::class, 'storeOffer']);
+        $r->post('/market/offers/{id}/status', [ApiMarketController::class, 'updateOfferStatus']);
+        $r->post('/market/offers/{id}/delete', [ApiMarketController::class, 'destroyOffer']);
+
+        /* ----------------------------------------------- notifications */
+        $r->get('/notifications', [ApiNotificationsController::class, 'index']);
+        $r->get('/notifications/unread-count', [ApiNotificationsController::class, 'unreadCount']);
+        $r->post('/notifications/{id}/read', [ApiNotificationsController::class, 'markRead']);
+        $r->post('/notifications/read-all', [ApiNotificationsController::class, 'markAllRead']);
+
+        /* ----------------------------------------------- cooperatives */
+        $r->get('/cooperatives', [ApiCooperativeController::class, 'index']);
+        $r->post('/cooperatives', [ApiCooperativeController::class, 'store']);
+        $r->post('/cooperatives/join', [ApiCooperativeController::class, 'join']);
+
+        $r->group('/cooperatives/{id}', ['ResolveCooperativeContext'], static function (Router $r): void {
+            $r->get('', [ApiCooperativeController::class, 'show']);
+            $r->post('/members/{farmId}/remove', [ApiCooperativeController::class, 'removeMember']);
+            $r->post('/contributions', [ApiCooperativeController::class, 'addContribution']);
+            $r->post('/sales', [ApiCooperativeController::class, 'addSale']);
+        });
     });
 });
 

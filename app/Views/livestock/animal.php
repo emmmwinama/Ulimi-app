@@ -24,7 +24,7 @@ $editable = $canManage && $a['status'] === 'Active';
     </div>
     <div class="row">
         <span class="badge <?= $a['status'] === 'Active' ? 'green' : ($a['status'] === 'Sold' ? 'blue' : 'red') ?>"><?= e((string) $a['status']) ?></span>
-        <?php if ($canManage): ?><a class="btn secondary" href="<?= e(url('livestock/animals/' . $id . '/edit')) ?>">Edit</a><?php endif; ?>
+        <?php if ($canManage): ?><a class="btn secondary" href="#edit-animal">Edit</a><?php endif; ?>
     </div>
 </div>
 
@@ -186,5 +186,33 @@ $mon = static fn (string $k) => static fn ($r) => e(Money::format((float) ($r[$k
         <p class="hint mt-8px">Creates an income transaction in Finance and sets the animal’s status to Sold.</p>
     </div>
 </div>
+<?php endif; ?>
+
+<?php if ($canManage): ?>
+    <div class="slide-over" id="edit-animal">
+        <a href="#" class="scrim" aria-label="Close"></a>
+        <div class="panel">
+            <div class="panel-head">
+                <div>
+                    <h2 class="h3">Edit animal</h2>
+                    <p class="small muted mt-8px"><?= e($name) ?></p>
+                </div>
+                <a href="#" class="panel-close" aria-label="Close"><?= $this->partial('partials/icon', ['name' => 'x', 'class' => 'ico ico-sm']) ?></a>
+            </div>
+            <form method="post" action="<?= e(url('livestock/animals/' . $id)) ?>" style="display:contents">
+                <?= csrf_field() ?>
+                <?= method_field('PUT') ?>
+                <div class="panel-body stack">
+                    <?= $this->partial('partials/livestock/animal', [
+                        'a' => $a, 'types' => $types, 'parents' => $parents, 'sexes' => $sexes, 'statuses' => $statuses, 'acqTypes' => $acqTypes,
+                    ]) ?>
+                </div>
+                <div class="panel-foot">
+                    <a href="#" class="btn ghost block">Cancel</a>
+                    <button type="submit" class="btn block">Save changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
 <?php endif; ?>
 <?php $this->stop(); ?>

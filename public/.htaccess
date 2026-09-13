@@ -9,6 +9,13 @@
     # If the domain's DocumentRoot is a parent dir, uncomment and set:
     # RewriteBase /
 
+    # Apache/mod_php does not forward the Authorization header to PHP by
+    # default (it never reaches $_SERVER['HTTP_AUTHORIZATION']), which
+    # silently breaks the mobile API's Bearer JWT auth. Re-expose it as an
+    # env var so PHP sees it.
+    RewriteCond %{HTTP:Authorization} ^(.*)
+    RewriteRule .* - [E=HTTP_AUTHORIZATION:%1]
+
     # Block dotfiles (.env, .git, .htaccess itself is already protected).
     RewriteRule (^|/)\.(?!well-known/) - [F]
 

@@ -95,7 +95,7 @@ return [
         // anyway. Feature no-ops (hidden, not broken) when api_key is empty.
         'api_key'  => '',  // REQUIRED via config.local.php to enable AI features
         'base_url' => 'https://api.groq.com/openai/v1',
-        'model'    => 'llama-3.3-70b-versatile',
+        'model'    => 'openai/gpt-oss-120b',
     ],
 
     'trusted_proxies' => [],

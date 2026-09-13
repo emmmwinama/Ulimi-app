@@ -17,6 +17,15 @@ if ($field['location_lat'] !== null) {
     $centre = [(float) $boundary['centroid_lat'], (float) $boundary['centroid_lng']];
 }
 
+$zoneTypeMeta = [
+    'management' => ['code' => 'MG', 'color' => '#2563EB'],
+    'soil'       => ['code' => 'SL', 'color' => '#EA580C'],
+    'irrigation' => ['code' => 'IR', 'color' => '#0284C7'],
+    'problem'    => ['code' => 'PR', 'color' => '#DC2626'],
+    'other'      => ['code' => 'OT', 'color' => '#64748B'],
+];
+$fmtAc = static fn (?float $ha): string => $ha ? number_format($ha * 2.471, 2) . ' ac' : '';
+
 $config = [
     'mode'      => 'field',
     'canEdit'   => $canManage,
@@ -43,7 +52,7 @@ $config = [
         <h1 class="h1"><?= e((string) $field['name']) ?> — map</h1>
         <p class="lede">
             <?= e(number_format((float) $field['total_area'], 2)) ?> ha on record
-            <?php if ($boundary && $boundary['area_ha'] !== null): ?>· drawn area <?= e(number_format((float) $boundary['area_ha'], 3)) ?> ha<?php endif; ?>
+            <?php if ($boundary && $boundary['area_ha'] !== null): ?>· drawn area <?= e(number_format((float) $boundary['area_ha'], 3)) ?> ha (<?= e($fmtAc((float) $boundary['area_ha'])) ?>)<?php endif; ?>
         </p>
     </div>
     <a class="btn ghost" href="<?= e(url('fields')) ?>">← Fields</a>
@@ -58,7 +67,7 @@ $config = [
         <div class="card-head"><h2 class="h2">Boundary</h2></div>
         <div class="card-body">
             <p class="small muted mb-8px">Draw or redraw the field outline. Area is calculated when you save.</p>
-            <button type="button" class="btn secondary sm" onclick="window.__agvBeginDraw('bnd_geometry','bnd_area')">Draw boundary</button>
+            <button type="button" class="btn secondary sm" data-begin-draw data-target="bnd_geometry" data-area="bnd_area">Draw boundary</button>
             <span id="bnd_area" class="small muted" style="margin-left:8px"></span>
             <form method="post" action="<?= e(url('fields/' . $fieldId . '/map/boundary')) ?>" class="mt-16px" data-noguard>
                 <?= csrf_field() ?>
@@ -80,19 +89,29 @@ $config = [
                 <p class="muted small">Draw the boundary first, then you can carve it into zones.</p>
             <?php else: ?>
                 <?php if ($zones !== []): ?>
-                    <ul style="list-style:none;padding:0;margin:0 0 12px">
-                        <?php foreach ($zones as $z): ?>
-                            <li class="spread" style="padding:6px 0;border-bottom:1px solid var(--line)">
-                                <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:<?= e((string) ($z['colour'] ?: '#0D9488')) ?>"></span>
-                                    <?= e((string) $z['name']) ?> <span class="muted small"><?= e((string) $z['type']) ?><?= $z['area_ha'] !== null ? ' · ' . e(number_format((float) $z['area_ha'], 3)) . ' ha' : '' ?></span></span>
+                    <div class="stack" style="gap:8px;margin-bottom:12px">
+                        <?php foreach ($zones as $z):
+                            $meta = $zoneTypeMeta[$z['type']] ?? $zoneTypeMeta['other'];
+                            $colour = (string) ($z['colour'] ?: $meta['color']);
+                            $areaHa = $z['area_ha'] !== null ? (float) $z['area_ha'] : null;
+                        ?>
+                            <div class="spread" style="padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:var(--surface-2)">
+                                <div class="row" style="gap:10px">
+                                    <span style="width:26px;height:26px;border-radius:8px;flex:none;display:grid;place-items:center;font-size:.6rem;font-weight:900;color:#fff;background:<?= e($colour) ?>"><?= e($meta['code']) ?></span>
+                                    <span>
+                                        <span style="font-weight:700;color:var(--text)"><?= e((string) $z['name']) ?></span><br>
+                                        <span class="muted small"><?= e(ucfirst(str_replace('_', ' ', (string) $z['type']))) ?><?= $areaHa !== null ? ' · ' . e(number_format($areaHa, 3)) . ' ha (' . e($fmtAc($areaHa)) . ')' : '' ?></span>
+                                    </span>
+                                </div>
                                 <form method="post" action="<?= e(url('fields/' . $fieldId . '/map/zones/' . rawurlencode((string) $z['id']) . '/delete')) ?>">
-                                    <?= csrf_field() ?><button class="btn sm ghost danger" type="submit">✕</button>
+                                    <?= csrf_field() ?>
+                                    <button class="btn sm ghost danger" type="submit" aria-label="Remove zone"><?= $this->partial('partials/icon', ['name' => 'trash', 'class' => 'ico ico-sm']) ?></button>
                                 </form>
-                            </li>
+                            </div>
                         <?php endforeach; ?>
-                    </ul>
+                    </div>
                 <?php endif; ?>
-                <button type="button" class="btn secondary sm" onclick="window.__agvBeginDraw('zone_geometry')">Draw zone</button>
+                <button type="button" class="btn secondary sm" data-begin-draw data-target="zone_geometry">Draw zone</button>
                 <form method="post" action="<?= e(url('fields/' . $fieldId . '/map/zones')) ?>" class="mt-16px grid cols-2" style="gap:10px" data-noguard>
                     <?= csrf_field() ?>
                     <input type="hidden" name="geometry" id="zone_geometry">

@@ -58,7 +58,7 @@ $catColor = [
 
 <?php if ($items === []): ?>
     <div class="empty">
-        <span class="icon-box" style="width:64px;height:64px;border-radius:16px;background:var(--surface-2);color:var(--text-faint);display:grid;place-items:center;margin:0 auto 16px">
+        <span class="icon-box lg muted" style="margin:0 auto 16px">
             <?= $this->partial('partials/icon', ['name' => 'boxes', 'class' => 'ico']) ?>
         </span>
         <div class="h3">No stock recorded</div>
@@ -97,15 +97,13 @@ $catColor = [
                             <a href="<?= e(url('inventory/' . rawurlencode((string) $it['id']) . '/sell')) ?>" class="row" style="gap:4px;height:32px;padding:0 12px;border-radius:9px;background:var(--teal-pale);color:var(--teal);font-size:.75rem;font-weight:800;border:1px solid #86EFAC">
                                 <?= $this->partial('partials/icon', ['name' => 'wallet', 'class' => 'ico ico-sm']) ?> Sell
                             </a>
-                            <a href="#edit-item-<?= e((string) $it['id']) ?>" title="Edit"
-                               style="width:32px;height:32px;border-radius:9px;display:grid;place-items:center;background:var(--surface-3);color:var(--text-faint)">
-                                <?= $this->partial('partials/icon', ['name' => 'pencil', 'class' => 'ico ico-sm']) ?>
+                            <a href="#edit-item-<?= e((string) $it['id']) ?>" title="Edit" class="icon-box sm muted">
+                                <?= $this->partial('partials/icon', ['name' => 'pencil', 'class' => 'ico']) ?>
                             </a>
                             <form method="post" action="<?= e(url('inventory/' . rawurlencode((string) $it['id']) . '/delete')) ?>" onsubmit="return confirm('Delete this stock item?')">
                                 <?= csrf_field() ?>
-                                <button type="submit" title="Delete"
-                                        style="width:32px;height:32px;border-radius:9px;display:grid;place-items:center;background:var(--red-050);color:var(--red-text);border:0;cursor:pointer">
-                                    <?= $this->partial('partials/icon', ['name' => 'trash', 'class' => 'ico ico-sm']) ?>
+                                <button type="submit" title="Delete" class="icon-box sm red" style="border:0;cursor:pointer">
+                                    <?= $this->partial('partials/icon', ['name' => 'trash', 'class' => 'ico']) ?>
                                 </button>
                             </form>
                         </div>
@@ -113,20 +111,20 @@ $catColor = [
                 </div>
                 <div class="card-body">
                     <div class="grid cols-4" style="gap:10px">
-                        <div style="background:var(--surface-2);border:1px solid var(--line);border-radius:12px;padding:10px">
-                            <p style="font-size:.625rem;font-weight:800;text-transform:uppercase;color:var(--text-faint);margin-bottom:2px">Available</p>
+                        <div class="mini-stat">
+                            <p class="label">Available</p>
                             <p style="font-size:.8rem;font-weight:800;color:<?= $stock <= 0 ? 'var(--text-faint)' : 'var(--text)' ?>"><?= e(rtrim(rtrim(number_format($stock, 3), '0'), '.')) ?> <?= e((string) $it['unit']) ?></p>
                         </div>
-                        <div style="background:var(--surface-2);border:1px solid var(--line);border-radius:12px;padding:10px">
-                            <p style="font-size:.625rem;font-weight:800;text-transform:uppercase;color:var(--text-faint);margin-bottom:2px">Total sold</p>
+                        <div class="mini-stat">
+                            <p class="label">Total sold</p>
                             <p style="font-size:.8rem;font-weight:800;color:var(--text)"><?= (float) $it['sold_qty'] > 0 ? e(rtrim(rtrim(number_format((float) $it['sold_qty'], 3), '0'), '.')) . ' ' . e((string) $it['unit']) : '—' ?></p>
                         </div>
-                        <div style="background:var(--surface-2);border:1px solid var(--line);border-radius:12px;padding:10px">
-                            <p style="font-size:.625rem;font-weight:800;text-transform:uppercase;color:var(--text-faint);margin-bottom:2px">Revenue</p>
+                        <div class="mini-stat">
+                            <p class="label">Revenue</p>
                             <p style="font-size:.8rem;font-weight:800;color:<?= (float) $it['sold_revenue'] > 0 ? 'var(--green-text)' : 'var(--text-faint)' ?>"><?= (float) $it['sold_revenue'] > 0 ? e(Money::format((float) $it['sold_revenue'])) : '—' ?></p>
                         </div>
-                        <div style="background:var(--surface-2);border:1px solid var(--line);border-radius:12px;padding:10px">
-                            <p style="font-size:.625rem;font-weight:800;text-transform:uppercase;color:var(--text-faint);margin-bottom:2px">Acq. cost</p>
+                        <div class="mini-stat">
+                            <p class="label">Acq. cost</p>
                             <p style="font-size:.8rem;font-weight:800;color:var(--text)"><?= $it['acquisition_unit_cost'] !== null ? e(Money::format((float) $it['acquisition_unit_cost'])) : '—' ?></p>
                         </div>
                     </div>

@@ -2,6 +2,7 @@
 /**
  * @var array<string,mixed> $item
  * @var array<int,array<string,mixed>> $sales
+ * @var array<int,array<string,mixed>> $buyers
  */
 $this->layout('layouts/app');
 use App\Support\Dates;
@@ -26,7 +27,16 @@ $id = rawurlencode((string) $item['id']);
             <?= $this->partial('partials/field', ['name' => 'quantity_sold', 'label' => 'Quantity sold (' . e((string) $item['unit']) . ')', 'type' => 'number', 'step' => 'any', 'inputmode' => 'decimal', 'required' => true]) ?>
             <?= $this->partial('partials/field', ['name' => 'price_per_unit', 'label' => 'Price per unit', 'type' => 'number', 'step' => 'any', 'inputmode' => 'decimal', 'required' => true]) ?>
             <?= $this->partial('partials/field', ['name' => 'sale_date', 'label' => 'Sale date', 'type' => 'date', 'required' => true, 'value' => date('Y-m-d')]) ?>
-            <?= $this->partial('partials/field', ['name' => 'buyer_name', 'label' => 'Buyer (optional)']) ?>
+            <?php if ($buyers !== []): ?>
+                <div class="field">
+                    <label for="f_buyer_id">Saved buyer (optional)</label>
+                    <select class="select" id="f_buyer_id" name="buyer_id">
+                        <option value="">—</option>
+                        <?php foreach ($buyers as $b): ?><option value="<?= e((string) $b['id']) ?>"><?= e((string) $b['name']) ?></option><?php endforeach; ?>
+                    </select>
+                </div>
+            <?php endif; ?>
+            <?= $this->partial('partials/field', ['name' => 'buyer_name', 'label' => 'Or type a buyer name (optional)']) ?>
             <?= $this->partial('partials/field', ['name' => 'collection_point', 'label' => 'Collection point (optional)', 'placeholder' => 'Where the buyer collects it']) ?>
             <?= $this->partial('partials/field', ['name' => 'transport_method', 'label' => 'Transport (optional)', 'placeholder' => 'Own truck, buyer pickup, courier']) ?>
             <?= $this->partial('partials/field', ['name' => 'pickup_date', 'label' => 'Pickup date (optional)', 'type' => 'date']) ?>
@@ -44,10 +54,10 @@ $id = rawurlencode((string) $item['id']);
     <div class="card-head"><h2 class="h2">Sale history</h2></div>
     <div class="table-wrap" style="border:0">
         <table class="data">
-            <thead><tr><th>Date</th><th class="num">Qty</th><th class="num">Price</th><th class="num">Total</th><th>Buyer</th></tr></thead>
+            <thead><tr><th>Date</th><th class="num">Qty</th><th class="num">Price</th><th class="num">Total</th><th>Buyer</th><th class="num">Receipt</th></tr></thead>
             <tbody>
             <?php if ($sales === []): ?>
-                <tr><td colspan="5" class="muted">No sales yet.</td></tr>
+                <tr><td colspan="6" class="muted">No sales yet.</td></tr>
             <?php else: foreach ($sales as $s): ?>
                 <tr>
                     <td class="small"><?= e(Dates::forDisplay((string) $s['sale_date'])) ?></td>
@@ -60,6 +70,7 @@ $id = rawurlencode((string) $item['id']);
                             <div class="small"><?= e(trim(((string) ($s['collection_point'] ?? '')) . (!empty($s['transport_method']) ? ' · ' . (string) $s['transport_method'] : ''))) ?></div>
                         <?php endif; ?>
                     </td>
+                    <td class="num"><a class="btn sm ghost" href="<?= e(url('inventory/' . $id . '/sell/' . rawurlencode((string) $s['id']) . '/receipt')) ?>">Receipt</a></td>
                 </tr>
             <?php endforeach; endif; ?>
             </tbody>

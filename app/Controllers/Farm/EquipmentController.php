@@ -62,11 +62,13 @@ final class EquipmentController extends Controller
             return $this->redirect(url('equipment'));
         }
         return $this->view('equipment/show', [
-            'title'     => (string) $item['name'],
-            'active'    => 'equipment',
-            'e'         => $item,
-            'logs'      => $this->equipment->logsFor($ctx->farmId(), (string) $item['id']),
-            'canManage' => $ctx->can('equipment.manage') && !$ctx->isReadOnly(),
+            'title'      => (string) $item['name'],
+            'active'     => 'equipment',
+            'e'          => $item,
+            'logs'       => $this->equipment->logsFor($ctx->farmId(), (string) $item['id']),
+            'categories' => self::CATEGORIES,
+            'statuses'   => self::STATUSES,
+            'canManage'  => $ctx->can('equipment.manage') && !$ctx->isReadOnly(),
         ]);
     }
 

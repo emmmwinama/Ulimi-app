@@ -19,6 +19,8 @@ use App\Support\Seasons;
 
 final class CropsController extends Controller
 {
+    private const STATUSES = ['Active', 'Harvested', 'Failed', 'Terminated'];
+
     public function __construct(
         private readonly CropFieldRepository $crops = new CropFieldRepository(),
         private readonly CropTypeRepository $cropTypes = new CropTypeRepository(),
@@ -30,21 +32,48 @@ final class CropsController extends Controller
     {
         $ctx = FarmContext::current();
         $season = (string) $request->query('season', '');
+        $fieldId = (string) $request->query('field_id', '');
+        $status = (string) $request->query('status', '');
         $archived = $request->query('view') === 'archived';
         $canManage = $ctx->can('crops.manage') && !$ctx->isReadOnly();
+        $allFields = $this->fields->forFarm($ctx->farmId());
+
+        $crops = $this->crops->forFarm($ctx->farmId(), [
+            'season'   => $season,
+            'field_id' => $fieldId,
+            'status'   => $status,
+            'archived' => $archived,
+        ]);
+
+        $today = strtotime('today');
+        $dueSoonOrOverdue = 0;
+        foreach ($crops as $c) {
+            if ((int) $c['is_archived'] === 1 || empty($c['expected_harvest_date'])) {
+                continue;
+            }
+            $days = (int) floor((strtotime((string) $c['expected_harvest_date']) - $today) / 86400);
+            if ($days < 14) {
+                $dueSoonOrOverdue++;
+            }
+        }
 
         return $this->view('crops/index', [
             'title'         => 'Crops',
             'active'        => 'crops',
-            'crops'         => $this->crops->forFarm($ctx->farmId(), [
-                'season'   => $season,
-                'archived' => $archived,
-            ]),
+            'crops'         => $crops,
+            'stats'         => [
+                'total_area' => array_sum(array_map(static fn ($c) => (float) $c['area_planted'], $crops)),
+                'active'     => count(array_filter($crops, static fn ($c) => $c['status'] === 'Active')),
+                'due_soon'   => $dueSoonOrOverdue,
+            ],
             'seasons'       => $this->crops->seasons($ctx->farmId()),
+            'allFields'     => $allFields,
+            'statuses'      => self::STATUSES,
+            'filters'       => ['season' => $season, 'field_id' => $fieldId, 'status' => $status],
             'season'        => $season,
             'archived'      => $archived,
             'canManage'     => $canManage,
-            'fields'        => $canManage && !$archived ? $this->fields->forFarm($ctx->farmId()) : [],
+            'fields'        => $canManage && !$archived ? $allFields : [],
             'cropTypes'     => $canManage && !$archived ? $this->cropTypes->available($ctx->farmId()) : [],
             'currentSeason' => Seasons::current(),
         ]);
@@ -72,7 +101,7 @@ final class CropsController extends Controller
     public function store(Request $request): Response
     {
         $ctx = FarmContext::current();
-        $prepared = $this->prepare($request);
+        $prepared = $this->prepare($request, null);
         if ($prepared instanceof Response) {
             return $prepared;
         }
@@ -129,7 +158,7 @@ final class CropsController extends Controller
             return $this->redirect(url('crops'));
         }
 
-        $prepared = $this->prepare($request);
+        $prepared = $this->prepare($request, $id);
         if ($prepared instanceof Response) {
             return $prepared;
         }
@@ -171,8 +200,12 @@ final class CropsController extends Controller
         return $this->redirect(url('crops?view=archived'));
     }
 
-    /** @return array<string,mixed>|Response */
-    private function prepare(Request $request): array|Response
+    /**
+     * @param string|null $excludeId the planting's own id when editing it, so its
+     *   current area doesn't count against itself in the remaining-acreage check
+     * @return array<string,mixed>|Response
+     */
+    private function prepare(Request $request, ?string $excludeId): array|Response
     {
         $ctx = FarmContext::current();
 
@@ -191,7 +224,8 @@ final class CropsController extends Controller
         }
 
         // The field must belong to this farm.
-        if ($this->fields->find($ctx->farmId(), (string) $data['field_id']) === null) {
+        $field = $this->fields->find($ctx->farmId(), (string) $data['field_id']);
+        if ($field === null) {
             return $this->fieldError($request, 'field_id', 'Choose one of your fields.');
         }
 
@@ -199,6 +233,28 @@ final class CropsController extends Controller
         $harvest = date('Y-m-d', (int) strtotime((string) $data['expected_harvest_date']));
         if ($harvest < $plant) {
             return $this->fieldError($request, 'expected_harvest_date', 'Expected harvest cannot be before planting.');
+        }
+
+        // A planting only claims land while it's Active — one still growing
+        // (or just recorded) can't claim more than the field actually has
+        // left once every other active planting on it is accounted for.
+        $areaPlanted = (float) $data['area_planted'];
+        if ((string) $data['status'] === 'Active') {
+            $allocated = $this->crops->activeAllocatedArea($ctx->farmId(), (string) $field['id'], $excludeId);
+            $remaining = (float) $field['cultivatable_area'] - $allocated;
+            if ($areaPlanted > $remaining + 1e-9) {
+                return $this->fieldError(
+                    $request,
+                    'area_planted',
+                    sprintf(
+                        'Only %.2f ha remaining on %s (%.2f of %.2f ha cultivatable already planted).',
+                        max(0.0, $remaining),
+                        (string) $field['name'],
+                        $allocated,
+                        (float) $field['cultivatable_area'],
+                    ),
+                );
+            }
         }
 
         return [

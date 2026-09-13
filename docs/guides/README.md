@@ -17,6 +17,9 @@ here first so the words exist before deciding where they're surfaced.
 | [Pest & Disease Log](pest-and-disease-log.md) | Reporting crop incidents, photo/voice attachments, outbreak alerts |
 | [Inventory & Equipment](inventory-and-equipment.md) | Batch/expiry/supplier tracking, low-stock and expiry alerts, the Equipment section and maintenance logs |
 | [Post-Harvest & Storage](post-harvest-and-storage.md) | Logging storage/drying/loss details per harvest, collection & transport on a sale |
+| [Buyers, Offers & Receipts](buyers-offers-and-receipts.md) | Buyer contact book, tracking offers, payment status, printable sale receipts |
+| [Sharing Reports & Climate Events](sharing-reports-and-climate-events.md) | Sending a record pack to a lender/buyer without giving them a login, logging drought/flood/storm losses |
+| [Cooperatives](cooperatives.md) | Creating or joining a farm group, group inventory/production view, contributions, collective sales |
 
 Style notes for future guides:
 - Address the farmer directly ("you"), short sentences, no jargon

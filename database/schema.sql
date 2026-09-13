@@ -306,6 +306,75 @@ CREATE TABLE IF NOT EXISTS `auth_tokens` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ---------------------------------------------------------------------
+-- buyers
+-- ---------------------------------------------------------------------
+DROP TABLE IF EXISTS `buyers`;
+CREATE TABLE IF NOT EXISTS `buyers` (
+  `id` varchar(40) NOT NULL,
+  `farm_id` varchar(40) NOT NULL,
+  `name` varchar(160) NOT NULL,
+  `type` varchar(20) NOT NULL DEFAULT 'individual',
+  `phone` varchar(40) DEFAULT NULL,
+  `email` varchar(160) DEFAULT NULL,
+  `location` varchar(160) DEFAULT NULL,
+  `notes` varchar(500) DEFAULT NULL,
+  `created_at` datetime NOT NULL,
+  `updated_at` datetime NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx_buyers_farm` (`farm_id`),
+  CONSTRAINT `fk_buyers_farm` FOREIGN KEY (`farm_id`) REFERENCES `farms` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ---------------------------------------------------------------------
+-- buyer_offers
+-- ---------------------------------------------------------------------
+DROP TABLE IF EXISTS `buyer_offers`;
+CREATE TABLE IF NOT EXISTS `buyer_offers` (
+  `id` varchar(40) NOT NULL,
+  `farm_id` varchar(40) NOT NULL,
+  `buyer_id` varchar(40) DEFAULT NULL,
+  `crop_name` varchar(120) NOT NULL,
+  `quantity_wanted` decimal(14,3) DEFAULT NULL,
+  `unit` varchar(20) NOT NULL DEFAULT 'kg',
+  `price_offered` decimal(12,2) DEFAULT NULL,
+  `status` varchar(20) NOT NULL DEFAULT 'open',
+  `expiry_date` date DEFAULT NULL,
+  `notes` varchar(500) DEFAULT NULL,
+  `created_at` datetime NOT NULL,
+  `updated_at` datetime NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx_bo_farm` (`farm_id`,`status`),
+  KEY `idx_bo_buyer` (`buyer_id`),
+  CONSTRAINT `fk_bo_buyer` FOREIGN KEY (`buyer_id`) REFERENCES `buyers` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `fk_bo_farm` FOREIGN KEY (`farm_id`) REFERENCES `farms` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ---------------------------------------------------------------------
+-- climate_events
+-- ---------------------------------------------------------------------
+DROP TABLE IF EXISTS `climate_events`;
+CREATE TABLE IF NOT EXISTS `climate_events` (
+  `id` varchar(40) NOT NULL,
+  `farm_id` varchar(40) NOT NULL,
+  `event_type` varchar(20) NOT NULL,
+  `start_date` date NOT NULL,
+  `end_date` date DEFAULT NULL,
+  `description` varchar(500) DEFAULT NULL,
+  `estimated_loss_amount` decimal(14,2) DEFAULT NULL,
+  `affected_crop_field_id` varchar(40) DEFAULT NULL,
+  `created_by_id` varchar(40) NOT NULL,
+  `created_at` datetime NOT NULL,
+  `updated_at` datetime NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx_ce_farm` (`farm_id`,`start_date`),
+  KEY `idx_ce_crop_field` (`affected_crop_field_id`),
+  KEY `fk_ce_user` (`created_by_id`),
+  CONSTRAINT `fk_ce_crop_field` FOREIGN KEY (`affected_crop_field_id`) REFERENCES `crop_fields` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `fk_ce_farm` FOREIGN KEY (`farm_id`) REFERENCES `farms` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_ce_user` FOREIGN KEY (`created_by_id`) REFERENCES `users` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ---------------------------------------------------------------------
 -- cms_features
 -- ---------------------------------------------------------------------
 DROP TABLE IF EXISTS `cms_features`;
@@ -364,6 +433,105 @@ CREATE TABLE IF NOT EXISTS `contact_submissions` (
   `replied_at` datetime DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `idx_contact_status` (`status`,`created_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ---------------------------------------------------------------------
+-- cooperatives
+-- ---------------------------------------------------------------------
+DROP TABLE IF EXISTS `cooperatives`;
+CREATE TABLE IF NOT EXISTS `cooperatives` (
+  `id` varchar(40) NOT NULL,
+  `name` varchar(160) NOT NULL,
+  `region` varchar(120) DEFAULT NULL,
+  `join_code` varchar(12) NOT NULL,
+  `created_by_id` varchar(40) NOT NULL,
+  `created_at` datetime NOT NULL,
+  `updated_at` datetime NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uniq_coop_join_code` (`join_code`),
+  KEY `fk_coop_user` (`created_by_id`),
+  CONSTRAINT `fk_coop_user` FOREIGN KEY (`created_by_id`) REFERENCES `users` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ---------------------------------------------------------------------
+-- cooperative_contributions
+-- ---------------------------------------------------------------------
+DROP TABLE IF EXISTS `cooperative_contributions`;
+CREATE TABLE IF NOT EXISTS `cooperative_contributions` (
+  `id` varchar(40) NOT NULL,
+  `cooperative_id` varchar(40) NOT NULL,
+  `farm_id` varchar(40) NOT NULL,
+  `amount` decimal(14,2) NOT NULL DEFAULT 0.00,
+  `date` date NOT NULL,
+  `type` varchar(40) NOT NULL DEFAULT 'membership',
+  `notes` varchar(500) DEFAULT NULL,
+  `created_by_id` varchar(40) NOT NULL,
+  `created_at` datetime NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx_cc_coop` (`cooperative_id`),
+  KEY `idx_cc_farm` (`farm_id`),
+  KEY `fk_cc_user` (`created_by_id`),
+  CONSTRAINT `fk_cc_coop` FOREIGN KEY (`cooperative_id`) REFERENCES `cooperatives` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_cc_farm` FOREIGN KEY (`farm_id`) REFERENCES `farms` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_cc_user` FOREIGN KEY (`created_by_id`) REFERENCES `users` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ---------------------------------------------------------------------
+-- cooperative_members
+-- ---------------------------------------------------------------------
+DROP TABLE IF EXISTS `cooperative_members`;
+CREATE TABLE IF NOT EXISTS `cooperative_members` (
+  `id` varchar(40) NOT NULL,
+  `cooperative_id` varchar(40) NOT NULL,
+  `farm_id` varchar(40) NOT NULL,
+  `role` varchar(20) NOT NULL DEFAULT 'member',
+  `joined_at` datetime NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uniq_cm_coop_farm` (`cooperative_id`,`farm_id`),
+  KEY `idx_cm_farm` (`farm_id`),
+  CONSTRAINT `fk_cm_coop` FOREIGN KEY (`cooperative_id`) REFERENCES `cooperatives` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_cm_farm` FOREIGN KEY (`farm_id`) REFERENCES `farms` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ---------------------------------------------------------------------
+-- cooperative_sales
+-- ---------------------------------------------------------------------
+DROP TABLE IF EXISTS `cooperative_sales`;
+CREATE TABLE IF NOT EXISTS `cooperative_sales` (
+  `id` varchar(40) NOT NULL,
+  `cooperative_id` varchar(40) NOT NULL,
+  `crop_name` varchar(120) NOT NULL,
+  `total_quantity` decimal(14,3) NOT NULL DEFAULT 0.000,
+  `unit` varchar(20) NOT NULL DEFAULT 'kg',
+  `price_per_unit` decimal(12,2) NOT NULL DEFAULT 0.00,
+  `total_amount` decimal(14,2) NOT NULL DEFAULT 0.00,
+  `buyer_name` varchar(160) DEFAULT NULL,
+  `sale_date` date NOT NULL,
+  `notes` varchar(500) DEFAULT NULL,
+  `created_by_id` varchar(40) NOT NULL,
+  `created_at` datetime NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx_cs_coop` (`cooperative_id`),
+  KEY `fk_cs_user` (`created_by_id`),
+  CONSTRAINT `fk_cs_coop` FOREIGN KEY (`cooperative_id`) REFERENCES `cooperatives` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_cs_user` FOREIGN KEY (`created_by_id`) REFERENCES `users` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ---------------------------------------------------------------------
+-- cooperative_sale_splits
+-- ---------------------------------------------------------------------
+DROP TABLE IF EXISTS `cooperative_sale_splits`;
+CREATE TABLE IF NOT EXISTS `cooperative_sale_splits` (
+  `id` varchar(40) NOT NULL,
+  `cooperative_sale_id` varchar(40) NOT NULL,
+  `farm_id` varchar(40) NOT NULL,
+  `quantity` decimal(14,3) NOT NULL DEFAULT 0.000,
+  `amount` decimal(14,2) NOT NULL DEFAULT 0.00,
+  PRIMARY KEY (`id`),
+  KEY `idx_css_sale` (`cooperative_sale_id`),
+  KEY `idx_css_farm` (`farm_id`),
+  CONSTRAINT `fk_css_farm` FOREIGN KEY (`farm_id`) REFERENCES `farms` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_css_sale` FOREIGN KEY (`cooperative_sale_id`) REFERENCES `cooperative_sales` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ---------------------------------------------------------------------
@@ -800,6 +968,7 @@ CREATE TABLE IF NOT EXISTS `inventory_sales` (
   `price_per_unit` decimal(12,2) NOT NULL DEFAULT 0.00,
   `total_amount` decimal(14,2) NOT NULL DEFAULT 0.00,
   `buyer_name` varchar(160) DEFAULT NULL,
+  `buyer_id` varchar(40) DEFAULT NULL,
   `collection_point` varchar(160) DEFAULT NULL,
   `transport_method` varchar(80) DEFAULT NULL,
   `pickup_date` date DEFAULT NULL,
@@ -810,6 +979,8 @@ CREATE TABLE IF NOT EXISTS `inventory_sales` (
   KEY `idx_invs_farm` (`farm_id`),
   KEY `idx_invs_item` (`inventory_item_id`),
   KEY `fk_invs_tx` (`transaction_id`),
+  KEY `fk_invs_buyer` (`buyer_id`),
+  CONSTRAINT `fk_invs_buyer` FOREIGN KEY (`buyer_id`) REFERENCES `buyers` (`id`) ON DELETE SET NULL,
   CONSTRAINT `fk_invs_farm` FOREIGN KEY (`farm_id`) REFERENCES `farms` (`id`) ON DELETE CASCADE,
   CONSTRAINT `fk_invs_item` FOREIGN KEY (`inventory_item_id`) REFERENCES `inventory_items` (`id`) ON DELETE CASCADE,
   CONSTRAINT `fk_invs_tx` FOREIGN KEY (`transaction_id`) REFERENCES `transactions` (`id`) ON DELETE SET NULL
@@ -873,6 +1044,47 @@ CREATE TABLE IF NOT EXISTS `market_prices` (
   PRIMARY KEY (`id`),
   KEY `idx_mp_crop` (`crop_name`,`is_active`),
   KEY `idx_mp_recorded` (`recorded_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ---------------------------------------------------------------------
+-- market_price_feed_state
+-- ---------------------------------------------------------------------
+DROP TABLE IF EXISTS `market_price_feed_state`;
+CREATE TABLE IF NOT EXISTS `market_price_feed_state` (
+  `id` varchar(10) NOT NULL,
+  `last_checked_at` datetime DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ---------------------------------------------------------------------
+-- market_price_updates
+-- ---------------------------------------------------------------------
+DROP TABLE IF EXISTS `market_price_updates`;
+CREATE TABLE IF NOT EXISTS `market_price_updates` (
+  `id` varchar(40) NOT NULL,
+  `existing_price_id` varchar(40) DEFAULT NULL,
+  `crop_name` varchar(120) NOT NULL,
+  `variety` varchar(120) DEFAULT NULL,
+  `unit` varchar(20) NOT NULL DEFAULT 'kg',
+  `price_min` decimal(12,2) NOT NULL DEFAULT 0.00,
+  `price_max` decimal(12,2) NOT NULL DEFAULT 0.00,
+  `price_avg` decimal(12,2) NOT NULL DEFAULT 0.00,
+  `market` varchar(120) NOT NULL DEFAULT '',
+  `region` varchar(120) NOT NULL DEFAULT '',
+  `currency` varchar(3) NOT NULL DEFAULT 'MWK',
+  `recorded_at` datetime NOT NULL,
+  `source` varchar(60) NOT NULL DEFAULT 'WFP',
+  `status` varchar(20) NOT NULL DEFAULT 'pending',
+  `fetched_at` datetime NOT NULL,
+  `reviewed_by` varchar(40) DEFAULT NULL,
+  `reviewed_at` datetime DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uniq_mpu_pending_slot` (`crop_name`,`region`,`source`,`status`),
+  KEY `idx_mpu_status` (`status`),
+  KEY `fk_mpu_existing` (`existing_price_id`),
+  KEY `fk_mpu_reviewer` (`reviewed_by`),
+  CONSTRAINT `fk_mpu_existing` FOREIGN KEY (`existing_price_id`) REFERENCES `market_prices` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `fk_mpu_reviewer` FOREIGN KEY (`reviewed_by`) REFERENCES `admin_users` (`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ---------------------------------------------------------------------
@@ -975,6 +1187,29 @@ CREATE TABLE IF NOT EXISTS `rate_limits` (
   `expires_at` int(10) unsigned NOT NULL,
   PRIMARY KEY (`bucket`),
   KEY `idx_rate_limits_expires` (`expires_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ---------------------------------------------------------------------
+-- report_share_links
+-- ---------------------------------------------------------------------
+DROP TABLE IF EXISTS `report_share_links`;
+CREATE TABLE IF NOT EXISTS `report_share_links` (
+  `id` varchar(40) NOT NULL,
+  `farm_id` varchar(40) NOT NULL,
+  `pack_type` varchar(20) NOT NULL,
+  `token_hash` char(64) NOT NULL,
+  `created_by_id` varchar(40) NOT NULL,
+  `expires_at` datetime NOT NULL,
+  `revoked_at` datetime DEFAULT NULL,
+  `last_viewed_at` datetime DEFAULT NULL,
+  `view_count` int(11) NOT NULL DEFAULT 0,
+  `created_at` datetime NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx_rsl_hash` (`token_hash`),
+  KEY `idx_rsl_farm` (`farm_id`),
+  KEY `fk_rsl_user` (`created_by_id`),
+  CONSTRAINT `fk_rsl_farm` FOREIGN KEY (`farm_id`) REFERENCES `farms` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_rsl_user` FOREIGN KEY (`created_by_id`) REFERENCES `users` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ---------------------------------------------------------------------
@@ -1125,6 +1360,7 @@ CREATE TABLE IF NOT EXISTS `transactions` (
   `farm_id` varchar(40) NOT NULL,
   `type` varchar(10) NOT NULL,
   `category` varchar(80) NOT NULL DEFAULT 'Other',
+  `payment_status` varchar(20) NOT NULL DEFAULT 'paid',
   `amount` decimal(14,2) NOT NULL DEFAULT 0.00,
   `date` date NOT NULL,
   `description` varchar(255) NOT NULL DEFAULT '',

@@ -146,6 +146,11 @@ final class LivestockController extends Controller
             'expenses'   => $this->repo->events('animal_expenses', $ctx->farmId(), (string) $animal['id']),
             'sales'      => $this->repo->events('animal_sales', $ctx->farmId(), (string) $animal['id']),
             'canManage'  => $ctx->can('livestock.manage') && !$ctx->isReadOnly(),
+            'types'      => $this->repo->types($ctx->farmId()),
+            'parents'    => $this->repo->animals($ctx->farmId(), ['status' => 'Active']),
+            'sexes'      => self::SEX,
+            'statuses'   => self::STATUS,
+            'acqTypes'   => self::ACQ,
         ]);
     }
 

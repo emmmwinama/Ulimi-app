@@ -80,6 +80,7 @@ final class TransactionRepository
             'farm_id'           => $farmId,
             'type'              => $data['type'],
             'category'          => $data['category'],
+            'payment_status'    => $data['payment_status'] ?? 'paid',
             'amount'            => $data['amount'],
             'date'              => $data['date'],
             'description'       => $data['description'],

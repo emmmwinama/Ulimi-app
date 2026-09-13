@@ -2,6 +2,7 @@
 /**
  * @var array<string,mixed> $e
  * @var array<int,array<string,mixed>> $logs
+ * @var list<string> $categories @var list<string> $statuses
  * @var bool $canManage
  */
 $this->layout('layouts/app');
@@ -19,7 +20,7 @@ $totalCost = array_sum(array_map(static fn ($l) => (float) $l['cost'], $logs));
     </div>
     <?php if ($canManage): ?>
         <div class="row" style="gap:8px">
-            <a class="btn ghost" href="<?= e(url('equipment/' . rawurlencode((string) $e['id']) . '/edit')) ?>">Edit</a>
+            <a class="btn ghost" href="#edit-equipment">Edit</a>
             <form method="post" action="<?= e(url('equipment/' . rawurlencode((string) $e['id']) . '/delete')) ?>" onsubmit="return confirm('Delete this equipment record? Its maintenance history will be deleted too.')">
                 <?= csrf_field() ?>
                 <button class="btn ghost danger" type="submit">Delete</button>
@@ -87,4 +88,30 @@ $totalCost = array_sum(array_map(static fn ($l) => (float) $l['cost'], $logs));
         </table>
     </div>
 </div>
+
+<?php if ($canManage): ?>
+    <div class="slide-over" id="edit-equipment">
+        <a href="#" class="scrim" aria-label="Close"></a>
+        <div class="panel">
+            <div class="panel-head">
+                <div>
+                    <h2 class="h3">Edit equipment</h2>
+                    <p class="small muted mt-8px"><?= e((string) $e['name']) ?></p>
+                </div>
+                <a href="#" class="panel-close" aria-label="Close"><?= $this->partial('partials/icon', ['name' => 'x', 'class' => 'ico ico-sm']) ?></a>
+            </div>
+            <form method="post" action="<?= e(url('equipment/' . rawurlencode((string) $e['id']))) ?>" style="display:contents">
+                <?= csrf_field() ?>
+                <?= method_field('PUT') ?>
+                <div class="panel-body stack">
+                    <?= $this->partial('partials/equipment/equipment', ['item' => $e, 'categories' => $categories, 'statuses' => $statuses]) ?>
+                </div>
+                <div class="panel-foot">
+                    <a href="#" class="btn ghost block">Cancel</a>
+                    <button type="submit" class="btn block">Save changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+<?php endif; ?>
 <?php $this->stop(); ?>
